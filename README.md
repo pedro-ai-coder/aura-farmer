@@ -1,31 +1,39 @@
 # AURA FARMER — Cartoon 2D Roguelite
 
-Protótipo solo para browser, desenvolvido em Phaser 3, TypeScript e Vite. Sobrevive a cinco vagas de 50 segundos, recolhe XP, escolhe upgrades e derrota o Big Hater na última vaga.
+A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. Survive five 50-second waves, collect XP, choose upgrades, and defeat the Big Hater in the final wave.
 
-## Experimentar
+## Play online
 
-Requer Node.js 22 (`.nvmrc`) e npm. Num clone deste repositório:
+**[Play Aura Farmer v0.1](https://aura-farmer-ecru.vercel.app)**
+
+The Vercel deployment tracks the `main` branch. Changes appear on the live website after they have been merged and the production build succeeds.
+
+## Run locally
+
+Requires Node.js 22 (see `.nvmrc`) and npm. In your local checkout:
 
 ```bash
-nvm use                 # se utilizares nvm
+nvm use                 # if you use nvm
 npm ci
 npm run dev
 ```
 
-Abre no browser o endereço apresentado pelo Vite. Não são necessários login, chaves de API ou serviços externos. Para experimentar os ficheiros de produção, executa `npm run build` seguido de `npm run preview`.
+Open the URL printed by Vite. No login, API keys, backend, or external services required. For a production-like run, use `npm run build` followed by `npm run preview`.
 
-| Tecla | Ação |
+| Key | Action |
 | --- | --- |
-| ENTER | Começar, avançar de vaga ou reiniciar |
-| WASD / setas | Mover; o disparo aponta automaticamente ao inimigo mais próximo |
-| E | FLEX: fica imóvel e sem novos ataques durante 1 s; precisas de 3 inimigos a até 145 px para ganhar 25 Aura |
-| ESPAÇO | Sigma Focus: abranda os inimigos durante 3 s |
-| 1 / 2 / 3 | Escolher upgrade; a simulação fica em pausa |
-| F3 | Mostrar FPS e estado da simulação |
+| ENTER | Start, advance to the next wave, or restart |
+| WASD / arrow keys | Move; weapons automatically target the closest enemy |
+| E | FLEX: stand still and stop attacking for 1s; keep at least 3 enemies within 145px to earn +25 Aura |
+| SPACE | Sigma Focus: slow enemies for 3s |
+| 1 / 2 / 3 | Choose an upgrade; the game pauses during selection |
+| F3 | Show FPS and simulation diagnostics |
 
-Recolhe os cristais verdes para obter XP. Receber dano interrompe o FLEX e retira 20 Aura. O FLEX tem 15 s de cooldown após terminar/interromper. Atingir 100 Aura inicia um Burst de +20% de dano durante 6 s e repõe a Aura em 40. O relógio da última vaga chegar a zero não chega para vencer: o boss também tem de morrer.
+Collect green crystals to gain XP. Getting hit interrupts FLEX and costs 20 Aura. FLEX enters a 15-second cooldown after it ends or is interrupted. At 100 Aura, Aura Burst gives +20% damage for 6 seconds and resets the meter to 40. Reaching the end of the final wave is not enough: the boss must also be defeated.
 
-## Validação
+All in-game UI, buff descriptions, and combat messages are in English. Meme-themed names (such as Sigma, Mewing, and Six Seven) are intentionally kept.
+
+## Testing
 
 ```bash
 npm run typecheck
@@ -35,8 +43,8 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Em Linux, `npx playwright install --with-deps chromium` instala também as dependências do browser, quando necessário. A suite usa `/usr/bin/chromium` se existir; `CHROMIUM_PATH` permite selecionar outro executável. Os testes de browser iniciam o seu próprio Vite na porta 4174. Capturas e traces ficam em `test-results/` e não são versionados.
+On Linux, `npx playwright install --with-deps chromium` can also install system browser dependencies. The browser tests start their own Vite server on port 4174; screenshots and traces go to `test-results/` and are not committed.
 
-Resultados, limites dos testes e parâmetros do protótipo: [docs/VALIDATION.md](docs/VALIDATION.md). A lógica de combate é independente do Phaser e está em `src/game/core/arena.ts`; a cena trata dos controlos e desenho.
+Validation history and limitations: [docs/VALIDATION.md](docs/VALIDATION.md). The Phaser-independent combat simulation lives in `src/game/core/arena.ts`, and the rendering/input scene lives in `src/game/scenes/ArenaScene.ts`.
 
-O balanceamento ainda precisa de playtesting humano. Multiplayer, Discord, loja, mobile e persistência estão fora desta versão.
+Human gameplay balance testing is still needed. Multiplayer, Discord, shop, mobile controls, and persistence are out of scope for v0.1.
