@@ -1,0 +1,260 @@
+import { AuraSystem } from './aura';
+import { FlexSystem, type FlexResult } from './flex';
+import { Progression } from './progression';
+import { GAME } from './constants';
+import { combatStats } from './combat';
+import { clamp, distance, normalized, type Vec2 } from './math';
+import { availableBuffs, emptyBuffLevels, type BuffDefinition } from '../data/buffs';
+import { ENEMIES, type EnemyType } from '../data/enemies';
+
+export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
+export interface Controls { x?: number; y?: number; flex?: boolean; focus?: boolean; confirm?: boolean; choice?: number }
+export interface Enemy extends Vec2 { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
+export interface Shot extends Vec2 { vx: number; vy: number; ttl: number; damage: number; hostile: boolean }
+export interface Drop extends Vec2 { xp: number }
+
+/** Phaser-free simulation. All durations use active simulation time, including cooldowns. */
+export class Arena {
+  mode: Mode = 'intro';
+  pos = { x: 480, y: 330 };
+  hp = 100;
+  aura = new AuraSystem();
+  flex = new FlexSystem();
+  xp = new Progression();
+  buffs = emptyBuffLevels();
+  enemies: Enemy[] = [];
+  shots: Shot[] = [];
+  drops: Drop[] = [];
+  choices: BuffDefinition[] = [];
+  pendingUpgrades = 0;
+  clock = 0;
+  wave = 1;
+  waveClock = 0;
+  kills = 0;
+  focusReady = 0;
+  focusUntil = 0;
+  bossSpawned = false;
+  bossDefeated = false;
+  lastDamageAt = 0;
+  feedback = '';
+  feedbackUntil = 0;
+  jawUntil = 0;
+  private spawnClock = 0;
+  private fireReady = 0;
+  private jawReady = 0;
+  private orbReady = 0;
+  private nextId = 0;
+
+  constructor(private readonly random: () => number = Math.random) {}
+
+  get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
+  get stats() { return combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt); }
+  get orb(): Vec2 { return { x: this.pos.x + Math.cos(this.clock / 350) * 76, y: this.pos.y + Math.sin(this.clock / 350) * 76 }; }
+
+  update(elapsed: number, input: Controls = {}): void {
+    if (this.mode === 'intro' || this.mode === 'dead' || this.mode === 'win') {
+      if (input.confirm) { Object.assign(this, new Arena(this.random)); this.mode = 'playing'; }
+      return;
+    }
+    if (this.mode === 'between') {
+      if (input.confirm) {
+        this.wave++; this.waveClock = 0; this.spawnClock = 0;
+        this.enemies = []; this.shots = []; this.drops = [];
+        this.hp = Math.min(this.stats.maxHp, this.hp + 20); this.mode = 'playing';
+      }
+      return;
+    }
+    if (this.mode === 'upgrades') {
+      const buff = input.choice === undefined ? undefined : this.choices[input.choice];
+      if (buff) {
+        this.buffs[buff.id]++;
+        if (buff.id === 'thick-skin') this.hp = Math.min(this.stats.maxHp, this.hp + 20);
+        this.pendingUpgrades--; this.offerUpgrade();
+      }
+      return;
+    }
+    if (input.flex && this.flex.tryStart(this.clock)) this.say('FLEX — mantém 3 inimigos por perto!');
+    if (input.focus && this.clock >= this.focusReady) {
+      this.focusUntil = this.clock + GAME.focusDurationMs;
+      this.focusReady = this.clock + GAME.focusCooldownMs;
+    }
+    // Small steps prevent projectile tunnelling; discard long inactive-tab gaps.
+    let remaining = clamp(elapsed, 0, 250);
+    while (remaining > 0 && this.mode === 'playing') {
+      const dt = Math.min(remaining, 1000 / 60);
+      this.step(dt, input); remaining -= dt;
+    }
+  }
+
+  private step(dt: number, input: Controls): void {
+    this.clock += dt; this.waveClock += dt; this.spawnClock += dt;
+    const charging = this.flex.state === 'charging';
+    if (!charging) {
+      const v = normalized(input.x ?? 0, input.y ?? 0);
+      const speed = this.stats.speed * this.aura.moveMultiplier;
+      this.pos.x = clamp(this.pos.x + v.x * speed * dt / 1000, 25, 935);
+      this.pos.y = clamp(this.pos.y + v.y * speed * dt / 1000, 105, 575);
+    }
+    if (this.waveClock < GAME.waveDurationMs && this.spawnClock >= Math.max(300, 1100 - this.wave * 120)) {
+      this.spawnClock = 0;
+      if (this.enemies.length < GAME.maxEnemies - (this.wave === 5 && !this.bossSpawned ? 1 : 0)) {
+        const types: EnemyType[] = this.wave >= 3 ? ['npc', 'hater', 'beta'] : this.wave >= 2 ? ['npc', 'hater'] : ['npc'];
+        this.spawn(types[Math.floor(this.random() * types.length)]);
+      }
+    }
+    if (this.wave === 5 && !this.bossSpawned && this.waveClock >= 12000) {
+      this.spawn('boss'); this.bossSpawned = true;
+      this.say('BIG HATER chegou. Derrota-o para vencer!');
+    }
+    for (const e of this.enemies) {
+      const stats = ENEMIES[e.type];
+      const d = distance(e, this.pos), v = normalized(this.pos.x - e.x, this.pos.y - e.y);
+      const slow = this.clock < this.focusUntil ? .62 : 1;
+      // Haters stop at range and fire aimed, dodgeable projectiles.
+      if (e.type !== 'hater' || d > 235) {
+        e.x += v.x * stats.speed * dt / 1000 * slow;
+        e.y += v.y * stats.speed * dt / 1000 * slow;
+      }
+      if ((e.type === 'hater' || e.type === 'boss') && this.clock >= e.nextShot) {
+        this.shoot(e, this.pos, stats.damage, true, 165);
+        e.nextShot = this.clock + (e.type === 'boss' ? 1200 : 1800);
+      }
+      if (distance(e, this.pos) < stats.radius + GAME.playerRadius && this.clock >= e.nextHit) {
+        e.nextHit = this.clock + 850;
+        this.hurt(stats.damage);
+        if (this.mode === 'dead') return;
+      }
+    }
+    // Existing projectiles can finish their flight during FLEX; no new attacks start.
+    if (!charging) this.attack();
+    for (const shot of [...this.shots]) {
+      shot.x += shot.vx * dt / 1000; shot.y += shot.vy * dt / 1000; shot.ttl -= dt;
+      if (shot.ttl <= 0) { this.removeShot(shot); continue; }
+      if (shot.hostile) {
+        if (distance(shot, this.pos) < GAME.playerRadius + 6) {
+          this.removeShot(shot); this.hurt(shot.damage);
+          if (this.mode === 'dead') return;
+        }
+      } else {
+        const enemy = this.enemies.find(e => distance(e, shot) < ENEMIES[e.type].radius + 6);
+        if (enemy) { this.removeShot(shot); this.hit(enemy, shot.damage); }
+      }
+    }
+    const flexResult = this.flex.update(this.clock, this.nearby);
+    if (flexResult !== 'waiting') this.finishFlex(flexResult);
+    for (const drop of [...this.drops]) {
+      const d = distance(drop, this.pos);
+      if (d < 26) {
+        this.drops.splice(this.drops.indexOf(drop), 1);
+        this.pendingUpgrades += this.xp.gain(drop.xp);
+      } else if (d < 100) {
+        const v = normalized(this.pos.x - drop.x, this.pos.y - drop.y);
+        const step = Math.min(d, 300 * dt / 1000);
+        drop.x += v.x * step; drop.y += v.y * step;
+      }
+    }
+    if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
+    if (this.waveClock >= GAME.waveDurationMs) {
+      if (this.wave < GAME.waveCount) this.mode = 'between';
+      else if (this.bossDefeated) this.mode = 'win';
+    }
+  }
+
+  private attack(): void {
+    if (!this.enemies.length) return;
+    if (this.clock >= this.fireReady) {
+      const target = this.enemies.reduce((a, b) => distance(a, this.pos) < distance(b, this.pos) ? a : b);
+      this.shoot(this.pos, target, this.damage(18));
+      this.fireReady = this.clock + 420 / (this.aura.fireRateMultiplier * this.stats.fireRate);
+    }
+    if (this.buffs['mewing-jaw'] && this.clock >= this.jawReady && this.enemies.some(e => distance(e, this.pos) < 95)) {
+      this.jawReady = this.clock + 1100; this.jawUntil = this.clock + 160;
+      for (const e of [...this.enemies]) if (distance(e, this.pos) < 95) this.hit(e, this.damage(26));
+    }
+    if (this.buffs['ohio-orbiter'] && this.clock >= this.orbReady) {
+      const targets = this.enemies.filter(e => distance(e, this.orb) < ENEMIES[e.type].radius + 12);
+      if (targets.length) {
+        this.orbReady = this.clock + 350;
+        for (const e of targets) this.hit(e, this.damage(14));
+      }
+    }
+  }
+
+  private damage(base: number): number {
+    const stats = this.stats;
+    return base * this.aura.attackMultiplier(this.clock) * stats.damage * (this.random() < stats.critChance ? 2 : 1);
+  }
+
+  private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): void {
+    const v = normalized(to.x - from.x, to.y - from.y);
+    this.shots.push({ ...from, vx: v.x * speed, vy: v.y * speed, ttl: hostile ? 5000 : 1800, damage, hostile });
+  }
+
+  private removeShot(shot: Shot): void {
+    const index = this.shots.indexOf(shot);
+    if (index >= 0) this.shots.splice(index, 1);
+  }
+
+  private hit(enemy: Enemy, damage: number): void {
+    enemy.hp -= damage;
+    if (enemy.hp > 0) return;
+    const index = this.enemies.indexOf(enemy);
+    if (index < 0) return;
+    this.enemies.splice(index, 1); this.kills++;
+    this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
+    if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER derrotado!'); }
+    if (this.kills % 5 === 0) this.aura.change(10, this.clock);
+    if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
+      for (let i = 0; i < 7; i++) {
+        const angle = i * Math.PI * 2 / 7;
+        this.shoot(this.pos, { x: this.pos.x + Math.cos(angle), y: this.pos.y + Math.sin(angle) }, this.damage(18));
+      }
+      this.say('SIX SEVEN!');
+    }
+  }
+
+  private hurt(amount: number): void {
+    this.hp = Math.max(0, this.hp - Math.max(1, amount - this.stats.armor));
+    this.lastDamageAt = this.clock;
+    this.aura.change(-20, this.clock);
+    if (this.flex.interrupt(this.clock) === 'interrupted') this.say('FLEX interrompido!');
+    if (this.hp <= 0) this.mode = 'dead';
+  }
+
+  private finishFlex(result: FlexResult): void {
+    if (result === 'success') {
+      this.aura.change(25, this.clock);
+      for (const enemy of this.enemies) {
+        if (distance(enemy, this.pos) > GAME.flexRadius) continue;
+        const v = normalized(enemy.x - this.pos.x, enemy.y - this.pos.y);
+        enemy.x = clamp(enemy.x + v.x * 85, 20, 940);
+        enemy.y = clamp(enemy.y + v.y * 85, 105, 575);
+      }
+      this.say('FLEX! +25 AURA');
+    } else if (result === 'no-audience') this.say('Sem plateia: precisas de 3 inimigos a 145 px.');
+  }
+
+  private offerUpgrade(): void {
+    const options = availableBuffs(this.buffs);
+    if (!options.length || this.pendingUpgrades <= 0) {
+      this.pendingUpgrades = 0; this.choices = []; this.mode = 'playing'; return;
+    }
+    // Fisher–Yates: unique choices with no random-sort comparator bias.
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(this.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    this.choices = options.slice(0, 3); this.mode = 'upgrades';
+  }
+
+  private spawn(type: EnemyType): void {
+    const side = Math.floor(this.random() * 4), offset = this.random();
+    const pos = side < 2 ? { x: side === 0 ? 25 : 935, y: 105 + offset * 470 }
+      : { x: 25 + offset * 910, y: side === 2 ? 105 : 575 };
+    // Never materialize on the player, even when they hug an arena edge.
+    if (distance(pos, this.pos) < 220) { pos.x = 960 - pos.x; pos.y = 680 - pos.y; }
+    this.enemies.push({ ...pos, id: this.nextId++, type, hp: ENEMIES[type].hp, nextHit: this.clock, nextShot: this.clock + 1500 });
+  }
+
+  private say(message: string): void { this.feedback = message; this.feedbackUntil = this.clock + 2200; }
+}
