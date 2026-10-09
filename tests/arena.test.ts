@@ -74,7 +74,7 @@ describe('integrated FLEX', () => {
       enemy(a, 550).nextHit = Infinity; enemy(a, 560).nextHit = Infinity;
       if (count === 3) enemy(a, 700).nextHit = Infinity;
       a.flex.tryStart(0); a.update(1);
-      expect(a.aura.value).toBe(0); expect(a.feedback).toContain('Sem plateia');
+      expect(a.aura.value).toBe(0); expect(a.feedback).toContain('No audience');
     }
   });
   it('counts an enemy exactly at 145px and interrupts without a later reward', () => {
@@ -82,7 +82,7 @@ describe('integrated FLEX', () => {
     a.enemies = []; for (let i = 0; i < 3; i++) enemy(a, 480, 330).nextHit = i ? Infinity : 0;
     a.aura.change(50); a.update(10, { flex: true });
     a.enemies = []; advance(a, 1100);
-    expect(a.aura.value).toBe(30); expect(a.feedback).toContain('interrompido');
+    expect(a.aura.value).toBe(30); expect(a.feedback).toContain('interrupted');
   });
 });
 
