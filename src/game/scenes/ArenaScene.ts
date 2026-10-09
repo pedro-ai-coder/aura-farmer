@@ -144,8 +144,10 @@ export class ArenaScene extends Phaser.Scene {
       g.lineStyle(2, 0xb899eb).strokeRoundedRect(110, 118, 740, 438, 22);
     }
     if (touchControls.visible) {
-      if (a.mode === 'upgrades') message += '\\n\\nTap a buff button below.';
-      if (a.mode === 'between' || a.mode === 'dead' || a.mode === 'win') message = message.replace(/Press ENTER[^\\n]*/g, 'Use the button below to continue');
+      if (a.mode === 'upgrades') message += '\n\nTap a buff button below.';
+      if (a.mode === 'between' || a.mode === 'dead' || a.mode === 'win') {
+        message = message.replace(/Press ENTER[^\n]*/g, 'Use the button below to continue');
+      }
     }
     touchControls.setMode(a.mode, a.choices);
     this.overlay.setPosition(480, 337).setFontSize(a.mode === 'upgrades' ? 18 : 20).setText(message);
