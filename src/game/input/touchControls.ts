@@ -16,7 +16,7 @@ export class TouchControls {
   private confirmActions = document.querySelector<HTMLElement>('#touch-confirm-actions')!;
   private upgradeActions = document.querySelector<HTMLElement>('#touch-upgrade-actions')!;
   private confirmButton = document.querySelector<HTMLButtonElement>('#touch-confirm')!;
-  private upgradeButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-game-action^="choice"]')];
+  private upgradeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-game-action^="choice"]'));
   private pointerId: number | null = null;
   private x = 0;
   private y = 0;
