@@ -73,7 +73,7 @@ export class Arena {
       }
       return;
     }
-    if (input.flex && this.flex.tryStart(this.clock)) this.say('FLEX — mantém 3 inimigos por perto!');
+    if (input.flex && this.flex.tryStart(this.clock)) this.say('FLEX — keep 3 enemies nearby!');
     if (input.focus && this.clock >= this.focusReady) {
       this.focusUntil = this.clock + GAME.focusDurationMs;
       this.focusReady = this.clock + GAME.focusCooldownMs;
@@ -104,7 +104,7 @@ export class Arena {
     }
     if (this.wave === 5 && !this.bossSpawned && this.waveClock >= 12000) {
       this.spawn('boss'); this.bossSpawned = true;
-      this.say('BIG HATER chegou. Derrota-o para vencer!');
+      this.say('BIG HATER is here! Defeat the boss to win!');
     }
     for (const e of this.enemies) {
       const stats = ENEMIES[e.type];
@@ -202,7 +202,7 @@ export class Arena {
     if (index < 0) return;
     this.enemies.splice(index, 1); this.kills++;
     this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
-    if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER derrotado!'); }
+    if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER defeated!'); }
     if (this.kills % 5 === 0) this.aura.change(10, this.clock);
     if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
       for (let i = 0; i < 7; i++) {
@@ -217,7 +217,7 @@ export class Arena {
     this.hp = Math.max(0, this.hp - Math.max(1, amount - this.stats.armor));
     this.lastDamageAt = this.clock;
     this.aura.change(-20, this.clock);
-    if (this.flex.interrupt(this.clock) === 'interrupted') this.say('FLEX interrompido!');
+    if (this.flex.interrupt(this.clock) === 'interrupted') this.say('FLEX interrupted!');
     if (this.hp <= 0) this.mode = 'dead';
   }
 
@@ -231,7 +231,7 @@ export class Arena {
         enemy.y = clamp(enemy.y + v.y * 85, 105, 575);
       }
       this.say('FLEX! +25 AURA');
-    } else if (result === 'no-audience') this.say('Sem plateia: precisas de 3 inimigos a 145 px.');
+    } else if (result === 'no-audience') this.say('No audience: need 3 enemies within 145px.');
   }
 
   private offerUpgrade(): void {
