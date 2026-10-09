@@ -24,6 +24,8 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('.controls')).toContainText('choose upgrade');
   await expect.poll(() => read(page, a => a.mode)).toBe('intro');
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: 'test-results/intro.png' });
@@ -94,7 +96,7 @@ test('FLEX success, 15s cooldown, damage interrupt, radius and timed Aura Burst'
     a.flex.tryStart(a.clock); a.update(10);
   });
   expect(await read(page, a => a.flex.state)).toBe('cooldown');
-  expect(await read(page, a => a.feedback)).toContain('interrompido');
+  expect(await read(page, a => a.feedback)).toContain('interrupted');
   expect(await read(page, a => a.aura.value)).toBe(5);
   await page.evaluate(() => {
     const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
