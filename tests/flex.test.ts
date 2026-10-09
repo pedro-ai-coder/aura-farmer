@@ -1,0 +1,3 @@
+import { describe, expect, it } from 'vitest';
+import { FlexSystem } from '../src/game/core/flex';
+describe('Flex',()=>{it('requires 1s and 3 nearby enemies',()=>{const f=new FlexSystem();expect(f.tryStart(100)).toBe(true);expect(f.update(1099,4)).toBe('waiting');expect(f.update(1100,3)).toBe('success');expect(f.tryStart(1101)).toBe(false)});it('fails with insufficient audience',()=>{const f=new FlexSystem();f.tryStart(100);expect(f.update(1100,2)).toBe('no-audience')});it('interrupts on damage',()=>{const f=new FlexSystem();f.tryStart(100);expect(f.interrupt(300)).toBe('interrupted');expect(f.update(1100,5)).toBe('waiting')})});
