@@ -1,16 +1,16 @@
 export type BuffId = 'sigma' | 'alpha' | 'mewing' | 'locked-in' | 'drip' | 'speed' | 'six-seven' | 'thick-skin' | 'mewing-jaw' | 'ohio-orbiter';
-export interface BuffDefinition { id: BuffId; name: string; description: string; maxStacks: number; rarity: 'COMUM' | 'RARO' | 'ÉPICO' }
+export interface BuffDefinition { id: BuffId; name: string; description: string; maxStacks: number; rarity: 'COMMON' | 'RARE' | 'EPIC' }
 export const BUFFS: BuffDefinition[] = [
-  { id: 'sigma', name: 'Sigma Aura', description: '+15% dano enquanto tiveres 50+ Aura.', maxStacks: 2, rarity: 'RARO' },
-  { id: 'alpha', name: 'Alpha Aura', description: '+1,5% dano por inimigo próximo (máx. 10).', maxStacks: 2, rarity: 'RARO' },
-  { id: 'mewing', name: 'Mewing Streak', description: '+10% probabilidade crítica após 8 s sem dano.', maxStacks: 2, rarity: 'COMUM' },
-  { id: 'locked-in', name: 'Locked In', description: '+25% cadência após 8 s sem dano.', maxStacks: 2, rarity: 'RARO' },
-  { id: 'drip', name: 'Drip Check', description: 'Reduz 1 ponto de dano recebido.', maxStacks: 3, rarity: 'COMUM' },
-  { id: 'speed', name: 'Bro Has Motion', description: '+12% velocidade de movimento.', maxStacks: 3, rarity: 'COMUM' },
-  { id: 'six-seven', name: 'Six Seven', description: 'A cada 67 mortes lança 7 projéteis radiais.', maxStacks: 1, rarity: 'ÉPICO' },
-  { id: 'thick-skin', name: 'Absolute Unit', description: '+20 de vida máxima e recupera 20 HP.', maxStacks: 3, rarity: 'COMUM' },
-  { id: 'mewing-jaw', name: 'Mewing Jaw', description: 'Desbloqueia pancada automática de proximidade.', maxStacks: 1, rarity: 'RARO' },
-  { id: 'ohio-orbiter', name: 'Ohio Orbiter', description: 'Desbloqueia orbe giratório que causa dano.', maxStacks: 1, rarity: 'ÉPICO' },
+  { id: 'sigma', name: 'Sigma Aura', description: '+15% damage while you have 50+ Aura.', maxStacks: 2, rarity: 'RARE' },
+  { id: 'alpha', name: 'Alpha Aura', description: '+1.5% damage per nearby enemy (max 10).', maxStacks: 2, rarity: 'RARE' },
+  { id: 'mewing', name: 'Mewing Streak', description: '+10% crit chance after 8s without taking damage.', maxStacks: 2, rarity: 'COMMON' },
+  { id: 'locked-in', name: 'Locked In', description: '+25% attack speed after 8s without taking damage.', maxStacks: 2, rarity: 'RARE' },
+  { id: 'drip', name: 'Drip Check', description: 'Reduce incoming damage by 1.', maxStacks: 3, rarity: 'COMMON' },
+  { id: 'speed', name: 'Bro Has Motion', description: '+12% movement speed.', maxStacks: 3, rarity: 'COMMON' },
+  { id: 'six-seven', name: 'Six Seven', description: 'Every 67 kills, fire 7 radial projectiles.', maxStacks: 1, rarity: 'EPIC' },
+  { id: 'thick-skin', name: 'Absolute Unit', description: '+20 max HP and restore 20 HP.', maxStacks: 3, rarity: 'COMMON' },
+  { id: 'mewing-jaw', name: 'Mewing Jaw', description: 'Unlock an automatic close-range strike.', maxStacks: 1, rarity: 'RARE' },
+  { id: 'ohio-orbiter', name: 'Ohio Orbiter', description: 'Unlock an orbiting damage orb.', maxStacks: 1, rarity: 'EPIC' },
 ];
 export type BuffLevels = Record<BuffId, number>;
 export function emptyBuffLevels(): BuffLevels {
