@@ -121,17 +121,17 @@ export class ArenaScene extends Phaser.Scene {
     this.bar(245, 40, 270, a.aura.value / 100, burst ? 0xffd574 : 0xb79aff);
     this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), 0x7cf7c6);
     this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x9bdfff);
-    const flex = charging ? `A CARREGAR · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `PRONTO · ${a.nearby}/3 perto` : `${a.flex.secondsUntilReady(a.clock)}s`;
-    const focus = a.clock < a.focusUntil ? 'ATIVO' : a.clock >= a.focusReady ? 'PRONTO' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
-    this.status.setText(`E FLEX: ${flex}       ESPAÇO FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% dano` : `${a.kills} eliminações · recolhe os cristais verdes`}`);
-    this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Derrota o BIG HATER para terminar!' : '');
-    this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} inimigos / ${a.shots.length} projéteis\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
+    const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
+    const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
+    this.status.setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
+    this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
+    this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
     let message = '';
-    if (a.mode === 'intro') message = 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / setas para mover · disparo automático\nE: FLEX perto de 3 inimigos · ESPAÇO: abrandar\nRecolhe XP, escolhe upgrades e derrota o BIG HATER.\n\nENTER para começar';
-    if (a.mode === 'upgrades') message = `LEVEL UP · ESCOLHE O TEU BUFF\nSimulação em pausa · ${a.pendingUpgrades} escolha(s)\n\n${a.choices.map((b, i) => `[${i + 1}] ${b.name} · ${a.buffs[b.id] + 1}/${b.maxStacks}\n${b.description}`).join('\n\n')}`;
-    if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} eliminações · Nível ${a.xp.level}\n+20 HP na próxima vaga\n\nENTER para continuar`;
-    if (a.mode === 'dead') message = `YOU ARE COOKED\n\nVaga ${a.wave}/5 · ${a.kills} eliminações\n\nENTER para tentar novamente`;
-    if (a.mode === 'win') message = `GOD AURA — VITÓRIA!\n\nBIG HATER derrotado · 5 vagas completas\n${a.kills} eliminações · Nível ${a.xp.level}\n\nENTER para jogar outra vez`;
+    if (a.mode === 'intro') message = 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
+    if (a.mode === 'upgrades') message = `LEVEL UP · CHOOSE YOUR BUFF\nGame paused · ${a.pendingUpgrades} upgrade(s) left\n\n${a.choices.map((b, i) => `[${i + 1}] ${b.name} · ${a.buffs[b.id] + 1}/${b.maxStacks}\n${b.description}`).join('\n\n')}`;
+    if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
+    if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
+    if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
     if (message) {
       g.fillStyle(0x100b20, .78).fillRect(0, 91, 960, 509);
       g.fillStyle(0x241a3b, .98).fillRoundedRect(110, 118, 740, 438, 22);
