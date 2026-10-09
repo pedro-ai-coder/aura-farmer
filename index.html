@@ -2,17 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#130d29" />
-    <meta name="description" content="Aura Farmer: farm Aura, dodge cringe, and defeat the haters." />
+    <meta name="description" content="Aura Farmer: farm Aura, dodge cringe, and defeat the haters. Play on desktop or phone." />
     <title>Aura Farmer — Prototype 0.1</title>
   </head>
   <body>
     <main id="app">
       <div class="masthead"><span class="tag">PROTOTYPE 0.1</span><strong>AURA <em>FARMER</em></strong><span class="tag">NO AURA? SKILL ISSUE.</span></div>
-      <div id="game" aria-label="Aura Farmer game"></div>
-      <p class="controls">WASD / arrow keys = move · E = FLEX (risky move) · SPACE = Sigma Focus · 1/2/3 = choose upgrade · ENTER = start / restart</p>
-      <p class="note">Solo browser prototype · Cartoon 2D graphics drawn in Phaser · No login, multiplayer, or external services.</p>
+      <div class="play-layout">
+        <div id="game" aria-label="Aura Farmer game"></div>
+        <div id="touch-controls" class="touch-controls" aria-label="Mobile game controls">
+          <div id="touch-stick" class="touch-stick" hidden>
+            <div id="joystick-track" class="joystick-track" role="group" aria-label="Drag to move">
+              <span id="joystick-thumb" class="joystick-thumb" aria-hidden="true"></span>
+            </div>
+            <span class="touch-caption">MOVE</span>
+          </div>
+          <div id="touch-panel" class="touch-panel">
+            <div id="touch-play-actions" class="touch-play-actions" hidden>
+              <button type="button" class="touch-button touch-flex" data-game-action="flex" aria-label="Flex">FLEX</button>
+              <button type="button" class="touch-button touch-focus" data-game-action="focus" aria-label="Sigma Focus">FOCUS</button>
+            </div>
+            <div id="touch-confirm-actions" hidden>
+              <button type="button" id="touch-confirm" class="touch-button touch-confirm" data-game-action="confirm">PLAY</button>
+            </div>
+            <div id="touch-upgrade-actions" class="touch-upgrades" hidden aria-label="Choose your upgrade">
+              <button type="button" class="touch-button" data-game-action="choice0" aria-label="Choose first upgrade">1</button>
+              <button type="button" class="touch-button" data-game-action="choice1" aria-label="Choose second upgrade">2</button>
+              <button type="button" class="touch-button" data-game-action="choice2" aria-label="Choose third upgrade">3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mobile-hint">For a larger play area, rotate your phone sideways.</p>
+      <p class="controls">Keyboard: WASD / arrows = move · E = FLEX (risky move) · SPACE = Sigma Focus · 1/2/3 = choose upgrade · ENTER = start / restart</p>
+      <p class="note">Solo browser prototype · Cartoon 2D graphics · No login or downloads required.</p>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

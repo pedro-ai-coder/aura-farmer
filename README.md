@@ -8,6 +8,12 @@ A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. S
 
 The Vercel deployment tracks the `main` branch. Changes appear on the live website after they have been merged and the production build succeeds.
 
+## Mobile controls
+
+Open the same game URL on your phone — no app installation required. Use the **virtual joystick** to move, tap **FLEX** for the risky Aura action, and **FOCUS** to slow enemies. The on-screen **PLAY / NEXT WAVE / RETRY** button replaces Enter, and upgrade buttons let you choose buffs by touch. Rotating to **landscape** gives a larger game view, but portrait controls are supported as well.
+
+The mobile layout is an initial playable adaptation: real-device performance and small-screen readability still need field testing.
+
 ## Run locally
 
 Requires Node.js 22 (see `.nvmrc`) and npm. In your local checkout:

@@ -3,6 +3,7 @@ import { Arena } from '../core/arena';
 import { GAME } from '../core/constants';
 import { xpToNextLevel } from '../core/progression';
 import { ENEMIES } from '../data/enemies';
+import { touchControls } from '../input/touchControls';
 
 export class ArenaScene extends Phaser.Scene {
   readonly arena = new Arena();
@@ -41,11 +42,14 @@ export class ArenaScene extends Phaser.Scene {
     // Consume every edge every frame so menu inputs cannot leak into a later state.
     const one = just('ONE'), two = just('TWO'), three = just('THREE');
     if (just('F3')) this.debugVisible = !this.debugVisible;
+    const touch = touchControls.consume();
     this.arena.update(delta, {
-      x: Number(this.keyboard.D.isDown || this.keyboard.RIGHT.isDown) - Number(this.keyboard.A.isDown || this.keyboard.LEFT.isDown),
-      y: Number(this.keyboard.S.isDown || this.keyboard.DOWN.isDown) - Number(this.keyboard.W.isDown || this.keyboard.UP.isDown),
-      flex: just('E'), focus: just('SPACE'), confirm: just('ENTER'),
-      choice: one ? 0 : two ? 1 : three ? 2 : undefined,
+      x: Phaser.Math.Clamp(Number(this.keyboard.D.isDown || this.keyboard.RIGHT.isDown) - Number(this.keyboard.A.isDown || this.keyboard.LEFT.isDown) + (touch.x ?? 0), -1, 1),
+      y: Phaser.Math.Clamp(Number(this.keyboard.S.isDown || this.keyboard.DOWN.isDown) - Number(this.keyboard.W.isDown || this.keyboard.UP.isDown) + (touch.y ?? 0), -1, 1),
+      flex: just('E') || touch.flex,
+      focus: just('SPACE') || touch.focus,
+      confirm: just('ENTER') || touch.confirm,
+      choice: one ? 0 : two ? 1 : three ? 2 : touch.choice,
     });
     this.draw();
   }
@@ -127,7 +131,9 @@ export class ArenaScene extends Phaser.Scene {
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
     let message = '';
-    if (a.mode === 'intro') message = 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
+    if (a.mode === 'intro') message = touchControls.visible
+      ? 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nDrag the joystick to move · auto-attack\nTap FLEX near 3 enemies · FOCUS slows enemies\nCollect XP, upgrade, and defeat the BIG HATER.\n\nTap PLAY below to start'
+      : 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
     if (a.mode === 'upgrades') message = `LEVEL UP · CHOOSE YOUR BUFF\nGame paused · ${a.pendingUpgrades} upgrade(s) left\n\n${a.choices.map((b, i) => `[${i + 1}] ${b.name} · ${a.buffs[b.id] + 1}/${b.maxStacks}\n${b.description}`).join('\n\n')}`;
     if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
@@ -137,6 +143,13 @@ export class ArenaScene extends Phaser.Scene {
       g.fillStyle(0x241a3b, .98).fillRoundedRect(110, 118, 740, 438, 22);
       g.lineStyle(2, 0xb899eb).strokeRoundedRect(110, 118, 740, 438, 22);
     }
+    if (touchControls.visible) {
+      if (a.mode === 'upgrades') message += '\n\nTap a buff button below.';
+      if (a.mode === 'between' || a.mode === 'dead' || a.mode === 'win') {
+        message = message.replace(/Press ENTER[^\n]*/g, 'Use the button below to continue');
+      }
+    }
+    touchControls.setMode(a.mode, a.choices);
     this.overlay.setPosition(480, 337).setFontSize(a.mode === 'upgrades' ? 18 : 20).setText(message);
   }
 }
