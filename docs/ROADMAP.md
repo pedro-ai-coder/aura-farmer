@@ -11,12 +11,12 @@
 - [x] AF-007 Five waves and game over/victory loop
 - [ ] AF-008 Gameplay QA and balancing
 - [ ] AF-009 FX, controls and UI polish
-- [ ] AF-010 Host HTTPS web preview
+- [x] AF-010 Host HTTPS web preview
 
 AF-000 now has executed validation recorded in docs/VALIDATION.md. AF-001–007 have automated logic/browser coverage; AF-008 human balancing remains open.
 
 ## Sprint 1
-AF-101 Refactor ArenaScene into systems; AF-102 Shop + coins; AF-103 Aura Challenges; AF-104 Alpha/Rizzler; AF-105 mobile controls.
+AF-101 Refactor ArenaScene into systems; AF-102 Shop + coins; AF-103 Aura Challenges; AF-104 Alpha/Rizzler; AF-105 mobile touch controls (implemented in a PR; physical-device QA pending).
 
 ## Sprint 2
 AF-201 Network contracts; AF-202 Colyseus 2 players; AF-203 4-player coop; AF-204 Discord Activity; AF-205 performance/reconnections.
