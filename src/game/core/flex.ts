@@ -32,6 +32,7 @@ export class FlexSystem {
     return this.state === 'charging' ? clamp((now - this.startedAt) / GAME.flexDurationMs, 0, 1) : 0;
   }
   secondsUntilReady(now: number): number {
+    if (this.state === 'charging') return Math.ceil((this.startedAt + GAME.flexDurationMs - now) / 1000);
     return this.isReady(now) ? 0 : Math.ceil((this.cooldownUntil - now) / 1000);
   }
   private end(now: number): void {

@@ -1,4 +1,5 @@
 import { clamp } from './math';
+import { GAME } from './constants';
 
 export type AuraRank = 'NPC' | 'COOL' | 'ALPHA' | 'SIGMA' | 'GOD AURA';
 export function auraRank(value: number): AuraRank {
@@ -12,11 +13,13 @@ export interface AuraChange { before: number; after: number; burst: boolean }
 export class AuraSystem {
   value = 0;
   bursts = 0;
-  change(amount: number): AuraChange {
+  burstUntil = 0;
+  change(amount: number, now = 0): AuraChange {
     const before = this.value;
     const next = clamp(before + amount, 0, 100);
     if (next >= 100) {
       this.bursts++;
+      this.burstUntil = now + GAME.burstDurationMs;
       this.value = 40;
       return { before, after: this.value, burst: true };
     }
@@ -26,5 +29,8 @@ export class AuraSystem {
   get rank(): AuraRank { return auraRank(this.value); }
   get moveMultiplier(): number { return this.value >= 25 ? 1.05 : 1; }
   get damageMultiplier(): number { return this.value >= 50 ? 1.10 : 1; }
+  attackMultiplier(now: number): number {
+    return this.damageMultiplier * (now < this.burstUntil ? 1.2 : 1);
+  }
   get fireRateMultiplier(): number { return this.value >= 75 ? 1.10 : 1; }
 }

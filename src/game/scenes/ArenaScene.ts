@@ -1,67 +1,142 @@
 import Phaser from 'phaser';
+import { Arena } from '../core/arena';
 import { GAME } from '../core/constants';
-import { AuraSystem } from '../core/aura';
-import { FlexSystem } from '../core/flex';
-import { Progression } from '../core/progression';
-import { distance, normalized, clamp } from '../core/math';
-import { ENEMIES, type EnemyType } from '../data/enemies';
-import { BUFFS, emptyBuffLevels, availableBuffs } from '../data/buffs';
+import { xpToNextLevel } from '../core/progression';
+import { ENEMIES } from '../data/enemies';
 
-type Enemy = { x:number; y:number; hp:number; type:EnemyType; nextHit:number };
-type Shot = { x:number; y:number; vx:number; vy:number; ttl:number };
 export class ArenaScene extends Phaser.Scene {
+  readonly arena = new Arena();
   private g!: Phaser.GameObjects.Graphics;
-  private hud!: Phaser.GameObjects.Text;
-  private keyboard!: Record<string,Phaser.Input.Keyboard.Key>;
-  private pos={x:480,y:320};
-  private hp=100; private aura=new AuraSystem(); private flex=new FlexSystem();
-  private xp=new Progression(); private buffs=emptyBuffLevels();
-  private enemies:Enemy[]=[]; private shots:Shot[]=[];
-  private mode:'intro'|'playing'|'upgrades'|'between'|'dead'|'win'='intro';
-  private clock=0; private wave=1; private waveClock=0; private spawnClock=0; private fireClock=0;private focusReady=0;private focusUntil=0;private kills=0;
-  private choices=[] as typeof BUFFS;
-  constructor(){super('ArenaScene');}
-  create():void{
-    this.g=this.add.graphics();
-    this.hud=this.add.text(20,12,'',{font:'bold 18px Arial',color:'#fff'}).setDepth(3);
-    this.keyboard=this.input.keyboard!.addKeys('W,A,S,D,E,SPACE,ONE,TWO,THREE,ENTER') as Record<string,Phaser.Input.Keyboard.Key>;
-    this.add.text(480,300,'',{font:'20px Arial'}); 
-  }
-  private reset():void{this.pos={x:480,y:320};this.hp=100;this.aura=new AuraSystem();this.flex=new FlexSystem();this.xp=new Progression();this.buffs=emptyBuffLevels();this.enemies=[];this.shots=[];this.clock=0;this.wave=1;this.waveClock=0;this.spawnClock=0;this.fireClock=0;this.focusReady=0;this.focusUntil=0;this.kills=0;this.mode='playing';}
-  update(_time:number,delta:number):void{
-    const down=(k:string)=>Phaser.Input.Keyboard.JustDown(this.keyboard[k]);
-    if(this.mode==='intro'||this.mode==='dead'||this.mode==='win'){if(down('ENTER'))this.reset();this.draw();return;}
-    if(this.mode==='between'){if(down('ENTER')){this.wave++;this.waveClock=0;this.enemies=[];this.shots=[];this.hp=Math.min(100,this.hp+20);this.mode='playing';}this.draw();return;}
-    if(this.mode==='upgrades'){
-      const selected=down('ONE')?0:down('TWO')?1:down('THREE')?2:-1;
-      if(selected>=0&&this.choices[selected]){this.buffs[this.choices[selected].id]++;this.mode='playing';}
-      this.draw();return;
+  private hud: Phaser.GameObjects.Text[] = [];
+  private status!: Phaser.GameObjects.Text;
+  private overlay!: Phaser.GameObjects.Text;
+  private feedback!: Phaser.GameObjects.Text;
+  private debug!: Phaser.GameObjects.Text;
+  private keyboard!: Record<string, Phaser.Input.Keyboard.Key>;
+  private debugVisible = false;
+  private pendingKeys = new Set<string>();
+
+  constructor() { super('ArenaScene'); }
+
+  create(): void {
+    this.g = this.add.graphics();
+    this.hud = [24, 245, 565, 745].map(x => this.label(x, 12, 16));
+    this.status = this.label(24, 62, 12);
+    this.overlay = this.label(480, 300, 20).setOrigin(.5).setAlign('center').setWordWrapWidth(650).setLineSpacing(12).setDepth(5);
+    this.feedback = this.label(480, 559, 15).setOrigin(.5).setDepth(3);
+    this.debug = this.label(940, 111, 12).setOrigin(1, 0).setDepth(3);
+    this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
+    for (const [name, key] of Object.entries(this.keyboard)) {
+      key.on('down', () => this.pendingKeys.add(name));
     }
-    const dt=Math.min(delta,50),now=this.clock+=dt;this.waveClock+=dt;this.spawnClock+=dt;this.fireClock-=dt;
-    const dx=(this.keyboard.D.isDown?1:0)-(this.keyboard.A.isDown?1:0);
-    const dy=(this.keyboard.S.isDown?1:0)-(this.keyboard.W.isDown?1:0);
-    if(down('E'))this.flex.tryStart(now);
-    if(down('SPACE')&&now>=this.focusReady){this.focusUntil=now+3000;this.focusReady=now+22000;}
-    if(this.flex.state!=='charging'){const v=normalized(dx,dy);const speed=205*this.aura.moveMultiplier*(1+this.buffs.speed*.12);this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);}
-    if(this.spawnClock>Math.max(300,1100-this.wave*120)&&this.enemies.length<90){this.spawnClock=0;const types:EnemyType[]=this.wave>=3?['npc','hater','beta']:this.wave>=2?['npc','hater']:['npc'];const type=types[Math.floor(Math.random()*types.length)];this.spawn(type);}
-    if(this.wave===5&&!this.enemies.some(e=>e.type==='boss')&&this.waveClock>12000&&this.kills<1e9&&!this.bossSpawned){this.spawn('boss');this.bossSpawned=true;}
-    if(this.flex.state!=='charging'&&this.fireClock<=0&&this.enemies.length){let target=this.enemies[0];for(const e of this.enemies)if(distance(e,this.pos)<distance(target,this.pos))target=e;const v=normalized(target.x-this.pos.x,target.y-this.pos.y);this.shots.push({x:this.pos.x,y:this.pos.y,vx:v.x*460,vy:v.y*460,ttl:1600});this.fireClock=420/this.aura.fireRateMultiplier;}
-    for(const e of this.enemies){const v=normalized(this.pos.x-e.x,this.pos.y-e.y),stats=ENEMIES[e.type];e.x+=v.x*stats.speed*dt/1000*(now<this.focusUntil?.62:1);e.y+=v.y*stats.speed*dt/1000*(now<this.focusUntil?.62:1);if(distance(e,this.pos)<stats.radius+19&&now>=e.nextHit){e.nextHit=now+850;this.hp-=stats.damage;this.aura.change(-20);this.flex.interrupt(now);if(this.hp<=0)this.mode='dead';}}
-    for(let i=this.shots.length-1;i>=0;i--){const s=this.shots[i];s.x+=s.vx*dt/1000;s.y+=s.vy*dt/1000;s.ttl-=dt;if(s.ttl<=0){this.shots.splice(i,1);continue;}const target=this.enemies.find(e=>distance(e,s)<ENEMIES[e.type].radius+6);if(target){target.hp-=18*this.aura.damageMultiplier;this.shots.splice(i,1);if(target.hp<=0){this.enemies.splice(this.enemies.indexOf(target),1);this.kills++;if(this.xp.gain(ENEMIES[target.type].xp)>0){this.choices=availableBuffs(this.buffs).sort(()=>Math.random()-.5).slice(0,3);this.mode='upgrades';}if(this.kills%5===0)this.aura.change(10);}}}
-    const near=this.enemies.filter(e=>distance(e,this.pos)<=GAME.flexRadius).length;
-    if(this.flex.update(now,near)==='success')this.aura.change(25);
-    if(this.waveClock>=GAME.waveDurationMs&&this.mode==='playing'){this.mode=this.wave===5?'win':'between';this.bossSpawned=false;}
+    this.game.events.on(Phaser.Core.Events.BLUR, this.clearKeys, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(Phaser.Core.Events.BLUR, this.clearKeys, this));
+  }
+
+  update(_time: number, delta: number): void {
+    // Preserve short taps even when down/up both arrive between rendered frames.
+    const pressed = new Set(this.pendingKeys);
+    this.pendingKeys.clear();
+    const just = (key: string) => pressed.has(key);
+    // Consume every edge every frame so menu inputs cannot leak into a later state.
+    const one = just('ONE'), two = just('TWO'), three = just('THREE');
+    if (just('F3')) this.debugVisible = !this.debugVisible;
+    this.arena.update(delta, {
+      x: Number(this.keyboard.D.isDown || this.keyboard.RIGHT.isDown) - Number(this.keyboard.A.isDown || this.keyboard.LEFT.isDown),
+      y: Number(this.keyboard.S.isDown || this.keyboard.DOWN.isDown) - Number(this.keyboard.W.isDown || this.keyboard.UP.isDown),
+      flex: just('E'), focus: just('SPACE'), confirm: just('ENTER'),
+      choice: one ? 0 : two ? 1 : three ? 2 : undefined,
+    });
     this.draw();
   }
-  private bossSpawned=false;
-  private spawn(type:EnemyType):void{const angle=Math.random()*Math.PI*2;this.enemies.push({x:clamp(this.pos.x+Math.cos(angle)*360,20,940),y:clamp(this.pos.y+Math.sin(angle)*300,105,575),hp:ENEMIES[type].hp,type,nextHit:0});}
-  private draw():void{
-    const g=this.g;g.clear();g.fillStyle(0x261c43).fillRect(0,0,960,600);g.fillStyle(0x33234f).fillRoundedRect(12,84,936,502,18);
-    for(const e of this.enemies){const s=ENEMIES[e.type];g.fillStyle(s.color).fillCircle(e.x,e.y,s.radius);g.lineStyle(3,0x161124).strokeCircle(e.x,e.y,s.radius);}
-    for(const s of this.shots)g.fillStyle(0xffdc68).fillCircle(s.x,s.y,6);
-    g.fillStyle(this.flex.state==='charging'?0xffdb77:0x9a78f6).fillCircle(this.pos.x,this.pos.y,19);g.lineStyle(4,0xf9f5ff).strokeCircle(this.pos.x,this.pos.y,19);
-    if(this.flex.state==='charging')g.lineStyle(3,0xfbd176).strokeCircle(this.pos.x,this.pos.y,GAME.flexRadius);
-    this.hud.setText('AURA FARMER   WAVE '+this.wave+'/5    HP '+Math.max(0,Math.ceil(this.hp))+'    AURA '+this.aura.value+'/100 ('+this.aura.rank+')    LVL '+this.xp.level+'    KILLS '+this.kills+'\nWASD move • E FLEX • SPACE Sigma Focus');
-    if(this.mode!=='playing'){g.fillStyle(0x130e2f,.88).fillRoundedRect(125,180,710,260,22);const msg=this.mode==='intro'?'AURA FARMER\nNO AURA? SKILL ISSUE.\nENTER para começar':this.mode==='upgrades'?'LEVEL UP — escolhe 1, 2 ou 3\n'+this.choices.map((b,i)=>(i+1)+' '+b.name+' — '+b.description).join('\n'):this.mode==='between'?'WAVE COMPLETE\nENTER para continuar':this.mode==='dead'?'YOU ARE COOKED 💀\nENTER para reiniciar':'GOD AURA — VITÓRIA!\nENTER para reiniciar';this.hud.setText(this.hud.text+'\n\n'+msg);}
+
+  private clearKeys(): void { this.pendingKeys.clear(); }
+
+  private label(x: number, y: number, size: number): Phaser.GameObjects.Text {
+    return this.add.text(x, y, '', { fontFamily: 'Arial, sans-serif', fontSize: size, fontStyle: 'bold', color: '#fff6e8' }).setDepth(2);
+  }
+
+  private bar(x: number, y: number, width: number, value: number, color: number): void {
+    this.g.fillStyle(0x130f26).fillRoundedRect(x, y, width, 10, 5);
+    if (value > 0) this.g.fillStyle(color).fillRoundedRect(x, y, Math.max(5, width * Phaser.Math.Clamp(value, 0, 1)), 10, 5);
+  }
+
+  private draw(): void {
+    const a = this.arena, g = this.g, stats = a.stats;
+    g.clear();
+    g.fillGradientStyle(0x211b37, 0x211b37, 0x312349, 0x312349).fillRect(0, 0, 960, 600);
+    g.fillStyle(0x3b2c53).fillRoundedRect(12, 91, 936, 497, 20);
+    g.lineStyle(1, 0x725585, .16);
+    for (let x = 40; x < 940; x += 40) g.lineBetween(x, 100, x, 580);
+    for (let y = 100; y < 580; y += 40) g.lineBetween(20, y, 940, y);
+    g.lineStyle(2, 0x9772b5, .5).strokeRoundedRect(12, 91, 936, 497, 20);
+    for (const drop of a.drops) {
+      g.fillStyle(0x7cf7c6).fillTriangle(drop.x, drop.y - 7, drop.x - 5, drop.y + 4, drop.x + 5, drop.y + 4);
+    }
+    for (const enemy of a.enemies) {
+      const s = ENEMIES[enemy.type], r = s.radius, x = enemy.x, y = enemy.y;
+      g.fillStyle(0x160f29, .3).fillEllipse(x, y + r, r * 2, r * .65);
+      g.fillStyle(s.color).fillRoundedRect(x - r, y - r, r * 2, r * 2, r * .6);
+      g.lineStyle(3, 0x1b1429).strokeRoundedRect(x - r, y - r, r * 2, r * 2, r * .6);
+      g.fillStyle(0x271a38).fillCircle(x - r * .35, y - 2, 3).fillCircle(x + r * .35, y - 2, 3);
+      g.lineStyle(2, 0x271a38).lineBetween(x - r * .3, y + r * .4, x + r * .3, y + r * .4);
+      if (enemy.type === 'hater') g.fillStyle(0xffffff).fillTriangle(x - 9, y - r + 1, x + 9, y - r + 1, x, y - r - 9);
+      if (enemy.type === 'boss') {
+        g.fillStyle(0xffd16b).fillTriangle(x - 24, y - r, x + 24, y - r, x, y - r - 24);
+        this.bar(x - 45, y - r - 12, 90, enemy.hp / s.hp, 0xff729f);
+      }
+    }
+    for (const shot of a.shots) {
+      g.fillStyle(shot.hostile ? 0xff769b : 0xffe08b).fillCircle(shot.x, shot.y, shot.hostile ? 6 : 4);
+    }
+    const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
+    if (a.clock < a.focusUntil) {
+      g.lineStyle(3, 0x9bdfff, .5).strokeCircle(a.pos.x, a.pos.y, 90);
+      g.lineStyle(2, 0x9bdfff, .2).strokeCircle(a.pos.x, a.pos.y, 105);
+    }
+    if (charging) {
+      g.fillStyle(0xffd574, .08).fillCircle(a.pos.x, a.pos.y, GAME.flexRadius);
+      g.lineStyle(2, 0xffd574, .7).strokeCircle(a.pos.x, a.pos.y, GAME.flexRadius);
+      g.lineStyle(5, 0xffe69f).beginPath().arc(a.pos.x, a.pos.y, 28, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * a.flex.progress(a.clock)).strokePath();
+    }
+    if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y, 95);
+    if (a.buffs['ohio-orbiter']) {
+      g.lineStyle(1, 0xa48cff, .3).strokeCircle(a.pos.x, a.pos.y, 76);
+      g.fillStyle(charging ? 0x746789 : 0xb398ff).fillCircle(a.orb.x, a.orb.y, 12);
+    }
+    if (burst) g.lineStyle(4, 0xffe283, .7).strokeCircle(a.pos.x, a.pos.y, 34);
+    g.fillStyle(0x160f29, .4).fillEllipse(a.pos.x, a.pos.y + 20, 44, 14);
+    g.fillStyle(charging ? 0xffd574 : a.clock - a.lastDamageAt < 180 && a.clock > 0 ? 0xff8694 : 0xb49afa)
+      .fillRoundedRect(a.pos.x - 18, a.pos.y - 21, 36, 42, 13);
+    g.lineStyle(3, 0xefe1ff).strokeRoundedRect(a.pos.x - 18, a.pos.y - 21, 36, 42, 13);
+    // Sunglasses and a tiny grin: original procedural cartoon character.
+    g.fillStyle(0x21172f).fillRoundedRect(a.pos.x - 14, a.pos.y - 9, 28, 10, 3);
+    g.lineStyle(2, 0xffffff).lineBetween(a.pos.x + 1, a.pos.y + 9, a.pos.x + 10, a.pos.y + 6);
+
+    this.hud[0].setText(`HP ${Math.ceil(a.hp)}/${stats.maxHp}`);
+    this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
+    this.hud[2].setText(`LVL ${a.xp.level}`);
+    this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
+    this.bar(24, 40, 180, a.hp / stats.maxHp, 0xff82a2);
+    this.bar(245, 40, 270, a.aura.value / 100, burst ? 0xffd574 : 0xb79aff);
+    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), 0x7cf7c6);
+    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x9bdfff);
+    const flex = charging ? `A CARREGAR · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `PRONTO · ${a.nearby}/3 perto` : `${a.flex.secondsUntilReady(a.clock)}s`;
+    const focus = a.clock < a.focusUntil ? 'ATIVO' : a.clock >= a.focusReady ? 'PRONTO' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
+    this.status.setText(`E FLEX: ${flex}       ESPAÇO FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% dano` : `${a.kills} eliminações · recolhe os cristais verdes`}`);
+    this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Derrota o BIG HATER para terminar!' : '');
+    this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} inimigos / ${a.shots.length} projéteis\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
+    let message = '';
+    if (a.mode === 'intro') message = 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / setas para mover · disparo automático\nE: FLEX perto de 3 inimigos · ESPAÇO: abrandar\nRecolhe XP, escolhe upgrades e derrota o BIG HATER.\n\nENTER para começar';
+    if (a.mode === 'upgrades') message = `LEVEL UP · ESCOLHE O TEU BUFF\nSimulação em pausa · ${a.pendingUpgrades} escolha(s)\n\n${a.choices.map((b, i) => `[${i + 1}] ${b.name} · ${a.buffs[b.id] + 1}/${b.maxStacks}\n${b.description}`).join('\n\n')}`;
+    if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} eliminações · Nível ${a.xp.level}\n+20 HP na próxima vaga\n\nENTER para continuar`;
+    if (a.mode === 'dead') message = `YOU ARE COOKED\n\nVaga ${a.wave}/5 · ${a.kills} eliminações\n\nENTER para tentar novamente`;
+    if (a.mode === 'win') message = `GOD AURA — VITÓRIA!\n\nBIG HATER derrotado · 5 vagas completas\n${a.kills} eliminações · Nível ${a.xp.level}\n\nENTER para jogar outra vez`;
+    if (message) {
+      g.fillStyle(0x100b20, .78).fillRect(0, 91, 960, 509);
+      g.fillStyle(0x241a3b, .98).fillRoundedRect(110, 118, 740, 438, 22);
+      g.lineStyle(2, 0xb899eb).strokeRoundedRect(110, 118, 740, 438, 22);
+    }
+    this.overlay.setPosition(480, 337).setFontSize(a.mode === 'upgrades' ? 18 : 20).setText(message);
   }
 }
