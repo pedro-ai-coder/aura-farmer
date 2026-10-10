@@ -1,10 +1,10 @@
 # AURA FARMER — ART BIBLE
 
-**ID:** AF-ART-001 · **Estado:** PROPOSTA PARA APROVAÇÃO · **Data:** 2026-10-10  
-**Direção proposta:** *Pixel Cartoon Brainrot Arcade* · **Idioma do jogo:** inglês  
+**ID:** AF-ART-001 · **Estado:** DIREÇÃO E PERSONAGEM APROVADOS; GATE A EM PREPARAÇÃO · **Data:** 2026-10-10  
+**Direção aprovada:** *Pixel Cartoon Brainrot Arcade* · **Idioma do jogo:** inglês · **Paleta:** revisão clara em teste  
 **Responsáveis:** Game Director (aprovação), Art Director/Pixel Artist (arte), Codex (integração técnica)
 
-> **Não executar implementação gráfica ou merge em produção sem aprovação explícita.** O estilo atual do jogo é Cartoon 2D desenhado por código. Esta Art Bible propõe uma evolução para pixel cartoon. Foi elaborada com base em orientações públicas de Pedro Medeiros / Saint11 e documentação do Aseprite; **não** representa uma entrevista nem uma contratação de um pixel artist. Os sprites finais devem ser originais e com direitos de utilização comercial verificados.
+> **Decisão 2026-10-10:** direção visual aprovada, The Sigma com hoodie escuro, cabelo angular e símbolo dourado aprovado, paleta mais clara solicitada. É permitido preparar arte conceptual Gate A, **mas não produzir lote completo, alterar o jogo, fazer merge nem publicar** sem aprovação posterior do Gate A. O estilo atual do jogo é Cartoon 2D desenhado por código. Esta Art Bible propõe uma evolução para pixel cartoon. Foi elaborada com base em orientações públicas de Pedro Medeiros / Saint11 e documentação do Aseprite; **não** representa uma entrevista nem uma contratação de um pixel artist. Os sprites finais devem ser originais e com direitos de utilização comercial verificados.
 
 ## 1. Visão e identidade visual
 
@@ -15,32 +15,39 @@
 2. **Chaos with hierarchy:** visual exuberante mas legível durante 90 inimigos; jogador e ataques hostis sempre distinguíveis.
 3. **Meme without dependence:** humor por silhouettes, 67, Aura, Flex e personagens originais; nunca copiar IP de LoL/Brotato, streamers ou marcas.
 
-**Atmosfera:** fundo noite-púrpura de arcade; contraste neon pontual; ícones e pequenos efeitos dourados de Aura; inimigos caricaturais e falsamente intimidadores. Ecrã cheio de ação mas não de ruído. O jogador deve entender o ataque de um Hater enquanto tenta um FLEX.
+**Atmosfera revista:** arcade pastel luminoso, arena lavanda clara com outlines ameixa escura, contraste neon pontual e detalhes dourados de Aura; inimigos caricaturais e falsamente intimidadores. Ecrã cheio de ação mas não de ruído. O jogador deve entender o ataque de um Hater enquanto tenta um FLEX.
 
 **Evitar:** realismo, gradient blur, inúmeros detalhes isolados, strobes/glitch agressivos, ataques escondidos por partículas e faces impossíveis de ler no telemóvel.
 
 ## 2. Design system
 
-### Paleta candidata
+### Paleta CANDIDATA CLARA — Lavender Pop Arcade (Gate A)
 
-| Papel | Cor | HEX |
-|---|---|---|
-| Night Ink, fundo | azul-noite | `#171126` |
-| Arcade Plum, arena | roxo | `#302447` |
-| Velvet Outline | contorno escuro | `#21172F` |
-| Cream Pixel | luz / olhos / texto | `#F4E7D5` |
-| Aura Gold | protagonista e recompensa | `#FFD36C` |
-| Sigma Violet | identidade Sigma | `#A684FF` |
-| Hater Pink | inimigos ofensivos | `#FF648E` |
-| Danger Coral | telegraphs hostis | `#FF6C5A` |
-| Beta Mint | Beta Bro | `#93DDB0` |
-| Ohio Cyan | teleporte / glitch | `#65D9E7` |
-| XP Lime | cristais e cura | `#84F6B2` |
-| NPC Fog | NPC base | `#A9A4BA` |
-| Electric Yellow | eventos 67, breve | `#FFF090` |
-| Deep Violet | sombra interior | `#4D385F` |
+Esta é a proposta concreta da versão **mais clara** escolhida pelo Game Director. O estilo e a personagem já estão aprovados; **valores HEX, contraste e leitura continuam sujeitos ao Art Test**.
 
-A paleta só fica definitiva quando o **Art Test A** for aprovado. Cada sprite com 4–6 cores dominantes (+ outline), luz do topo esquerdo, 1 sombra base e 1 highlight. Reduzir *orphan pixels* e dithering; distinguir silhuetas sem cor.
+| Papel | Cor visual | HEX | Uso |
+|---|---|---|---|
+| Cloud Cream | creme muito claro | `#F6F0EA` | exterior, painéis, luz ambiente |
+| Lavender Field | lavanda pastel | `#DDD6F0` | chão principal da arena |
+| Soft Lilac | lavanda média | `#C6B6E5` | tiles alternativos e sombras baixas |
+| Plum Ink | ameixa escuro | `#302747` | outlines, texto escuro e HUD |
+| Midnight Hoodie | violeta-escuro | `#44345F` | roupa do protagonista |
+| Sigma Violet | violeta saturado | `#8B5BD8` | efeitos/identidade Sigma |
+| Aura Gold | dourado luminoso | `#FFCC51` | símbolo do peito, recompensa; outline escuro |
+| Hater Pink | rosa intenso | `#EA568A` | Hater e boss |
+| Warning Coral | coral forte | `#E75154` | avisos hostis, sempre contornados |
+| Beta Mint | menta moderada | `#69BFA8` | Beta Bro |
+| Ohio Cyan | ciano vivo | `#2CB4C7` | glitch e Focus |
+| XP Green | verde forte | `#24AF7A` | XP e cura; highlight claro |
+| NPC Fog | cinza-lavanda | `#89839E` | NPC, outline escuro |
+| Glow Ivory | creme claro | `#FFF8E7` | brilhos e centros de explosão |
+| Electric Yellow | amarelo vivo | `#F5E75D` | eventos Six Seven, com sombra escura |
+
+**Hierarquia de contraste**: (1) player hoodie escuro + símbolo dourado; (2) projéteis perigosos coral contornados; (3) XP verde forte; (4) arena desaturada e pouco detalhada. Nunca depender só da cor para ameaça/raridade. Texto da UI sobre panel Plum Ink ou em Plum Ink sobre creme; evitar branco sobre lavanda clara. HUD pode permanecer escuro para manter leitura.
+
+**Comparativo Gate A**: apresentar paleta clara e uma variante ligeiramente mais saturada da mesma família; não regressar à versão noite-púrpura. Testar leitura em escala real no Android portrait/landscape, acessibilidade e grayscale.
+
+A paleta final é congelada apenas depois da aprovação visual **Gate A**. Cada sprite com 4–6 cores dominantes (+ outline), luz do topo esquerdo, 1 sombra base e 1 highlight. Reduzir *orphan pixels* e dithering; distinguir silhuetas sem cor.
 
 ### Perspetiva, resolução e pivots
 
@@ -54,8 +61,8 @@ A paleta só fica definitiva quando o **Art Test A** for aprovado. Cada sprite c
 
 ## 3. Fichas dos protagonistas e inimigos
 
-### The Sigma (player único da versão atual)
-Hoodie escuro de duas tonalidades, cabelo angular curto apontado para cima, detalhe Aura Gold no peito, ténis volumosos. Expressão de “main character” sem ser retrato de ninguém. Em FLEX cruza os braços e faz pose imóvel; se for interrompido, olhos aumentam; se tiver GOD AURA, a aura brilha **fora** do sprite, não numa nova versão de 20 frames.
+### The Sigma (player único da versão atual — LOOK APROVADO)
+Hoodie escuro Midnight Hoodie com outline Plum Ink, cabelo angular curto apontado para cima, símbolo dourado Aura Gold no peito, ténis volumosos. Expressão de “main character” sem ser retrato de ninguém. Em FLEX cruza os braços e faz pose imóvel; se for interrompido, olhos aumentam; se tiver GOD AURA, a aura brilha **fora** do sprite, não numa nova versão de 20 frames.
 
 **Player sheet:** `player_sigma`, frame 48×48; tags `idle` 4f/6fps, `move` 6f/10fps, `hurt` 2f, `flex_charge` 4f/6fps, `flex_success` 3f, `death` 6f. Focus/Shield/Aura Burst são efeitos reutilizáveis externos.
 
@@ -211,7 +218,7 @@ aseprite -b art/source/characters/player_sigma.aseprite \
 
 ## 9. Qualidade e regras de aprovação
 
-**Gate A — Aprovação artística:** silhuetas reconhecíveis sem cor, um frame Sigma/NPC/Hater, mockup arena e um VFX de FLEX; legível nos tamanhos 390×844 (portrait) e 844×390 (landscape).
+**Gate A — Aprovação da execução visual da paleta clara:** silhuetas reconhecíveis sem cor, um frame Sigma/NPC/Hater, mockup arena e um VFX de FLEX; legível nos tamanhos 390×844 (portrait) e 844×390 (landscape). Direção geral e roupa/cabelo/símbolo do Sigma já aprovados; a paleta clara exata e os concepts precisam de aprovação própria.
 
 **Gate B — Produção:** sheets com alpha limpo, animações sem jitter, tags e pivots corretos, fontes editáveis e direitos comerciais documentados; ícones reconhecíveis em tamanho natural.
 
@@ -221,14 +228,17 @@ aseprite -b art/source/characters/player_sigma.aseprite \
 
 **Checklist para cada sprite:** silhueta, outline/luz consistente, expressão legível, hitbox visual coerente, pivot estável, animação suave, dados de export, legibilidade Android, trabalho original e licença comercial verificada.
 
-## 10. Decisões pendentes do Game Director
+## 10. Registo de decisões do Game Director — 2026-10-10
 
-- [ ] A direção `Pixel Cartoon Brainrot Arcade` substitui o Cartoon vetorial atual?
-- [ ] O Sigma deve ter hoodie escuro, cabelo angular e símbolo dourado no peito?
-- [ ] Aprovar a paleta noite-púrpura/neon ou pedir alternativa mais clara?
-- [ ] Começar apenas por **Art Test (Gate A)** antes de produzir as spritesheets?
+- [x] **Aprovada**: identidade Pixel Cartoon Brainrot Arcade em substituição futura à arte vetorial atual.
+- [x] **Aprovado**: Sigma com hoodie escuro, cabelo angular e símbolo de Aura dourado no peito.
+- [x] **Escolhido**: desenvolver uma **paleta mais clara**, não a versão noite-púrpura original.
+- [x] **Autorizado**: preparar exclusivamente o **Art Test Gate A**, sem integrar sprites novos no jogo.
+- [ ] **Pendente**: aprovar os valores e contraste da paleta Lavender Pop Arcade em arte visual.
+- [ ] **Pendente**: aprovar Sigma, NPC, Hater, arena e VFX FLEX como mockup Gate A.
+- [ ] **Pendente**: autorizar produção dos sprites P0 após Art Test.
 
-**Este documento não autoriza nenhuma implementação até o utilizador aprovar explicitamente.**
+**Aprovação do documento NÃO equivale a autorização de merge, implementação de assets em Phaser ou deployment em produção.**
 
 ## 11. Referências públicas
 
