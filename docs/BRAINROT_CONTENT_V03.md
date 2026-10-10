@@ -2,7 +2,7 @@
 
 Status: PROPOSED. Implement via short reviewable Codex PRs, **after** AF-008 (#7) reaches green CI / is merged, to avoid conflicts in Arena and HUD.
 
-The current live version is solo, English UI, Phaser 3 + TS + Vite, five 50-second waves, 90-enemy hard cap, Android touch layout and desktop keyboard controls. Preserve all of these. There is already an existing \`Six Seven\` buff; do not duplicate it.
+The current live version is solo, English UI, Phaser 3 + TS + Vite, five 50-second waves, 90-enemy hard cap, Android touch layout and desktop keyboard controls. Preserve all of these. There is already an existing `Six Seven` buff; do not duplicate it.
 
 ## Goals
 
@@ -15,20 +15,20 @@ The current live version is solo, English UI, Phaser 3 + TS + Vite, five 50-seco
 
 ## New buff catalog (English game text)
 
-All entries must be defined in the existing data-driven \`src/game/data/buffs.ts\` catalog, including rarity and max stacks. Numbers are starting playtest hypotheses, not final balance.
+All entries must be defined in the existing data-driven `src/game/data/buffs.ts` catalog, including rarity and max stacks. Numbers are starting playtest hypotheses, not final balance.
 
 | Buff ID | In-game name | Rarity | Max stacks | Mechanic / player-facing description |
 | --- | --- | --- | --- | --- |
-| \`crash-out\` | Crash Out | RARE | 1 | When HP <= 35% of max HP: +40% damage dealt, +20% incoming damage. "Low HP, high chaos. +40% damage, but +20% damage taken." |
-| \`skibidi-bounce\` | Skibidi Bounce | EPIC | 1 | Non-hostile projectiles that hit an enemy may bounce exactly once to the closest *different* enemy within 145px; new hit deals 55% of previous projectile damage. Prevent bounce chains, self hits, and double-hitting the original enemy. "Your shots bounce once for 55% damage." |
-| \`delulu\` | Delulu Is the Solulu | EPIC | 1 | Prevent one lethal hit per wave, leave player at 1 HP and give 1.25 seconds invulnerability. Reset charge only on entering a new wave, not from opening upgrades. "Ignore one fatal hit per wave." |
-| \`touch-grass\` | Touch Grass | COMMON | 1 | After 8 continuous combat seconds without taking damage, heal 2 HP every 5 seconds up to current max HP. No healing while between waves/in upgrades. "Heal slowly after avoiding damage." |
-| \`mogged\` | Mogged | COMMON | 2 | +15% damage per stack on the first player hit received by each enemy (full-health condition). Must work on bosses without duplicating procs. "First hit on an enemy deals +15% damage." |
-| \`rizz-aura\` | Rizz Aura | RARE | 1 | Every 12 kills, pulse and slow enemies within 145px by 25% for 2.5 seconds. Bosses may be slowed up to 15%. "Every 12 kills, slow nearby enemies." |
+| `crash-out` | Crash Out | RARE | 1 | When HP <= 35% of max HP: +40% damage dealt, +20% incoming damage. "Low HP, high chaos. +40% damage, but +20% damage taken." |
+| `skibidi-bounce` | Skibidi Bounce | EPIC | 1 | Non-hostile projectiles that hit an enemy may bounce exactly once to the closest *different* enemy within 145px; new hit deals 55% of previous projectile damage. Prevent bounce chains, self hits, and double-hitting the original enemy. "Your shots bounce once for 55% damage." |
+| `delulu` | Delulu Is the Solulu | EPIC | 1 | Prevent one lethal hit per wave, leave player at 1 HP and give 1.25 seconds invulnerability. Reset charge only on entering a new wave, not from opening upgrades. "Ignore one fatal hit per wave." |
+| `touch-grass` | Touch Grass | COMMON | 1 | After 8 continuous combat seconds without taking damage, heal 2 HP every 5 seconds up to current max HP. No healing while between waves/in upgrades. "Heal slowly after avoiding damage." |
+| `mogged` | Mogged | COMMON | 2 | +15% damage per stack on the first player hit received by each enemy (full-health condition). Must work on bosses without duplicating procs. "First hit on an enemy deals +15% damage." |
+| `rizz-aura` | Rizz Aura | RARE | 1 | Every 12 kills, pulse and slow enemies within 145px by 25% for 2.5 seconds. Bosses may be slowed up to 15%. "Every 12 kills, slow nearby enemies." |
 
-**Existing synergy**: when \`Six Seven\` and \`Skibidi Bounce\` are both equipped, all seven existing Six Seven radial projectiles are eligible for a single bounce. Display a small "ULTIMATE 67" message on the first volley after the combination is acquired; do not create an extra active ability.
+**Existing synergy**: when `Six Seven` and `Skibidi Bounce` are both equipped, all seven existing Six Seven radial projectiles are eligible for a single bounce. Display a small "ULTIMATE 67" message on the first volley after the combination is acquired; do not create an extra active ability.
 
-Engineering: \`combatStats\` should provide derived stats where appropriate; special effects must be in reusable simulation helpers (Phaser-free) rather than deeply embedding UI. Ensure all upgrades remain obtainable through the existing level-up choice system. Do not change existing 10 buff IDs or base numbers.
+Engineering: `combatStats` should provide derived stats where appropriate; special effects must be in reusable simulation helpers (Phaser-free) rather than deeply embedding UI. Ensure all upgrades remain obtainable through the existing level-up choice system. Do not change existing 10 buff IDs or base numbers.
 
 ## Enemy roster
 
@@ -36,20 +36,20 @@ Each new enemy must have its own recognizable procedurally drawn silhouette/colo
 
 | Enemy type | Role | First appears | Proposed base stats | Behavior |
 | --- | --- | --- | --- | --- |
-| \`yap-goblin\` | cone-control | Wave 2 | HP 45, speed 48, contact damage 7, XP 12 | Stops/turns to aim a clearly drawn 65° cone of range 170px, telegraphs >= 0.7s, then emits one damage pulse (8 HP) every >=3.5s. Can be dodged, single damage evaluation per pulse. |
-| \`ohio-glitch\` | repositioning | Wave 3 | HP 42, speed 54, contact damage 8, XP 14 | Every >=6s (when in range) flashes with a 0.5s telegraph and relocates <=110px toward the player; never directly on the player (keep >=130px separation on landing), never outside arena bounds. |
-| \`fanum-thief\` | loot predator | Event wave 2 (and optional later) | HP 55, speed 95, contact damage 5, XP 15 | Prioritizes loose XP crystals, accumulating \`stolenXp\` (capped at 30 XP). On defeat, drops XP equal to all crystals it stole. Event thief escapes at its event timeout. Never remove XP already held by the player. |
+| `yap-goblin` | cone-control | Wave 2 | HP 45, speed 48, contact damage 7, XP 12 | Stops/turns to aim a clearly drawn 65° cone of range 170px, telegraphs >= 0.7s, then emits one damage pulse (8 HP) every >=3.5s. Can be dodged, single damage evaluation per pulse. |
+| `ohio-glitch` | repositioning | Wave 3 | HP 42, speed 54, contact damage 8, XP 14 | Every >=6s (when in range) flashes with a 0.5s telegraph and relocates <=110px toward the player; never directly on the player (keep >=130px separation on landing), never outside arena bounds. |
+| `fanum-thief` | loot predator | Event wave 2 (and optional later) | HP 55, speed 95, contact damage 5, XP 15 | Prioritizes loose XP crystals, accumulating `stolenXp` (capped at 30 XP). On defeat, drops XP equal to all crystals it stole. Event thief escapes at its event timeout. Never remove XP already held by the player. |
 
-Spawn balancing: cap total enemy count at existing \`GAME.maxEnemies\` (90). No teleports inside character hitbox, sudden unavoidable AoE, or offscreen immortal enemies. Existing boss remains Big Hater, unchanged except for compatibility with buffs.
+Spawn balancing: cap total enemy count at existing `GAME.maxEnemies` (90). No teleports inside character hitbox, sudden unavoidable AoE, or offscreen immortal enemies. Existing boss remains Big Hater, unchanged except for compatibility with buffs.
 
 ## Timed events (one per run, fixed and deterministic initial schedule)
 
-Events take place while the game continues: do not pause combat for events. Use ACTIVE SIMULATION time (frozen when upgrades/intermission pauses); all timers must reset on restart. Provide a brief high-contrast event banner, sound hook without copyrighted clips, countdown/progress HUD visible on mobile. Events shall be data-driven, using a small \`EventDirector\` or equivalent pure-core module.
+Events take place while the game continues: do not pause combat for events. Use ACTIVE SIMULATION time (frozen when upgrades/intermission pauses); all timers must reset on restart. Provide a brief high-contrast event banner, sound hook without copyrighted clips, countdown/progress HUD visible on mobile. Events shall be data-driven, using a small `EventDirector` or equivalent pure-core module.
 
 ### Fanum Tax Raid — wave 2, active second 18
 
-- Spawn exactly one special \`fanum-thief\` with warning and distinct icon. Starts a 15s escape timer.
-- While alive, thief seeks and collects loose XP drops; tracks \`stolenXp\` (<=30).
+- Spawn exactly one special `fanum-thief` with warning and distinct icon. Starts a 15s escape timer.
+- While alive, thief seeks and collects loose XP drops; tracks `stolenXp` (<=30).
 - If defeated before the deadline, drop the stolen XP again and grant +20 Aura once, plus enemy's regular XP drop. Say "FANUM TAX REFUNDED!".
 - If timer expires, remove this thief (and only its stolen XP), say "FANUM TAX PAID 💀"; never take player inventory/XP levels.
 - The event ends exactly once; no double payout, no carried state after restart or wave transition.
@@ -66,12 +66,12 @@ Events take place while the game continues: do not pause combat for events. Use 
 
 ## Scope breakdown for Codex
 
-Use 3 small PRs from freshly updated \`main\`, in this order:
+Use 3 small PRs from freshly updated `main`, in this order:
 1. Content core: buff definitions, implementations, tests (including Ultimate 67 interaction).
 2. Enemies: AI state/telegraphs, XP recovery and procedural visuals, tests.
 3. Events: timing and UI, + mobile and desktop Playwright tests, playtest tuning.
 
-Run \`npm run typecheck\`, \`npm test\`, \`npm run build\`, \`npm run test:browser\` on each PR before merging. Do not bypass CI. Preserve English UI and touch controls.
+Run `npm run typecheck`, `npm test`, `npm run build`, `npm run test:browser` on each PR before merging. Do not bypass CI. Preserve English UI and touch controls.
 
 ## Required tests
 
@@ -86,5 +86,5 @@ Run \`npm run typecheck\`, \`npm test\`, \`npm run build\`, \`npm run test:brows
 
 - Rizz Check objective zone.
 - The Algorithm final boss.
-- Two more buffs: \`Brainrot Overload\` (high fire-rate tradeoff) and \`Fanum Tax Deal\` (XP tradeoff).
+- Two more buffs: `Brainrot Overload` (high fire-rate tradeoff) and `Fanum Tax Deal` (XP tradeoff).
 - Deep visual refresh, cosmetics, co-op and Discord integration.
