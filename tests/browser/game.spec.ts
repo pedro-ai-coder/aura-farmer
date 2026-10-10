@@ -159,12 +159,23 @@ test('pixel-cartoon assets load with the light Lavender Pop arena and remain vis
       'px-xp', 'px-shot', 'px-hostile',
     ];
     const missing = required.filter(key => !scene.textures.exists(key));
+    const imported = ['spr-sigma', 'spr-npc', 'spr-hater', 'spr-beta', 'spr-boss', 'spr-items', 'spr-icons'];
+    const missingSheets = imported.filter(key => !scene.textures.exists(key));
+    const spriteFrames = Object.fromEntries(imported.map(key =>
+      [key, scene.textures.exists(key) ? scene.textures.get(key).frameTotal : 0]));
+    const displayed = scene.children.list.filter(x => x.type === 'Image')
+      .map(x => (x as Phaser.GameObjects.Image).texture.key);
     const canvas = scene.textures.get('px-floor').getSourceImage() as HTMLCanvasElement;
     const pixel = [...canvas.getContext('2d')!.getImageData(0, 0, 1, 1).data].slice(0, 3);
     const texturesVisible = scene.children.list.filter(x => x.type === 'Image' && (x as Phaser.GameObjects.Image).visible).length;
-    return { missing, pixel, texturesVisible };
+    return { missing, missingSheets, spriteFrames, displayed, pixel, texturesVisible };
   });
   expect(proof.missing).toEqual([]);
+  expect(proof.missingSheets).toEqual([]);
+  expect(proof.spriteFrames['spr-sigma']).toBeGreaterThan(5);
+  expect(proof.spriteFrames['spr-boss']).toBeGreaterThan(3);
+  expect(proof.spriteFrames['spr-icons']).toBeGreaterThan(16);
+  expect(proof.displayed).toContain('spr-sigma');
   expect(proof.pixel).toEqual([246, 240, 234]); // approved Cream: #F6F0EA
   expect(proof.texturesVisible).toBeGreaterThanOrEqual(2); // player + arena
   await page.screenshot({ path: 'test-results/pixel-cartoon.png' });

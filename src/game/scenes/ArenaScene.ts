@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Arena } from '../core/arena';
 import { GAME } from '../core/constants';
+import { BUFFS } from '../data/buffs';
 import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
@@ -10,6 +11,7 @@ export class ArenaScene extends Phaser.Scene {
   private g!: Phaser.GameObjects.Graphics;
   private modalBg!: Phaser.GameObjects.Graphics;
   private pixelWorld!: PixelWorld;
+  private buffIcons: Phaser.GameObjects.Image[] = [];
   private hud: Phaser.GameObjects.Text[] = [];
   private status!: Phaser.GameObjects.Text;
   private overlay!: Phaser.GameObjects.Text;
@@ -21,10 +23,27 @@ export class ArenaScene extends Phaser.Scene {
 
   constructor() { super('ArenaScene'); }
 
+  preload(): void {
+    // Original static PNG sprite sheets shipped with the application.
+    // Keep px-* runtime textures available as an explicit fallback.
+    for (const [key, frame] of [
+      ['sigma', 48], ['npc', 48], ['hater', 48],
+      ['beta', 64], ['boss', 128], ['items', 16], ['icons', 16],
+    ] as const) {
+      this.load.spritesheet('spr-' + key, 'assets/pixel/' + key + '.png', {
+        frameWidth: frame, frameHeight: frame,
+      });
+    }
+  }
+
   create(): void {
     this.pixelWorld = new PixelWorld(this);
     this.g = this.add.graphics().setDepth(0);
     this.modalBg = this.add.graphics().setDepth(4);
+    if (this.textures.exists('spr-icons')) {
+      this.buffIcons = Array.from({ length: 16 }, () =>
+        this.add.image(0,0,'spr-icons',0).setDepth(3).setScale(1.5).setVisible(false));
+    }
     this.hud = [24, 245, 565, 745].map(x => this.label(x, 12, 16));
     this.status = this.label(24, 62, 12);
     this.overlay = this.label(480, 300, 20).setOrigin(.5).setAlign('center').setWordWrapWidth(650).setLineSpacing(12).setDepth(5);
@@ -125,6 +144,12 @@ export class ArenaScene extends Phaser.Scene {
     if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
     if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
+    this.buffIcons.forEach(icon => icon.setVisible(false));
+    for (const [i,buff] of BUFFS.filter(b => a.buffs[b.id] > 0).slice(0,this.buffIcons.length).entries()) {
+      const image = this.buffIcons[i];
+      image.setTexture('spr-icons', BUFFS.findIndex(b => b.id === buff.id));
+      image.setPosition(30 + 29*i, 108).setVisible(true);
+    }
     this.modalBg.clear();
     if (message) {
       this.modalBg.fillStyle(0x302747, .72).fillRect(0, 82, 960, 518);
