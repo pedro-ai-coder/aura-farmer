@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { Arena } from '../core/arena';
 import { GAME } from '../core/constants';
 import { xpToNextLevel } from '../core/progression';
-import { ENEMIES } from '../data/enemies';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
 
