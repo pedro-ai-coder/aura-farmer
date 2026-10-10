@@ -448,3 +448,96 @@ body {
 }
 
 .meta-avatar img { display:block; width:600%; max-width:none; height:100%; image-rendering:pixelated; object-fit:fill; flex:none; }
+
+/* Lavender Pop visual quality pass — light panels, original pixel silhouettes and
+   tactile arcade surfaces. Animation is cosmetic only and honors reduced-motion. */
+.meta-panel {
+  position:relative;
+  background:linear-gradient(160deg,#fff9f1 0%,#eee6f7 61%,#e3d6f1 100%);
+  border-color:#302747;
+  box-shadow:0 6px 0 #8b5bd8,0 11px 0 #302747,0 20px 40px #30274760;
+}
+.meta-header {
+  background:#302747;
+  border:2px solid #604e86;
+  border-radius:10px;
+  padding:11px 12px;
+  color:#fff8e7;
+  box-shadow:inset 0 2px 0 #ffffff1e;
+}
+.meta-header span b {color:#ffcc51;}
+.meta-header small {color:#ddd6f0;}
+.meta-panel h1 {letter-spacing:.035em;text-shadow:2px 2px 0 #d4c4e6;}
+.meta-feature {
+  background:linear-gradient(135deg,#44345f,#6d5595);
+  color:#fff8e7;
+  border-color:#ffcc51;
+  box-shadow:0 4px 0 #302747;
+}
+.meta-feature small {color:#e7daee;}
+.meta-character {
+  position:relative;
+  background:linear-gradient(145deg,#fff9f1,#e5d8f2);
+  border:2px solid #6d5595;
+  box-shadow:0 3px 0 #44345f;
+}
+.meta-character.selected {
+  background:linear-gradient(155deg,#fff0aa,#fff9f1 66%,#e8d8ec);
+  border-color:#a26b00;
+  box-shadow:inset 0 0 0 2px #ffcc51,0 3px 0 #a26b00;
+}
+.meta-character.selected::after {
+  content:'✓';
+  position:absolute;right:7px;top:6px;
+  width:21px;height:21px;border:1px solid #302747;
+  border-radius:5px;background:#ffcc51;color:#302747;
+  display:grid;place-items:center;font-size:13px;
+}
+.meta-character:disabled {
+  background:repeating-linear-gradient(-45deg,#eee7f1 0,#eee7f1 12px,#ded4e7 12px,#ded4e7 15px);
+  opacity:.76;
+}
+.meta-character .meta-avatar {
+  background:#cab8e2;
+  width:54px;height:54px;
+  border-color:#302747;
+  box-shadow:2px 2px 0 #8b5bd8;
+}
+.meta-avatar {
+  background:var(--avatar,#44345f);
+  border-radius:8px;
+  box-shadow:inset 0 3px 0 #ffffff32;
+}
+.meta-avatar img { image-rendering:pixelated; }
+.meta-character strong {font-weight:1000; letter-spacing:.02em;}
+.meta-character small {font-weight:800;color:#655176;}
+.meta-character-description {line-height:1.35;color:#49365f;}
+.meta-button {
+  box-shadow:0 3px 0 #302747;
+  border-radius:8px;
+  letter-spacing:.04em;
+  background:linear-gradient(180deg,#e9dff6,#d5c3eb);
+}
+.meta-button.primary {
+  background:linear-gradient(180deg,#fff5ac,#ffcc51);
+  box-shadow:0 3px 0 #a26b00;
+}
+.meta-button:hover:not(:disabled) {filter:brightness(1.08);}
+.meta-achievement {
+  border:1px solid #b8a4d0;
+  box-shadow:inset 0 1px 0 #ffffff9c;
+}
+.meta-stat-grid div {
+  border:1px solid #b8a4d0;
+  box-shadow:inset 0 2px 0 #ffffffa9;
+}
+@media (max-height:470px) and (orientation:landscape){
+  .meta-header{padding:6px 9px;}
+  .meta-panel h1{margin:7px 0 6px;}
+  .meta-character .meta-avatar{width:34px;height:34px;}
+  .meta-feature {padding:5px;box-shadow:none;}
+  .meta-button {min-height:34px;box-shadow:0 2px 0 #302747;}
+}
+@media (prefers-reduced-motion:reduce){
+  .meta-panel,.meta-button,.meta-character {animation:none!important;transition:none!important;}
+}
