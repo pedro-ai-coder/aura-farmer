@@ -34,6 +34,7 @@ export class ArenaScene extends Phaser.Scene {
     for (const [key, frame] of [
       ['sigma', 48], ['npc', 48], ['hater', 48],
       ['beta', 64], ['boss', 128], ['items', 16], ['icons', 16],
+      ['alpha',48], ['rizzler',48], ['ohio',48], ['fanum',48], ['six-seven',48],
     ] as const) {
       this.load.spritesheet('spr-' + key, 'assets/pixel/' + key + '.png', {
         frameWidth: frame, frameHeight: frame,
