@@ -96,6 +96,8 @@ test('landscape controls flank the canvas and remain tappable', async ({ page })
 test('fullscreen button enables immersive landscape, preserves touch controls and exits cleanly', async ({ page }) => {
   await page.locator('[data-menu="play"]').click();
   await page.locator('[data-menu="start"]').click();
+  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
+  await expect(page.locator('#touch-play-actions')).toBeVisible();
   // Native Fullscreen isn't available in several embedded/mobile browsers.
   // Force rejection to exercise the CSS fallback, independent of CI browser permissions.
   await page.evaluate(() => {
