@@ -117,7 +117,7 @@ function orb(c: PixelContext, hostile: boolean): void {
 }
 function createKey(scene: Phaser.Scene, key: string, size: number, draw: (c: PixelContext) => void): void {
   if (!scene.textures.exists(key)) {
-    scene.textures.addCanvas(key, pixelCanvas(size, draw)).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    scene.textures.addCanvas(key, pixelCanvas(size, draw))?.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 }
 export function createPixelTextures(scene: Phaser.Scene): void {
