@@ -39,7 +39,7 @@ describe('character roster and game progression', () => {
     expect(ACHIEVEMENTS).toHaveLength(12);
     const a=new Arena(()=>.5,'sigma');a.start();
     a.kills=67;a.xpCollected=500;a.flexSuccesses=3;a.auraBursts=10;
-    a.ultimate67Triggered=true;a.mode='win';a.wave=5;
+    a.ultimate67Triggered=true;a.sixSevenTriggered=true;a.mode='win';a.wave=5;
     const result=runResult(a);
     const first=recordRun(newProfile(),result);
     expect(first.profile.achievements).toContain('first-win');
