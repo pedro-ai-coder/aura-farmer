@@ -177,13 +177,16 @@ export class PixelWorld {
       : frame === 0 ? 'walk1' : 'walk2';
     const playerMoving = Math.hypot(a.pos.x - this.lastX, a.pos.y - this.lastY) > .18;
     this.lastX = a.pos.x; this.lastY = a.pos.y;
-    if (this.scene.textures.exists('spr-sigma')) {
+    const characterSprite = 'spr-' + a.characterId;
+    const hasCharacterSheet = this.scene.textures.exists(characterSprite);
+    const hasDefaultSheet = this.scene.textures.exists('spr-sigma');
+    if (hasCharacterSheet || hasDefaultSheet) {
       // 0/1 idle, 2/3 run, 4 crossed-arm FLEX, 5 hurt.
       const actorFrame = a.mode !== 'playing' ? frame :
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
-      this.player.setTexture('spr-sigma',actorFrame);
+      this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
-    this.player.setPosition(a.pos.x, a.pos.y).setTint(getCharacter(a.characterId).color);
+    this.player.setPosition(a.pos.x, a.pos.y).setTint(hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     const alive = new Set<number>();
     for (const enemy of a.enemies) {
