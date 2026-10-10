@@ -1,10 +1,10 @@
-# AURA FARMER — Cartoon 2D Roguelite
+# AURA FARMER — Pixel Cartoon Brainrot Roguelite
 
 A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. Survive five 50-second waves, collect XP, choose upgrades, and defeat the Big Hater in the final wave.
 
 ## Play online
 
-**[Play Aura Farmer v0.1](https://aura-farmer-ecru.vercel.app)**
+**[Play Aura Farmer](https://aura-farmer-ecru.vercel.app)**
 
 The Vercel deployment tracks the `main` branch. Changes appear on the live website after they have been merged and the production build succeeds.
 
@@ -12,7 +12,11 @@ The Vercel deployment tracks the `main` branch. Changes appear on the live websi
 
 Open the same game URL on your phone — no app installation required. Use the **virtual joystick** to move, tap **FLEX** for the risky Aura action, and **FOCUS** to slow enemies. The on-screen **PLAY / NEXT WAVE / RETRY** button replaces Enter, and upgrade buttons let you choose buffs by touch. Rotating to **landscape** gives a larger game view, but portrait controls are supported as well.
 
-The mobile layout is an initial playable adaptation: real-device performance and small-screen readability still need field testing.
+**Immersive landscape on Android:** tap **FULL SCREEN** next to the game actions. The game requests browser fullscreen and attempts to lock landscape orientation where supported. The arena is in the center, the joystick on the left and FLEX/FOCUS/upgrade buttons on the right. Tap **EXIT** to return to the normal page. If the phone stays vertical, turn it sideways manually and ensure auto-rotate is enabled.
+
+**Fallback:** embedded browsers or iPhone Safari may reject native fullscreen/orientation lock. The game then fills the webpage viewport using CSS and offers a rotate-device prompt, but browser bars may remain visible. Native browser fullscreen and forced landscape cannot be guaranteed on every phone. Do not lock the game globally into landscape; portrait mode remains playable outside immersive mode.
+
+**Art production:** the current sprites are original runtime-generated pixel placeholders matching the approved Art Bible. Editable final Aseprite sprite atlases are planned in [Sprite Production P0](docs/SPRITE_PRODUCTION_P0.md) and tracked separately.
 
 ## Run locally
 
@@ -53,4 +57,4 @@ On Linux, `npx playwright install --with-deps chromium` can also install system 
 
 Validation history and limitations: [docs/VALIDATION.md](docs/VALIDATION.md). The Phaser-independent combat simulation lives in `src/game/core/arena.ts`, and the rendering/input scene lives in `src/game/scenes/ArenaScene.ts`.
 
-Human gameplay balance testing is still needed. Multiplayer, Discord, shop, mobile controls, and persistence are out of scope for v0.1.
+Human gameplay balance testing is still needed. Multiplayer, Discord, shop and persistence remain future features. Mobile touch and immersive landscape presentation are already implemented; final hand-drawn sprite production is planned separately.
