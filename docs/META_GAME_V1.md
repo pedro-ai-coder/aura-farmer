@@ -1,6 +1,6 @@
 # AURA FARMER — META GAME / PERSISTENCE DESIGN v1.0
 
-**Status:** PROPOSAL FOR GAME DIRECTOR APPROVAL (documentation only)  
+**Status:** APPROVED 2026-10-10; v0.4/v0.5 playable systems implemented in PR #17; online backend and public rankings remain proposals  
 **Based on:** repository main inspected 2026-10-10. Tech is Phaser 3 + TypeScript + Vite on Vercel; current core `Arena` starts with Sigma and has only a run-scoped progression system. No database, backend functions, login, persistent save or leaderboards currently implemented. Art direction: approved Lavender Pop Pixel Cartoon.
 
 ## 1. North star — the complete player loop
@@ -164,7 +164,7 @@ Acceptance: fake/unverified submissions rejected; public leaderboards only verif
 ### v0.8 — "Real game" polish (P2)
 Music/sfx, transitions, controls settings, accessible text/icons, 1–2 new bosses, collection view, unlock animations, analytics **only with appropriate notice/consent**. Discord/coop remains later and needs separate backend.
 
-**No implementation/merge/deploy authorized by this design document alone.** Await Game Director approval of roster, ranks and order; create small Codex tasks from this spec, with green typecheck/Vitest/build/Playwright and Android QA for each PR.
+**Implementation note:** Game Director approved the plan; menus, six playable characters, offline achievements and local saves were delivered in PR #17. Supabase, account sync, security validation and official leaderboards remain future work (staged database schema in draft PR #18, not provisioned). New online services still require explicit configuration and security QA.
 
 ## 9. Architecture notes for Codex
 
