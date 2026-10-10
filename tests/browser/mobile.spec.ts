@@ -107,7 +107,7 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   const toggle = page.locator('#fullscreen-toggle');
   await expect(toggle).toBeVisible();
   await expect(toggle).toHaveText('FULL SCREEN');
-  await tap(page, '#fullscreen-toggle');
+  await toggle.tap();
   await expect(page.locator('.play-layout')).toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('EXIT');
   await expect(page.locator('#rotate-notice')).toBeVisible();
@@ -138,7 +138,7 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
 
-  await tap(page, '#fullscreen-toggle');
+  await toggle.tap();
   await expect(page.locator('.play-layout')).not.toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('FULL SCREEN');
   await expect(page.locator('#joystick-track')).toBeVisible();
