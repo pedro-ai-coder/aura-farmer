@@ -114,6 +114,15 @@ export class ArenaScene extends Phaser.Scene {
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
+    // Layered arcade HUD panels with legible dark text on Cloud Cream.
+    for (const [x,w] of [[18,199],[238,288],[555,164],[735,211]]) {
+      g.fillStyle(0x302747,.15).fillRoundedRect(x+2,6,w,53,9);
+      g.fillStyle(0xfff8e7,.97).fillRoundedRect(x,4,w,53,8);
+      g.lineStyle(2,0x76609e,.82).strokeRoundedRect(x,4,w,53,8);
+      g.fillStyle(0xc6b6e5,.45).fillRect(x+9,33,w-18,2);
+    }
+    g.fillStyle(0x302747,.93).fillRoundedRect(18,59,924,20,5);
+    g.lineStyle(1,0x76609e,.92).strokeRoundedRect(18,59,924,20,5);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
@@ -151,9 +160,14 @@ export class ArenaScene extends Phaser.Scene {
     this.bar(245, 40, 270, a.aura.value / 100, burst ? ART.aura : ART.hoodie);
     this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), ART.xp);
     this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x2cb4c7);
+    // Consistent segmented bars make HP, Aura and wave time readable at a glance.
+    for (const [x,w,n] of [[24,180,5],[245,270,5],[565,140,5],[745,190,5]]) {
+      g.lineStyle(1,0xfff8e7,.64);
+      for(let j=1;j<n;j++) g.lineBetween(x+w*j/n,40,x+w*j/n,50);
+    }
     const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
     const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
-    this.status.setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
+    this.status.setColor('#fff8e7').setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
     let message = '';
