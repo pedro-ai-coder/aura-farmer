@@ -126,6 +126,23 @@ create policy "public catalog" on public.achievement_definitions for select to a
 create policy "public seasons" on public.seasons for select to anon,authenticated using (true);
 -- leaderboard_entries has NO direct client SELECT/INSERT/UPDATE/DELETE grants or policies.
 
+-- Changing a public nickname invalidates moderation approval, preventing a player
+-- from switching to an unreviewed name after a moderator has approved a prior one.
+create or replace function public.invalidate_unreviewed_nickname()
+returns trigger language plpgsql security definer set search_path = ''
+as $
+begin
+  if new.display_name is distinct from old.display_name then
+    new.name_approved := false;
+  end if;
+  new.updated_at := now();
+  return new;
+end $;
+drop trigger if exists profile_nickname_changed on public.profiles;
+create trigger profile_nickname_changed
+before update on public.profiles for each row
+execute function public.invalidate_unreviewed_nickname();
+
 -- Create private profile & basic unlocked roster after a new Supabase Auth identity.
 create or replace function public.init_aura_farmer_user()
 returns trigger language plpgsql security definer set search_path = ''
