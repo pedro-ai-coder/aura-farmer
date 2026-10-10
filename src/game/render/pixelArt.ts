@@ -17,13 +17,16 @@ function block(c: PixelContext, color: string, x: number, y: number, w: number, 
 }
 const INK = '#302747', HOOD = '#44345f', SKIN = '#f5bc93', GOLD = '#ffcc51';
 function pixelCanvas(size: number, painter: (c: PixelContext) => void): HTMLCanvasElement {
+  // Paint an authentic 24x24 pixel grid, then upscale using nearest-neighbor.
+  // This avoids antialiased rectangles at non-integer display sizes.
+  const low = document.createElement('canvas');
+  low.width = 24; low.height = 24;
+  painter(low.getContext('2d', { alpha: true })!);
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = size; canvas.height = size;
   const c = canvas.getContext('2d', { alpha: true })!;
   c.imageSmoothingEnabled = false;
-  c.scale(size / 24, size / 24);
-  painter(c);
+  c.drawImage(low, 0, 0, size, size);
   return canvas;
 }
 function player(c: PixelContext, pose: 'idle' | 'walk1' | 'walk2' | 'flex' | 'hurt'): void {
