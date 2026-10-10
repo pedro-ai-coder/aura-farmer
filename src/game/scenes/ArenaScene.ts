@@ -21,6 +21,19 @@ export class ArenaScene extends Phaser.Scene {
 
   constructor() { super('ArenaScene'); }
 
+  preload(): void {
+    // Original static PNG sprite sheets shipped with the application.
+    // Keep px-* runtime textures available as an explicit fallback.
+    for (const [key, frame] of [
+      ['sigma', 48], ['npc', 48], ['hater', 48],
+      ['beta', 64], ['boss', 128], ['items', 16], ['icons', 16],
+    ] as const) {
+      this.load.spritesheet('spr-' + key, 'assets/pixel/' + key + '.png', {
+        frameWidth: frame, frameHeight: frame,
+      });
+    }
+  }
+
   create(): void {
     this.pixelWorld = new PixelWorld(this);
     this.g = this.add.graphics().setDepth(0);
