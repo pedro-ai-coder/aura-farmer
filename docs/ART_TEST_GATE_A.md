@@ -1,6 +1,6 @@
 # AURA FARMER — GATE A: ART TEST BRIEF
 
-**AF-ART-GATE-A** | **Status:** READY FOR CONCEPT REVIEW; NOT APPROVED FOR ASSET PRODUCTION  
+**AF-ART-GATE-A** | **Status:** GATE A APPROVED 2026-10-10 — first playable visual implementation authorized  
 **Scope:** Concept art / static visual test only. **Do not change game code, sprites in use, renderer, hitboxes, controls, or the Vercel deployment.**
 
 Links: [Art Bible](ART_BIBLE.md) | [Gameplay design](GAME_DESIGN.md) | [Combat specification](COMBAT_SPEC.md).
@@ -100,6 +100,6 @@ For now Codex should only inspect documentation and organize tickets. After Gate
 
 - Art Bible changed in existing draft PR #10 on branch `docs/af-art-bible-review`.
 - User-approved direction/Sigma decisions are documented.
-- **Palette and final visual concepts await approval**, despite initial conceptual explorations.
+- **Gate A approved by the Game Director**. Implement the approved identity, verify it on Android, then refine with editable hand-drawn sprite sheets.
 - Any AI-generated illustration shown in conversation is a **concept mockup**, not a game-ready `.aseprite`, spritesheet or atlas.
-- PR #10 intentionally stays **Draft**. No merge, no production deploy.
+- PR #10 was merged after direction approval; the visual implementation proceeds in its own PR, with production deployment only after CI green.

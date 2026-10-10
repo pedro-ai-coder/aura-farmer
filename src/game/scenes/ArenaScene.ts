@@ -2,12 +2,14 @@ import Phaser from 'phaser';
 import { Arena } from '../core/arena';
 import { GAME } from '../core/constants';
 import { xpToNextLevel } from '../core/progression';
-import { ENEMIES } from '../data/enemies';
 import { touchControls } from '../input/touchControls';
+import { ART, PixelWorld } from '../render/pixelArt';
 
 export class ArenaScene extends Phaser.Scene {
   readonly arena = new Arena();
   private g!: Phaser.GameObjects.Graphics;
+  private modalBg!: Phaser.GameObjects.Graphics;
+  private pixelWorld!: PixelWorld;
   private hud: Phaser.GameObjects.Text[] = [];
   private status!: Phaser.GameObjects.Text;
   private overlay!: Phaser.GameObjects.Text;
@@ -20,12 +22,16 @@ export class ArenaScene extends Phaser.Scene {
   constructor() { super('ArenaScene'); }
 
   create(): void {
-    this.g = this.add.graphics();
+    this.pixelWorld = new PixelWorld(this);
+    this.g = this.add.graphics().setDepth(0);
+    this.modalBg = this.add.graphics().setDepth(4);
     this.hud = [24, 245, 565, 745].map(x => this.label(x, 12, 16));
     this.status = this.label(24, 62, 12);
     this.overlay = this.label(480, 300, 20).setOrigin(.5).setAlign('center').setWordWrapWidth(650).setLineSpacing(12).setDepth(5);
     this.feedback = this.label(480, 559, 15).setOrigin(.5).setDepth(3);
     this.debug = this.label(940, 111, 12).setOrigin(1, 0).setDepth(3);
+    for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#302747');
+    this.overlay.setDepth(5).setColor('#fff8e7');
     this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
     for (const [name, key] of Object.entries(this.keyboard)) {
       key.on('down', () => this.pendingKeys.add(name));
@@ -52,6 +58,7 @@ export class ArenaScene extends Phaser.Scene {
       choice: one ? 0 : two ? 1 : three ? 2 : touch.choice,
     });
     this.draw();
+    this.pixelWorld.sync(this.arena);
   }
 
   private clearKeys(): void { this.pendingKeys.clear(); }
@@ -68,31 +75,8 @@ export class ArenaScene extends Phaser.Scene {
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
-    g.fillGradientStyle(0x211b37, 0x211b37, 0x312349, 0x312349).fillRect(0, 0, 960, 600);
-    g.fillStyle(0x3b2c53).fillRoundedRect(12, 91, 936, 497, 20);
-    g.lineStyle(1, 0x725585, .16);
-    for (let x = 40; x < 940; x += 40) g.lineBetween(x, 100, x, 580);
-    for (let y = 100; y < 580; y += 40) g.lineBetween(20, y, 940, y);
-    g.lineStyle(2, 0x9772b5, .5).strokeRoundedRect(12, 91, 936, 497, 20);
-    for (const drop of a.drops) {
-      g.fillStyle(0x7cf7c6).fillTriangle(drop.x, drop.y - 7, drop.x - 5, drop.y + 4, drop.x + 5, drop.y + 4);
-    }
-    for (const enemy of a.enemies) {
-      const s = ENEMIES[enemy.type], r = s.radius, x = enemy.x, y = enemy.y;
-      g.fillStyle(0x160f29, .3).fillEllipse(x, y + r, r * 2, r * .65);
-      g.fillStyle(s.color).fillRoundedRect(x - r, y - r, r * 2, r * 2, r * .6);
-      g.lineStyle(3, 0x1b1429).strokeRoundedRect(x - r, y - r, r * 2, r * 2, r * .6);
-      g.fillStyle(0x271a38).fillCircle(x - r * .35, y - 2, 3).fillCircle(x + r * .35, y - 2, 3);
-      g.lineStyle(2, 0x271a38).lineBetween(x - r * .3, y + r * .4, x + r * .3, y + r * .4);
-      if (enemy.type === 'hater') g.fillStyle(0xffffff).fillTriangle(x - 9, y - r + 1, x + 9, y - r + 1, x, y - r - 9);
-      if (enemy.type === 'boss') {
-        g.fillStyle(0xffd16b).fillTriangle(x - 24, y - r, x + 24, y - r, x, y - r - 24);
-        this.bar(x - 45, y - r - 12, 90, enemy.hp / s.hp, 0xff729f);
-      }
-    }
-    for (const shot of a.shots) {
-      g.fillStyle(shot.hostile ? 0xff769b : 0xffe08b).fillCircle(shot.x, shot.y, shot.hostile ? 6 : 4);
-    }
+    // The light Lavender Pop arena and all character/projectile textures are
+    // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
     if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
     if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
@@ -106,27 +90,28 @@ export class ArenaScene extends Phaser.Scene {
       g.lineStyle(5, 0xffe69f).beginPath().arc(a.pos.x, a.pos.y, 28, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * a.flex.progress(a.clock)).strokePath();
     }
     if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y, 95);
-    if (a.buffs['ohio-orbiter']) {
-      g.lineStyle(1, 0xa48cff, .3).strokeCircle(a.pos.x, a.pos.y, 76);
-      g.fillStyle(charging ? 0x746789 : 0xb398ff).fillCircle(a.orb.x, a.orb.y, 12);
+    if (a.buffs['ohio-orbiter']) g.lineStyle(1, 0x8b5bd8, .45).strokeCircle(a.pos.x, a.pos.y, 76);
+    if (burst) {
+      g.lineStyle(5, ART.aura, .84).strokeCircle(a.pos.x, a.pos.y, 37 + 5 * Math.sin(a.clock / 145));
+      g.lineStyle(2, 0xfff8e7, .72).strokeCircle(a.pos.x, a.pos.y, 45);
     }
-    if (burst) g.lineStyle(4, 0xffe283, .7).strokeCircle(a.pos.x, a.pos.y, 34);
-    g.fillStyle(0x160f29, .4).fillEllipse(a.pos.x, a.pos.y + 20, 44, 14);
-    g.fillStyle(charging ? 0xffd574 : a.clock - a.lastDamageAt < 180 && a.clock > 0 ? 0xff8694 : 0xb49afa)
-      .fillRoundedRect(a.pos.x - 18, a.pos.y - 21, 36, 42, 13);
-    g.lineStyle(3, 0xefe1ff).strokeRoundedRect(a.pos.x - 18, a.pos.y - 21, 36, 42, 13);
-    // Sunglasses and a tiny grin: original procedural cartoon character.
-    g.fillStyle(0x21172f).fillRoundedRect(a.pos.x - 14, a.pos.y - 9, 28, 10, 3);
-    g.lineStyle(2, 0xffffff).lineBetween(a.pos.x + 1, a.pos.y + 9, a.pos.x + 10, a.pos.y + 6);
+    // A small golden risk burst while holding FLEX; game logic is unchanged.
+    if (charging) {
+      const p = a.flex.progress(a.clock);
+      for (let i=0;i<4;i++) {
+        const angle = i * Math.PI/2 + a.clock/500;
+        g.fillStyle(ART.aura, .6+p*.4).fillRect(a.pos.x+Math.cos(angle)*31-3,a.pos.y+Math.sin(angle)*31-3,6,6);
+      }
+    }
 
     this.hud[0].setText(`HP ${Math.ceil(a.hp)}/${stats.maxHp}`);
     this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
-    this.bar(24, 40, 180, a.hp / stats.maxHp, 0xff82a2);
-    this.bar(245, 40, 270, a.aura.value / 100, burst ? 0xffd574 : 0xb79aff);
-    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), 0x7cf7c6);
-    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x9bdfff);
+    this.bar(24, 40, 180, a.hp / stats.maxHp, ART.hostile);
+    this.bar(245, 40, 270, a.aura.value / 100, burst ? ART.aura : ART.hoodie);
+    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), ART.xp);
+    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x2cb4c7);
     const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
     const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
     this.status.setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
@@ -140,10 +125,11 @@ export class ArenaScene extends Phaser.Scene {
     if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
     if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
+    this.modalBg.clear();
     if (message) {
-      g.fillStyle(0x100b20, .78).fillRect(0, 91, 960, 509);
-      g.fillStyle(0x241a3b, .98).fillRoundedRect(110, 118, 740, 438, 22);
-      g.lineStyle(2, 0xb899eb).strokeRoundedRect(110, 118, 740, 438, 22);
+      this.modalBg.fillStyle(0x302747, .72).fillRect(0, 82, 960, 518);
+      this.modalBg.fillStyle(0x44345f, .98).fillRoundedRect(110, 118, 740, 438, 18);
+      this.modalBg.lineStyle(3, 0xffcc51).strokeRoundedRect(110, 118, 740, 438, 18);
     }
     if (touchControls.visible) {
       if (a.mode === 'upgrades') message += '\n\nTap a buff button below.';

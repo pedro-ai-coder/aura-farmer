@@ -1,6 +1,6 @@
 # AURA FARMER — ART BIBLE
 
-**ID:** AF-ART-001 · **Estado:** DIREÇÃO E PERSONAGEM APROVADOS; GATE A EM PREPARAÇÃO · **Data:** 2026-10-10  
+**ID:** AF-ART-001 · **Estado:** GATE A APROVADO; PRIMEIRA IMPLEMENTAÇÃO VISUAL EM CURSO · **Data:** 2026-10-10  
 **Direção aprovada:** *Pixel Cartoon Brainrot Arcade* · **Idioma do jogo:** inglês · **Paleta:** revisão clara em teste  
 **Responsáveis:** Game Director (aprovação), Art Director/Pixel Artist (arte), Codex (integração técnica)
 
@@ -234,11 +234,11 @@ aseprite -b art/source/characters/player_sigma.aseprite \
 - [x] **Aprovado**: Sigma com hoodie escuro, cabelo angular e símbolo de Aura dourado no peito.
 - [x] **Escolhido**: desenvolver uma **paleta mais clara**, não a versão noite-púrpura original.
 - [x] **Autorizado**: preparar exclusivamente o **Art Test Gate A**, sem integrar sprites novos no jogo.
-- [ ] **Pendente**: aprovar os valores e contraste da paleta Lavender Pop Arcade em arte visual.
-- [ ] **Pendente**: aprovar Sigma, NPC, Hater, arena e VFX FLEX como mockup Gate A.
-- [ ] **Pendente**: autorizar produção dos sprites P0 após Art Test.
+- [x] **Aprovado no Gate A:** avançar com a família Lavender Pop Arcade. Ajustes finos de contraste serão avaliados em dispositivo real.
+- [x] **Aprovado no Gate A:** Sigma, NPC, Hater, arena clara e direção FLEX para implementação iterativa.
+- [x] **Autorizado:** começar a implementação visual P0; refinar as sheets Aseprite numa fase posterior.
 
-**Aprovação do documento NÃO equivale a autorização de merge, implementação de assets em Phaser ou deployment em produção.**
+**Autorização 2026-10-10:** Gate A aprovado e pedido explícito para atualizar o jogo. A publicação desta primeira passagem requer CI verde e validação Vercel; as spritesheets finais desenhadas à mão continuam pendentes.
 
 ## 11. Referências públicas
 

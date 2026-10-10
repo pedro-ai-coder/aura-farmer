@@ -1,36 +1,36 @@
 :root {
   color-scheme: dark;
   font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #100c20;
-  color: #f9f7ff;
+  background: #f6f0ea;
+  color: #302747;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(ellipse at 50% 0%, #302158 0%, #100c20 65%);
+  background: radial-gradient(ellipse at 50% 0%, #f6f0ea 0%, #ddd6f0 85%);
   display: flex;
   justify-content: center;
 }
 #app { width: min(1050px, 100%); padding: 22px 14px 36px; }
 .masthead { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-.masthead strong { font-size: clamp(24px, 5vw, 40px); font-weight: 1000; letter-spacing: -1px; text-shadow: 0 3px #4d2478; }
-.masthead em { font-style: normal; color: #ffcf5c; }
-.tag { font-size: 10px; letter-spacing: 1.7px; font-weight: 800; color: #d2bffc; border: 1px solid #725594; border-radius: 40px; padding: 8px 10px; }
+.masthead strong { font-size: clamp(24px, 5vw, 40px); font-weight: 1000; letter-spacing: -1px; text-shadow: 0 3px #c6b6e5; }
+.masthead em { font-style: normal; color: #b97813; }
+.tag { font-size: 10px; letter-spacing: 1.7px; font-weight: 800; color: #44345f; border: 1px solid #8b5bd8; border-radius: 40px; padding: 8px 10px; }
 .play-layout { display: flex; flex-direction: column; }
-#game { border: 3px solid #a783ee; border-radius: 20px; box-shadow: 0 16px 48px #05020d99; overflow: hidden; background: #251b43; min-width: 0; }
+#game { border: 3px solid #44345f; border-radius: 20px; box-shadow: 0 14px 35px #44345f44; overflow: hidden; background: #ddd6f0; min-width: 0; }
 #game canvas { display: block; width: 100%; height: auto !important; outline: none; }
-.controls, .note, .mobile-hint { text-align: center; line-height: 1.6; color: #d7cbec; margin: 14px auto 0; font-size: 13px; }
-.note { font-size: 11px; color: #82789c; }
+.controls, .note, .mobile-hint { text-align: center; line-height: 1.6; color: #44345f; margin: 14px auto 0; font-size: 13px; }
+.note { font-size: 11px; color: #766789; }
 .mobile-hint, .touch-controls { display: none; }
 
 /* Large pointer targets. The stick captures touches, while action buttons
    register taps without making the entire page non-scrollable. */
 .touch-button {
-  border: 2px solid #b8a0f9;
+  border: 2px solid #44345f;
   color: #fff9ef;
-  background: linear-gradient(160deg, #7554c0, #4a347f);
+  background: linear-gradient(160deg, #8b5bd8, #44345f);
   border-radius: 16px;
   font: 900 clamp(12px, 3vw, 16px) ui-rounded, system-ui, sans-serif;
   letter-spacing: .5px;
@@ -42,11 +42,11 @@ body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-.touch-button:active { background: #b19aff; color: #170e35; }
+.touch-button:active { background: #ffcc51; color: #302747; }
 .touch-button:focus-visible { outline: 3px solid #ffe07f; outline-offset: 2px; }
-.touch-flex { background: linear-gradient(160deg, #c48841, #96541e); border-color: #fbd780; }
-.touch-focus { background: linear-gradient(160deg, #3d9ac2, #28668d); border-color: #a6eaff; }
-.touch-confirm { background: linear-gradient(160deg, #a076ea, #6b44ae); }
+.touch-flex { background: linear-gradient(160deg, #ffcc51, #c8822a); border-color: #302747; color: #302747; }
+.touch-focus { background: linear-gradient(160deg, #2cb4c7, #276c94); border-color: #302747; }
+.touch-confirm { background: linear-gradient(160deg, #8b5bd8, #44345f); }
 .touch-panel { width: min(46%, 300px); display: flex; flex-direction: column; justify-content: center; }
 .touch-play-actions, .touch-upgrades { display: grid; gap: 10px; }
 .touch-stick { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; }
@@ -55,9 +55,9 @@ body {
   width: 132px;
   height: 132px;
   max-width: 100%;
-  border: 3px solid #aa8ae4;
+  border: 3px solid #44345f;
   border-radius: 50%;
-  background: radial-gradient(circle, #564087 12%, #282043 70%);
+  background: radial-gradient(circle, #e9e1f4 12%, #c6b6e5 70%);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -71,11 +71,11 @@ body {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 3px solid #f1e6ff;
-  background: #b394f0;
+  border: 3px solid #302747;
+  background: #8b5bd8;
   pointer-events: none;
 }
-.touch-caption { color: #cbb7fa; letter-spacing: 2px; font-size: 11px; font-weight: 900; }
+.touch-caption { color: #44345f; letter-spacing: 2px; font-size: 11px; font-weight: 900; }
 
 @media (max-width: 900px), (pointer: coarse) {
   #app { padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); }
@@ -90,7 +90,7 @@ body {
   .note { margin-top: 8px; font-size: 10px; }
 }
 @media (max-width: 900px) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
-  .mobile-hint { display: block; font-size: 11px; margin: 6px auto 0; color: #b2a5db; }
+  .mobile-hint { display: block; font-size: 11px; margin: 6px auto 0; color: #584871; }
 }
 @media (max-width: 1100px) and (max-height: 650px) and (orientation: landscape) {
   #app { padding: 4px 7px calc(4px + env(safe-area-inset-bottom)); width: 100%; }
