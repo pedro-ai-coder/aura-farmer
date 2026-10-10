@@ -1,6 +1,6 @@
 # Aura Farmer v0.3 — Brainrot Invasion (Content Spec)
 
-Status: PROPOSED. Implement via short reviewable Codex PRs, **after** AF-008 (#7) reaches green CI / is merged, to avoid conflicts in Arena and HUD.
+Status: APPROVED FOR DEVELOPMENT. Implement through short reviewable Codex PRs from the latest `main`. AF-008 (#7) remains useful but is not a blocker; if it is developed in parallel, coordinate changes touching Arena and HUD to avoid conflicts.
 
 The current live version is solo, English UI, Phaser 3 + TS + Vite, five 50-second waves, 90-enemy hard cap, Android touch layout and desktop keyboard controls. Preserve all of these. There is already an existing `Six Seven` buff; do not duplicate it.
 
