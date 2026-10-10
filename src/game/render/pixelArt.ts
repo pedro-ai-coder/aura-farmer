@@ -270,7 +270,7 @@ export class PixelWorld {
       this.shadowLayer.fillStyle(0x302747,boss ? .32 : .20)
         .fillEllipse(enemy.x,enemy.y+(boss?31:enemy.type==='beta'?19:13),boss?88:enemy.type==='beta'?42:29,boss?16:9);
       if (boss) {
-        const w=112, x=enemy.x-w/2, y=enemy.y-65, health=Phaser.Math.Clamp(enemy.hp/ENEMIES.boss.hp,0,1);
+        const w=112, x=enemy.x-w/2, y=Math.max(111,enemy.y-65), health=Phaser.Math.Clamp(enemy.hp/ENEMIES.boss.hp,0,1);
         this.actionLayer.fillStyle(0x302747,.94).fillRoundedRect(x-2,y-2,w+4,13,4);
         this.actionLayer.fillStyle(0xffebdb,1).fillRect(x,y,w,9);
         this.actionLayer.fillStyle(0xea568a,1).fillRect(x,y,Math.max(0,w*health),9);
@@ -316,6 +316,16 @@ export class PixelWorld {
         img.setRotation(Math.sin(a.clock/460+i)*.10);
       }
     });
+    // Reusable, low-noise projectile trails: never allocate a GameObject per shot.
+    if (a.mode === 'playing') {
+      for (let i=0;i<a.shots.length && i<64;i++) {
+        const shot=a.shots[i], angle=Math.atan2(shot.vy,shot.vx);
+        this.actionLayer.fillStyle(shot.hostile ? 0xe75154 : 0xffcc51,.36)
+          .fillRect(shot.x-Math.cos(angle)*11-2,shot.y-Math.sin(angle)*11-2,4,4);
+        this.actionLayer.fillStyle(shot.hostile ? 0xf5bac5 : 0xfff8e7,.58)
+          .fillRect(shot.x-Math.cos(angle)*5-1,shot.y-Math.sin(angle)*5-1,3,3);
+      }
+    }
     if (this.scene.textures.exists('spr-items')) this.orbiter.setTexture('spr-items',3);
     this.orbiter.setVisible(a.buffs['ohio-orbiter']>0);
     if(a.buffs['ohio-orbiter'])this.orbiter.setPosition(a.orb.x,a.orb.y);
