@@ -541,3 +541,6 @@ body {
 @media (prefers-reduced-motion:reduce){
   .meta-panel,.meta-button,.meta-character {animation:none!important;transition:none!important;}
 }
+
+/* Sigma B1 has a true 48×48 single-frame portrait, not a six-frame strip. */
+.meta-avatar img[src$="sigma-portrait.png"] { width:100%; height:100%; object-fit:contain; }
