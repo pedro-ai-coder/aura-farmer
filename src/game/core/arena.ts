@@ -42,6 +42,7 @@ export class Arena {
   maxAura = 0;
   cleanWave = false;
   ultimate67Triggered = false;
+  sixSevenTriggered = false;
   private tookHitThisWave = false;
   private trackedBurstUntil = 0;
   private movedDistance = 0;
@@ -273,6 +274,7 @@ export class Arena {
       this.effects.rizzPulseUntil = this.clock + 300;
     }
     if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
+      this.sixSevenTriggered = true;
       for (let i = 0; i < 7; i++) {
         const angle = i * Math.PI * 2 / 7;
         this.shoot(this.pos, { x: this.pos.x + Math.cos(angle), y: this.pos.y + Math.sin(angle) }, this.damage(18));
