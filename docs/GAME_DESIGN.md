@@ -9,4 +9,6 @@ Weapons: starting Blaster; Mewing Jaw and Ohio Orbiter unlock through buffs.
 Buff themes: Sigma, Alpha, Mewing Streak, Locked In, Drip Check, Bro Has Motion, Six Seven, Absolute Unit.
 Victory after five 50s waves, boss on wave five; death restarts.
 Cartoon visuals: original vector primitives, rounded shapes, saturated and readable.
-MVP does not include multiplayer, Discord, persistence, shop or mobile support.
+MVP has desktop keyboard and Android-tested mobile touch controls. Multiplayer, Discord, persistence and shop are out of scope.
+
+Upcoming content: see [Brainrot Invasion v0.3](BRAINROT_CONTENT_V03.md) for proposed new buffs, enemy types and wave events.
