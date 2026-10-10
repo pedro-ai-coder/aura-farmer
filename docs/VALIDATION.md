@@ -1,5 +1,35 @@
 # Validation — Aura Farmer v0.1
 
+## Brainrot Invasion v0.3 — PR 1 (issue #8)
+
+Scope: six new catalog buffs and the existing Six Seven + Skibidi Bounce synergy. No new enemies or wave events are included. The original ten buff entries, English UI, five-wave lifecycle and touch input implementation remain intact.
+
+Validation on Node 22.23.3 and Chromium 151 (headless/SwiftShader):
+
+| Command | Result |
+| --- | --- |
+| `npm ci` | Passed with the existing lockfile |
+| `npm run typecheck` | Passed |
+| `npm test` | 54 tests passed across 6 files |
+| `npm run build` | Passed; existing Phaser bundle-size warning remains |
+| `npm run test:browser` | 11 scenarios passed, including existing desktop/mobile regressions |
+
+New unit coverage includes all six catalog rarities/stack limits and acquisition through XP upgrades; Crash Out thresholds and damage; Delulu's one-use charge, exact invulnerability boundary and wave reset; Touch Grass timing, damage reset, pause and HP cap; Mogged's first-hit behavior on mobs/bosses/melee; bounce range, target exclusion, killing blows and chain prevention; Rizz range/duration/boss cap and Focus interaction; seven eligible radial projectiles, one-time Ultimate 67 feedback and run reset.
+
+New browser scenarios select all six buffs through real level-up choices using keyboard or touch, in desktop, 390×844 portrait and 844×390 landscape layouts. They also exercise an Ultimate 67 volley/ricochet and visible English feedback, plus Delulu survival, upgrade pause and next-wave recharge. The original movement/FLEX/FOCUS, upgrade, five-wave boss victory and defeat/retry scenarios passed. The Ultimate 67 screenshot was visually inspected.
+
+These tests use controlled enemy/XP fixtures and simulation times alongside real keyboard/touch events. Mobile results are Chromium emulation, not physical Android-device playtesting; balance and real-device performance remain unverified.
+
+Implementation details for review (where interactions were not specified):
+
+- Crash Out checks HP against current maximum HP. Incoming amplification applies after Drip's armor/minimum damage; outgoing projectile damage is captured at firing, as with existing buffs.
+- Touch Grass first heals at eight damage-free active seconds, then every five seconds. Acquisition after an existing clean streak permits one immediate tick, never retroactive accumulated healing. Actual damage, including a lethal hit saved by Delulu, restarts the delay; invulnerable hits do not.
+- Delulu ignores damage/Aura loss/FLEX interruption during its 1.25s invulnerability. Its charge resets on entering the next wave; upgrades do not reset it. Starting a new run clears all buff state.
+- Mogged is evaluated on each enemy's first player impact at full base HP, including bosses and secondary weapons. Ricochets scale the projectile's damage by 55% before applying the new target's own first-hit modifier.
+- A bounce selects the closest different living enemy within 145px of the original target. It cannot hit the original enemy, intercept another target or bounce again. If its selected target dies, it expires normally. A ricochet continues an already-fired projectile during FLEX; new auto-attacks remain disabled.
+- Rizz slows refresh rather than stack; Rizz and Focus use the stronger active slow, preserving existing Focus values. Rizz alone slows ordinary enemies by 25% and bosses by 15%.
+- Ultimate 67 uses the existing seven-projectile volley, with feedback once per run on the first volley after both buffs are equipped. It adds no extra volley or active ability.
+
 ## AF-000 — 2026-10-09
 
 Validação executada no ambiente cloud com Node **22.23.3**, npm **11.9.0** e Chromium **151.0.7922.173** em modo headless/SwiftShader. O lockfile foi gerado e a instalação limpa com `npm ci` passou.

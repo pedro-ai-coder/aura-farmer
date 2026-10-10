@@ -94,6 +94,8 @@ export class ArenaScene extends Phaser.Scene {
       g.fillStyle(shot.hostile ? 0xff769b : 0xffe08b).fillCircle(shot.x, shot.y, shot.hostile ? 6 : 4);
     }
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
+    if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
+    if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
     if (a.clock < a.focusUntil) {
       g.lineStyle(3, 0x9bdfff, .5).strokeCircle(a.pos.x, a.pos.y, 90);
       g.lineStyle(2, 0x9bdfff, .2).strokeCircle(a.pos.x, a.pos.y, 105);

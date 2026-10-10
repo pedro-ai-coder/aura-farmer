@@ -3,14 +3,15 @@ import { FlexSystem, type FlexResult } from './flex';
 import { Progression } from './progression';
 import { GAME } from './constants';
 import { combatStats } from './combat';
+import { BuffEffects, findBounce, firstHitDamage, rizzPulse, rizzSpeed, type BuffTarget, type BounceState } from './buffEffects';
 import { clamp, distance, normalized, type Vec2 } from './math';
 import { availableBuffs, emptyBuffLevels, type BuffDefinition } from '../data/buffs';
 import { ENEMIES, type EnemyType } from '../data/enemies';
 
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; focus?: boolean; confirm?: boolean; choice?: number }
-export interface Enemy extends Vec2 { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
-export interface Shot extends Vec2 { vx: number; vy: number; ttl: number; damage: number; hostile: boolean }
+export interface Enemy extends BuffTarget { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
+export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean }
 export interface Drop extends Vec2 { xp: number }
 
 /** Phaser-free simulation. All durations use active simulation time, including cooldowns. */
@@ -22,6 +23,7 @@ export class Arena {
   flex = new FlexSystem();
   xp = new Progression();
   buffs = emptyBuffLevels();
+  effects = new BuffEffects();
   enemies: Enemy[] = [];
   shots: Shot[] = [];
   drops: Drop[] = [];
@@ -48,7 +50,7 @@ export class Arena {
   constructor(private readonly random: () => number = Math.random) {}
 
   get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
-  get stats() { return combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt); }
+  get stats() { return combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt, this.hp); }
   get orb(): Vec2 { return { x: this.pos.x + Math.cos(this.clock / 350) * 76, y: this.pos.y + Math.sin(this.clock / 350) * 76 }; }
 
   update(elapsed: number, input: Controls = {}): void {
@@ -59,6 +61,7 @@ export class Arena {
     if (this.mode === 'between') {
       if (input.confirm) {
         this.wave++; this.waveClock = 0; this.spawnClock = 0;
+        this.effects.beginWave();
         this.enemies = []; this.shots = []; this.drops = [];
         this.hp = Math.min(this.stats.maxHp, this.hp + 20); this.mode = 'playing';
       }
@@ -109,7 +112,8 @@ export class Arena {
     for (const e of this.enemies) {
       const stats = ENEMIES[e.type];
       const d = distance(e, this.pos), v = normalized(this.pos.x - e.x, this.pos.y - e.y);
-      const slow = this.clock < this.focusUntil ? .62 : 1;
+      // Keep Focus unchanged; simultaneous slows use the stronger effect, not a product.
+      const slow = Math.min(this.clock < this.focusUntil ? .62 : 1, rizzSpeed(e, e.type === 'boss', this.clock));
       // Haters stop at range and fire aimed, dodgeable projectiles.
       if (e.type !== 'hater' || d > 235) {
         e.x += v.x * stats.speed * dt / 1000 * slow;
@@ -136,8 +140,17 @@ export class Arena {
           if (this.mode === 'dead') return;
         }
       } else {
-        const enemy = this.enemies.find(e => distance(e, shot) < ENEMIES[e.type].radius + 6);
-        if (enemy) { this.removeShot(shot); this.hit(enemy, shot.damage); }
+        const enemy = this.enemies.find(e => (shot.targetId === undefined || e.id === shot.targetId) && distance(e, shot) < ENEMIES[e.type].radius + 6);
+        if (enemy) {
+          this.removeShot(shot);
+          this.hit(enemy, shot.damage);
+          // A ricochet continues an existing attack, including during FLEX.
+          const target = this.buffs['skibidi-bounce'] ? findBounce(shot, enemy, this.enemies) : undefined;
+          if (target) {
+            const bounce = this.shoot(enemy, target, shot.damage * .55);
+            bounce.bounced = true; bounce.targetId = target.id;
+          }
+        }
       }
     }
     const flexResult = this.flex.update(this.clock, this.nearby);
@@ -153,6 +166,7 @@ export class Arena {
         drop.x += v.x * step; drop.y += v.y * step;
       }
     }
+    this.hp = this.effects.heal(this.hp, this.stats.maxHp, this.clock, this.lastDamageAt, this.buffs['touch-grass'] > 0);
     if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
     if (this.waveClock >= GAME.waveDurationMs) {
       if (this.wave < GAME.waveCount) this.mode = 'between';
@@ -185,9 +199,11 @@ export class Arena {
     return base * this.aura.attackMultiplier(this.clock) * stats.damage * (this.random() < stats.critChance ? 2 : 1);
   }
 
-  private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): void {
+  private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): Shot {
     const v = normalized(to.x - from.x, to.y - from.y);
-    this.shots.push({ ...from, vx: v.x * speed, vy: v.y * speed, ttl: hostile ? 5000 : 1800, damage, hostile });
+    const shot: Shot = { x: from.x, y: from.y, vx: v.x * speed, vy: v.y * speed, ttl: hostile ? 5000 : 1800, damage, hostile };
+    this.shots.push(shot);
+    return shot;
   }
 
   private removeShot(shot: Shot): void {
@@ -196,7 +212,7 @@ export class Arena {
   }
 
   private hit(enemy: Enemy, damage: number): void {
-    enemy.hp -= damage;
+    enemy.hp -= firstHitDamage(enemy, ENEMIES[enemy.type].hp, damage, this.buffs.mogged);
     if (enemy.hp > 0) return;
     const index = this.enemies.indexOf(enemy);
     if (index < 0) return;
@@ -204,20 +220,29 @@ export class Arena {
     this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
     if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER defeated!'); }
     if (this.kills % 5 === 0) this.aura.change(10, this.clock);
+    if (this.buffs['rizz-aura'] && this.kills % 12 === 0) {
+      rizzPulse(this.enemies, this.pos, this.clock);
+      this.effects.rizzPulseUntil = this.clock + 300;
+    }
     if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
       for (let i = 0; i < 7; i++) {
         const angle = i * Math.PI * 2 / 7;
         this.shoot(this.pos, { x: this.pos.x + Math.cos(angle), y: this.pos.y + Math.sin(angle) }, this.damage(18));
       }
-      this.say('SIX SEVEN!');
+      this.say(this.effects.volleyMessage(this.buffs['skibidi-bounce'] > 0));
     }
   }
 
   private hurt(amount: number): void {
-    this.hp = Math.max(0, this.hp - Math.max(1, amount - this.stats.armor));
+    const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage;
+    const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
+    if (result.ignored) return;
+    this.hp = result.hp;
+    this.effects.tookDamage(this.clock);
     this.lastDamageAt = this.clock;
     this.aura.change(-20, this.clock);
     if (this.flex.interrupt(this.clock) === 'interrupted') this.say('FLEX interrupted!');
+    if (result.saved) this.say('DELULU SAVED YOU!');
     if (this.hp <= 0) this.mode = 'dead';
   }
 
