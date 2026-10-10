@@ -119,8 +119,17 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   const focus = (await page.locator('[data-game-action="focus"]').boundingBox())!;
   expect(stage.width).toBeGreaterThanOrEqual(840);
   expect(stage.height).toBeLessThanOrEqual(391);
-  expect(stick.x + stick.width).toBeLessThanOrEqual(arena.x + 5);
-  expect(focus.x).toBeGreaterThanOrEqual(arena.x + arena.width - 5);
+  // Full-bleed: gameplay canvas fills the screen and the controls float above it.
+  const gameCanvas = (await page.locator('#game canvas').boundingBox())!;
+  expect(arena.x).toBeLessThanOrEqual(2);
+  expect(arena.width).toBeGreaterThanOrEqual(840);
+  expect(arena.height).toBeGreaterThanOrEqual(385);
+  expect(gameCanvas.width).toBeGreaterThanOrEqual(840);
+  expect(gameCanvas.height).toBeGreaterThanOrEqual(385);
+  expect(stick.x).toBeGreaterThanOrEqual(arena.x);
+  expect(stick.x + stick.width).toBeLessThan(arena.x + arena.width / 2);
+  expect(focus.x).toBeGreaterThan(arena.x + arena.width / 2);
+  expect(focus.x + focus.width).toBeLessThanOrEqual(arena.x + arena.width + 2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
   await tap(page, '[data-game-action="focus"]');
