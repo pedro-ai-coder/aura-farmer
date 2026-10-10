@@ -2,10 +2,11 @@ import Phaser from 'phaser';
 import { ArenaScene } from './game/scenes/ArenaScene';
 import './styles/main.css';
 import { setupMobileFullscreen } from './game/input/mobileFullscreen';
+import { setupGameShell } from './meta/shell';
 
 setupMobileFullscreen();
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   width: 960,
   height: 600,
@@ -15,3 +16,5 @@ new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [ArenaScene],
 });
+
+setupGameShell(game);
