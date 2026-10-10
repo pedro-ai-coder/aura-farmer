@@ -23,7 +23,7 @@ AF-201 Network contracts; AF-202 Colyseus 2 players; AF-203 4-player coop; AF-20
 
 ## v0.3 — Brainrot Invasion (AF-301, issue #8)
 Proposed content spec: [BRAINROT_CONTENT_V03.md](BRAINROT_CONTENT_V03.md).
-Start after #7 (AF-008) is merged and tested to avoid conflicts in combat/UI.
+This is the next content priority; #7 (AF-008) can be resumed later. If both progress in parallel, coordinate overlapping combat/UI changes.
 - [ ] PR 1: 6 new buffs (Crash Out, Skibidi Bounce, Delulu, Touch Grass, Mogged, Rizz Aura), Ultimate 67 synergy
 - [ ] PR 2: Yap Goblin, Ohio Glitch, Fanum Thief with telegraphed behaviors and XP refunds
 - [ ] PR 3: Fanum Tax Raid (wave 2) and SIX SEVEN SURGE (wave 3), mobile-friendly HUD and tests
