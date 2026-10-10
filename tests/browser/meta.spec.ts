@@ -26,7 +26,7 @@ test('new home, character selection, run results, local save and leaderboard sur
     a.kills=27;a.xpCollected=62;a.hp=0;a.mode='dead';
   });
   await expect(page.locator('#meta-shell')).toContainText('SCORE');
-  await expect(page.locator('#meta-shell')).toContainText('The Alpha');
+  await expect(page.locator('#meta-shell')).toContainText('Alpha Chad');
   await page.locator('[data-menu="home"]').click();
   await page.locator('[data-menu="leaderboards"]').click();
   await expect(page.locator('.meta-leaderboard')).toContainText('Alpha Chad');
