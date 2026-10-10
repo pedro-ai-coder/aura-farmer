@@ -19,7 +19,7 @@ test('Lavender Pop arena has extra ground decals, shadow layers and high-contras
     const scene=window.__game.scene.scenes[0] as ArenaScene;
     const floor=scene.textures.get('px-floor').getSourceImage() as HTMLCanvasElement;
     const pixel=[...floor.getContext('2d')!.getImageData(52,127,1,1).data].slice(0,3);
-    const effects=scene.children.list.filter(g=>g.type==='Graphics').map(g=>g.depth);
+    const effects=scene.children.list.filter(g=>g.type==='Graphics').map(g=>(g as Phaser.GameObjects.Graphics).depth);
     const status=scene.children.list.filter(o=>o.type==='Text').map(o=>(o as Phaser.GameObjects.Text).text)
       .find(v=>v.includes('E FLEX'));
     return {pixel,effects,status};
