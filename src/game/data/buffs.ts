@@ -1,4 +1,4 @@
-export type BuffId = 'sigma' | 'alpha' | 'mewing' | 'locked-in' | 'drip' | 'speed' | 'six-seven' | 'thick-skin' | 'mewing-jaw' | 'ohio-orbiter';
+export type BuffId = 'sigma' | 'alpha' | 'mewing' | 'locked-in' | 'drip' | 'speed' | 'six-seven' | 'thick-skin' | 'mewing-jaw' | 'ohio-orbiter' | 'crash-out' | 'skibidi-bounce' | 'delulu' | 'touch-grass' | 'mogged' | 'rizz-aura';
 export interface BuffDefinition { id: BuffId; name: string; description: string; maxStacks: number; rarity: 'COMMON' | 'RARE' | 'EPIC' }
 export const BUFFS: BuffDefinition[] = [
   { id: 'sigma', name: 'Sigma Aura', description: '+15% damage while you have 50+ Aura.', maxStacks: 2, rarity: 'RARE' },
@@ -11,6 +11,12 @@ export const BUFFS: BuffDefinition[] = [
   { id: 'thick-skin', name: 'Absolute Unit', description: '+20 max HP and restore 20 HP.', maxStacks: 3, rarity: 'COMMON' },
   { id: 'mewing-jaw', name: 'Mewing Jaw', description: 'Unlock an automatic close-range strike.', maxStacks: 1, rarity: 'RARE' },
   { id: 'ohio-orbiter', name: 'Ohio Orbiter', description: 'Unlock an orbiting damage orb.', maxStacks: 1, rarity: 'EPIC' },
+  { id: 'crash-out', name: 'Crash Out', description: 'Low HP, high chaos. +40% damage, but +20% damage taken.', maxStacks: 1, rarity: 'RARE' },
+  { id: 'skibidi-bounce', name: 'Skibidi Bounce', description: 'Your shots bounce once for 55% damage.', maxStacks: 1, rarity: 'EPIC' },
+  { id: 'delulu', name: 'Delulu Is the Solulu', description: 'Ignore one fatal hit per wave.', maxStacks: 1, rarity: 'EPIC' },
+  { id: 'touch-grass', name: 'Touch Grass', description: 'Heal slowly after avoiding damage.', maxStacks: 1, rarity: 'COMMON' },
+  { id: 'mogged', name: 'Mogged', description: 'First hit on an enemy deals +15% damage.', maxStacks: 2, rarity: 'COMMON' },
+  { id: 'rizz-aura', name: 'Rizz Aura', description: 'Every 12 kills, slow nearby enemies.', maxStacks: 1, rarity: 'RARE' },
 ];
 export type BuffLevels = Record<BuffId, number>;
 export function emptyBuffLevels(): BuffLevels {
