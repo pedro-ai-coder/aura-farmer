@@ -14,10 +14,9 @@ export class GameShell {
   private newCharacters: CharacterId[] = [];
   private statusMessage = '';
   private previousMode = 'intro';
-  private readonly scene: ArenaScene;
+  private get scene(): ArenaScene { return this.game.scene.getScene('ArenaScene') as ArenaScene; }
 
-  constructor(game: Phaser.Game) {
-    this.scene = game.scene.getScene('ArenaScene') as ArenaScene;
+  constructor(private readonly game: Phaser.Game) {
     this.root.addEventListener('click', event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-menu]');
       if (button) this.handle(button.dataset.menu ?? '', button.dataset.character);
