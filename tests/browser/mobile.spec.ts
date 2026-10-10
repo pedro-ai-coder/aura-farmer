@@ -70,9 +70,8 @@ test('portrait touch controls: start, analog movement, FLEX, FOCUS, upgrade and 
   await page.evaluate(() => {
     (window.__game.scene.scenes[0] as ArenaScene).arena.mode = 'dead';
   });
-  await expect(page.locator('#touch-confirm')).toHaveText('RETRY');
-  await page.locator('[data-menu="play"]').click();
-  await page.locator('[data-menu="start"]').click();
+  await expect(page.locator('[data-menu="retry"]')).toBeVisible();
+  await page.locator('[data-menu="retry"]').click();
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
 });
 
