@@ -91,3 +91,152 @@ Há **16 buffs no jogo** atualmente; nenhum requer uma sheet completa nova do pr
 
 Os efeitos só comunicam mecânicas existentes. Buffs não devem alterar a hitbox nem a velocidade real do personagem via animação.
 
+
+## 5. Armas, efeitos e feedback
+
+| Asset | Tamanho / frames | Identidade |
+|---|---|---|
+| `projectile_aura_shot` | 16px / 2f | amarelo com cauda curta |
+| `vfx_mewing_swipe` | 64px / 4f | arcada de mandíbula cartoon |
+| `weapon_ohio_orbiter` | 24px / 4f | objeto orbital ciano |
+| `projectile_six_seven` | 16px / 2f | distinto do tiro principal |
+| `vfx_bounce_spark` | 32px / 4f | faísca de ricochete |
+| `projectile_hater` | 16px / 2f | coral/rosa de ameaça |
+| `vfx_hit` | 32px / 4f | impacto curto |
+| `vfx_crit` | 32px / 5f | estrela dourada angular |
+| `vfx_death_poof` | 32px / 5f | nuvem cartoon sem gore |
+| `vfx_flex_charge` | 32px / 4f | indicação de pose de risco |
+| `vfx_flex_success` | 64px / 5f | clarão e onda dourada |
+| `vfx_flex_fail` | 32px / 4f | pequeno efeito de falha |
+| `vfx_aura_burst` | 64px / 6f | halo poderoso e breve |
+| `vfx_focus` | 32px / 4f | pulso de energia ciano |
+| `vfx_levelup` | 32px / 5f | faíscas verdes/douradas |
+| `vfx_heal` | 32px / 4f | pixels verdes de recuperação |
+
+**Segurança visual:** zonas de ataque e cone de Yap Goblin são desenhados proceduralmente pelo Phaser para coincidirem com a área real de dano. Manter a duração de cada VFX independente das regras do core. Evitar FX persistentes que tornem telegraphs invisíveis. A onda FLEX não deve esconder jogadores nem inimigos.
+
+## 6. Pickups, ícones, UI e arena
+
+### Pickups
+Obrigatório agora: `pickup_xp_small` (16px, 2 frames, verde). Reservar `pickup_xp_medium`, `pickup_xp_large`, `pickup_heart`, `pickup_shield` para quando existirem diferenças reais de drops/pickups no core. Não pagar arte que ainda não tem lógica implementada.
+
+### Buff icons
+Produzir 16 ícones de 16×16 px, com possibilidade de usar 24×24 se os testes mobile justificarem: `icon_sigma`, `icon_alpha`, `icon_mewing`, `icon_locked_in`, `icon_drip`, `icon_speed`, `icon_six_seven`, `icon_thick_skin`, `icon_mewing_jaw`, `icon_ohio_orbiter`, `icon_crash_out`, `icon_skibidi_bounce`, `icon_delulu`, `icon_touch_grass`, `icon_mogged`, `icon_rizz_aura`. Adicionar `icon_ultimate_67` como símbolo da sinergia.
+
+As raridades dos buffs usam moldura e etiqueta, não apenas cor: COMMON cinza/azul, RARE violeta, EPIC dourado. O ícone deve ser reconhecível sem depender da cor.
+
+### UI
+- Frames de upgrades `ui_upgrade_common` / `ui_upgrade_rare` / `ui_upgrade_epic`: preferir 9-slice.
+- `ui_aura_bar`: frame e ornamentação; texto/número da Aura renderizados via código.
+- `ui_wave_banner` e `ui_boss_warning`: curtos, claros, margem de segurança no ecrã.
+- Botões Android PLAY/FLEX/FOCUS/RETRY e escolhas por toque: **skin apenas**; preservar o tamanho e as áreas táteis atuais.
+- Todo o texto apresentado ao jogador é **inglês**, desenhado pela UI, nunca incorporado permanentemente numa imagem.
+
+### Arena P0
+Quatro tiles 32×32: `tile_floor_base`, `tile_floor_alt`, `tile_floor_crack`, `tile_floor_aura_stain`. Três props 32×32: `prop_phone_debris`, `prop_crate`, `prop_aura_totem`. Props apenas decorativos, sem nova colisão. Chão escuro/subtil para destacar projéteis, XP e avisos hostis.
+
+**P1**, após eventos implementados: `ui_six_seven_surge`, `ui_fanum_tax_raid`, markers de evento, mais 2 tiles e 3 props.
+
+## 7. Inventário para aprovação e produção
+
+### Gate A — Art Test (começar por aqui, antes de animar tudo)
+
+| ID | Entrega | Verificação |
+|---|---|---|
+| ART-001 | Style frame de arena com HUD 960×600 | snapshot desktop + crops Android |
+| ART-002a | The Sigma estático | rosto/silhueta/escala/paleta |
+| ART-003a | NPC e Hater estáticos | distinguir silhuetas sem cor |
+| ART-006a | FLEX efeito exemplo | ação de risco visualmente legível |
+
+Primeiro elaborar 3 thumbnails de silhueta de Sigma, NPC e Hater; aprovar um por personagem. **Não encomendar sheets completas antes de Gate A ser aprovado.**
+
+### P0 — Primeiro upgrade visual jogável
+
+| ID | Entrega | Âmbito |
+|---|---|---|
+| ART-002 | Sigma animado | 48px, idle4/move6/hurt2/flex4+3/death6 |
+| ART-003 | NPC / Hater / Beta Bro animados | 48/48/64px, 11–15f por personagem |
+| ART-004 | Big Hater animado | 128px, idle4/move4/attack5/hurt2/death8 |
+| ART-005 | Armas e projéteis | 6 assets curtos do `5 |
+| ART-006 | Combat feedback | 10 VFX do `5 |
+| ART-007 | XP pequeno | 16px/2f |
+| ART-008 | Ícones | 16 buffs atuais + Ultimate 67 |
+| ART-009 | UI e banners | frames upgrade, Aura e warnings |
+| ART-010 | Arena e props | 4 tiles e 3 props |
+| ART-011 | Integração em Phaser | atlasses, animações, fallback, testes |
+
+### P1 — Quando o gameplay novo estiver pronto
+
+| ID | Entrega | Pré-requisito |
+|---|---|---|
+| ART-101 | Yap Goblin / Ohio Glitch / Fanum Thief | AI e telegraphs implementados |
+| ART-102 | Fanum Tax / SIX SEVEN banners e markers | eventos implementados |
+| ART-103 | Overlays especiais de Aura | necessidade provada por playtest |
+| ART-104 | Decoração extra | budget/performance testada em Android |
+| ART-105 | Skins e vistas adicionais | aprovação de produto |
+
+**Backlog sem orçamento nesta fase:** Cringe Runner, Doomscroller, Brute, outras personagens jogáveis, bosses extras, loja e biomas.
+
+## 8. Formatos, estrutura e pipeline
+
+Estrutura sugerida de fontes/exports (Codex confirma antes de criar):
+
+~~~text
+art/source/characters/player_sigma.aseprite
+art/source/enemies/npc.aseprite
+art/source/enemies/hater.aseprite
+art/source/enemies/beta_bro.aseprite
+art/source/bosses/big_hater.aseprite
+art/source/vfx/*.aseprite
+art/source/ui/*.aseprite
+art/exports/characters/*.png + *.json
+art/exports/enemies/*.png + *.json
+art/exports/ui/*.png + *.json
+public/assets/pixel/     # atlases da versão web, sem ficheiros-fonte
+src/game/render/         # loader + animation registry
+~~~
+
+**Entregas do artist:** `.aseprite` original, `.png` com alpha, `.json` com frames/tags/pivots, visualização a 1x e screenshot no jogo, licença de uso comercial explícita. Nomes em inglês e snake_case. Tags `idle` / `move` / `attack` / `hurt` / `death` / `flex_charge` (apenas onde se aplicam). 6–12 fps, duração definida por animação. 2 px de padding entre frames e pivots invariantes (`feet_center` nos characters, `center` em projéteis/VFX). Não cortar frames arbitrariamente sem guardar offsets.
+
+O Aseprite suporta export de sprite sheets, tags e JSON. Exemplo orientador:
+
+~~~bash
+aseprite -b art/source/characters/player_sigma.aseprite \
+  --sheet art/exports/characters/player_sigma.png \
+  --data art/exports/characters/player_sigma.json \
+  --sheet-type packed --sheet-pack
+~~~
+
+**Codex/Phaser:** criar renderer que lê atlasses sem reescrever `src/game/core/arena.ts`. Manter Graphics como fallback, não criar/destroy GameObjects para cada frame, sincronizar por ID estável, separar layers e manter warnings procedurais. A versão atual usa `pixelArt: false` / `antialias: true`; nearest-neighbor deve ser validado primeiro para não degradar HUD/texto e layout mobile. Não tocar em colisões, dano, XP, timings de Flex ou balanceamento.
+
+## 9. Qualidade e regras de aprovação
+
+**Gate A — Aprovação artística:** silhuetas reconhecíveis sem cor, um frame Sigma/NPC/Hater, mockup arena e um VFX de FLEX; legível nos tamanhos 390×844 (portrait) e 844×390 (landscape).
+
+**Gate B — Produção:** sheets com alpha limpo, animações sem jitter, tags e pivots corretos, fontes editáveis e direitos comerciais documentados; ícones reconhecíveis em tamanho natural.
+
+**Gate C — QA no jogo:** WASD/joystick, PLAY, auto-fire, E/FLEX, Focus, XP, upgrades, cinco vagas, Big Hater, morte e vitória funcionam como antes. Executar `npm run typecheck`, `npm test`, `npm run build` e `npm run test:browser`. Teste Android real e desktop; medir FPS, tamanho do bundle e memória sem prometer números não medidos.
+
+**Gestão:** dividir trabalho em PRs curtos: `art-test` → `characters` → `weapons-vfx` → `ui-environment`. Não alterar produção nem aprovar visual automaticamente. A Vercel Hobby pode bloquear previews de autores sem permissão; quem faz merge precisa de garantir autoria e autorização corretas, sem disfarçar identidade.
+
+**Checklist para cada sprite:** silhueta, outline/luz consistente, expressão legível, hitbox visual coerente, pivot estável, animação suave, dados de export, legibilidade Android, trabalho original e licença comercial verificada.
+
+## 10. Decisões pendentes do Game Director
+
+- [ ] A direção `Pixel Cartoon Brainrot Arcade` substitui o Cartoon vetorial atual?
+- [ ] O Sigma deve ter hoodie escuro, cabelo angular e símbolo dourado no peito?
+- [ ] Aprovar a paleta noite-púrpura/neon ou pedir alternativa mais clara?
+- [ ] Começar apenas por **Art Test (Gate A)** antes de produzir as spritesheets?
+
+**Este documento não autoriza nenhuma implementação até o utilizador aprovar explicitamente.**
+
+## 11. Referências públicas
+
+Material técnico e artístico consultado, sem entrevista/contratação:
+- Pedro Medeiros / Saint11 — https://saint11.art/blog/pixel-art-tutorials/
+- Clusters — https://saint11.art/pixel_art_articles/article2/
+- Shading — https://saint11.art/pixel_art_articles/article4/
+- Scaling — https://saint11.art/blog/scaling/
+- Aseprite Sprite Sheets — https://www.aseprite.org/docs/sprite-sheet/
+- Aseprite Tags — https://www.aseprite.org/docs/tags/
+- Aseprite CLI — https://www.aseprite.org/docs/cli/
