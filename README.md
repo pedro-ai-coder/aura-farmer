@@ -8,6 +8,19 @@ A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. S
 
 The Vercel deployment tracks the `main` branch. Changes appear on the live website after they have been merged and the production build succeeds.
 
+## Game menu and progression (v0.4/v0.5)
+
+The updated main menu offers **PLAY CLASSIC**, **CHARACTERS**, **ACHIEVEMENTS**, **LEADERBOARDS** (local/unverified results only), and **SETTINGS**.
+
+- Four starting playable characters: **The Sigma** (balanced), **Alpha Chad** (melee/tank), **The Rizzler** (crowd-control) and **Ohio Kid** (fast/crits/extra shots).
+- Two unlockable characters: **Fanum Lord** (+25% collected XP) and **Six Seven Kid** (starts with Six Seven).
+- The selected character has a different starting kit and numerical profile, not just a cosmetic color. The currently shipped art uses tinted/placeholder Sigma sprites for alternate heroes until dedicated original character atlases are produced.
+- **12 local achievements**, unlock progress, recent run history and personal-best scores persist in browser `localStorage`. The save is per browser/device and clearing site data can erase it. Guests can always play without an account.
+- The in-game **MENU** button pauses the simulation. After victory or defeat, the results panel shows kills, XP, Aura, FLEX performance and score.
+- Online accounts, permanent cloud saves and *verified* public rankings are **not yet implemented**. A client-side submitted score cannot safely become an official online record.
+- Local score formula (subject to balancing): 100 × waves cleared + 10 × kills + 25 × successful FLEX + 5 × level + 500 if Big Hater defeated.
+- Future implementation specification: [META_GAME_V1.md](docs/META_GAME_V1.md) (currently draft in PR #16). Backend provisioning will be a separate security-reviewed step.
+
 ## Mobile controls
 
 Open the same game URL on your phone — no app installation required. Use the **virtual joystick** to move, tap **FLEX** for the risky Aura action, and **FOCUS** to slow enemies. The on-screen **PLAY / NEXT WAVE / RETRY** button replaces Enter, and upgrade buttons let you choose buffs by touch. Rotating to **landscape** gives a larger game view, but portrait controls are supported as well.
@@ -16,7 +29,7 @@ Open the same game URL on your phone — no app installation required. Use the *
 
 **Fallback:** embedded browsers or iPhone Safari may reject native fullscreen/orientation lock. The game then fills the webpage viewport using CSS and offers a rotate-device prompt, but browser bars may remain visible. Native browser fullscreen and forced landscape cannot be guaranteed on every phone. Do not lock the game globally into landscape; portrait mode remains playable outside immersive mode.
 
-**Art production:** the current sprites are original runtime-generated pixel placeholders matching the approved Art Bible. Editable final Aseprite sprite atlases are planned in [Sprite Production P0](docs/SPRITE_PRODUCTION_P0.md) and tracked separately.
+**Art production:** the current sprites include original PNG pixel atlases for the default Sigma and enemies; alternate heroes use color-tinted placeholders until dedicated art is produced, following the approved Art Bible. Editable final Aseprite sprite atlases are planned in [Sprite Production P0](docs/SPRITE_PRODUCTION_P0.md) and tracked separately.
 
 ## Run locally
 

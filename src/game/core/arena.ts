@@ -7,6 +7,7 @@ import { BuffEffects, findBounce, firstHitDamage, rizzPulse, rizzSpeed, type Buf
 import { clamp, distance, normalized, type Vec2 } from './math';
 import { availableBuffs, emptyBuffLevels, type BuffDefinition } from '../data/buffs';
 import { ENEMIES, type EnemyType } from '../data/enemies';
+import { getCharacter, type CharacterId } from '../data/characters';
 
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; focus?: boolean; confirm?: boolean; choice?: number }
@@ -33,6 +34,18 @@ export class Arena {
   wave = 1;
   waveClock = 0;
   kills = 0;
+  xpCollected = 0;
+  flexSuccesses = 0;
+  flexInterruptions = 0;
+  damageTaken = 0;
+  auraBursts = 0;
+  maxAura = 0;
+  cleanWave = false;
+  ultimate67Triggered = false;
+  sixSevenTriggered = false;
+  private tookHitThisWave = false;
+  private trackedBurstUntil = 0;
+  private movedDistance = 0;
   focusReady = 0;
   focusUntil = 0;
   bossSpawned = false;
@@ -47,21 +60,39 @@ export class Arena {
   private orbReady = 0;
   private nextId = 0;
 
-  constructor(private readonly random: () => number = Math.random) {}
+  constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma') {
+    const selected = getCharacter(characterId);
+    if (selected.id === 'alpha') this.buffs['mewing-jaw'] = 1;
+    if (selected.id === 'rizzler') this.buffs['rizz-aura'] = 1;
+    if (selected.id === 'six-seven') this.buffs['six-seven'] = 1;
+    this.hp = this.stats.maxHp;
+  }
+
+  start(characterId: CharacterId = this.characterId): void {
+    Object.assign(this, new Arena(this.random, characterId));
+    this.mode = 'playing';
+  }
 
   get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
-  get stats() { return combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt, this.hp); }
+  get stats() {
+    const character = getCharacter(this.characterId);
+    const stats = combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt, this.hp, Math.round(100 * character.hp));
+    return { ...stats, speed: stats.speed * character.speed, damage: stats.damage * character.damage,
+      fireRate: stats.fireRate * character.fireRate, critChance: Math.min(1, stats.critChance + character.crit),
+      armor: stats.armor + character.armor };
+  }
   get orb(): Vec2 { return { x: this.pos.x + Math.cos(this.clock / 350) * 76, y: this.pos.y + Math.sin(this.clock / 350) * 76 }; }
 
   update(elapsed: number, input: Controls = {}): void {
     if (this.mode === 'intro' || this.mode === 'dead' || this.mode === 'win') {
-      if (input.confirm) { Object.assign(this, new Arena(this.random)); this.mode = 'playing'; }
+      if (input.confirm) this.start();
       return;
     }
     if (this.mode === 'between') {
       if (input.confirm) {
         this.wave++; this.waveClock = 0; this.spawnClock = 0;
         this.effects.beginWave();
+        this.tookHitThisWave = false;
         this.enemies = []; this.shots = []; this.drops = [];
         this.hp = Math.min(this.stats.maxHp, this.hp + 20); this.mode = 'playing';
       }
@@ -95,8 +126,17 @@ export class Arena {
     if (!charging) {
       const v = normalized(input.x ?? 0, input.y ?? 0);
       const speed = this.stats.speed * this.aura.moveMultiplier;
+      const previousX = this.pos.x, previousY = this.pos.y;
       this.pos.x = clamp(this.pos.x + v.x * speed * dt / 1000, 25, 935);
       this.pos.y = clamp(this.pos.y + v.y * speed * dt / 1000, 105, 575);
+      if (this.characterId === 'ohio') {
+        this.movedDistance += Math.hypot(this.pos.x - previousX, this.pos.y - previousY);
+        if (this.movedDistance >= 280 && this.enemies.length) {
+          this.movedDistance -= 280;
+          const target = this.enemies.reduce((a, b) => distance(a, this.pos) < distance(b, this.pos) ? a : b);
+          this.shoot(this.pos, target, this.damage(10));
+        }
+      }
     }
     if (this.waveClock < GAME.waveDurationMs && this.spawnClock >= Math.max(300, 1100 - this.wave * 120)) {
       this.spawnClock = 0;
@@ -159,7 +199,9 @@ export class Arena {
       const d = distance(drop, this.pos);
       if (d < 26) {
         this.drops.splice(this.drops.indexOf(drop), 1);
-        this.pendingUpgrades += this.xp.gain(drop.xp);
+        const amount = this.characterId === 'fanum' ? Math.ceil(drop.xp * 1.25) : drop.xp;
+        this.xpCollected += amount;
+        this.pendingUpgrades += this.xp.gain(amount);
       } else if (d < 100) {
         const v = normalized(this.pos.x - drop.x, this.pos.y - drop.y);
         const step = Math.min(d, 300 * dt / 1000);
@@ -167,9 +209,16 @@ export class Arena {
       }
     }
     this.hp = this.effects.heal(this.hp, this.stats.maxHp, this.clock, this.lastDamageAt, this.buffs['touch-grass'] > 0);
+    if (this.aura.burstUntil > this.trackedBurstUntil) {
+      this.trackedBurstUntil = this.aura.burstUntil; this.auraBursts++; this.maxAura = 100;
+    }
+    this.maxAura = Math.max(this.maxAura, this.aura.value);
     if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
     if (this.waveClock >= GAME.waveDurationMs) {
-      if (this.wave < GAME.waveCount) this.mode = 'between';
+      if (this.wave < GAME.waveCount) {
+        if (!this.tookHitThisWave) this.cleanWave = true;
+        this.mode = 'between';
+      }
       else if (this.bossDefeated) this.mode = 'win';
     }
   }
@@ -183,7 +232,7 @@ export class Arena {
     }
     if (this.buffs['mewing-jaw'] && this.clock >= this.jawReady && this.enemies.some(e => distance(e, this.pos) < 95)) {
       this.jawReady = this.clock + 1100; this.jawUntil = this.clock + 160;
-      for (const e of [...this.enemies]) if (distance(e, this.pos) < 95) this.hit(e, this.damage(26));
+      for (const e of [...this.enemies]) if (distance(e, this.pos) < 95) this.hit(e, this.damage(26) * (this.characterId === 'alpha' ? 1.15 : 1));
     }
     if (this.buffs['ohio-orbiter'] && this.clock >= this.orbReady) {
       const targets = this.enemies.filter(e => distance(e, this.orb) < ENEMIES[e.type].radius + 12);
@@ -225,10 +274,12 @@ export class Arena {
       this.effects.rizzPulseUntil = this.clock + 300;
     }
     if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
+      this.sixSevenTriggered = true;
       for (let i = 0; i < 7; i++) {
         const angle = i * Math.PI * 2 / 7;
         this.shoot(this.pos, { x: this.pos.x + Math.cos(angle), y: this.pos.y + Math.sin(angle) }, this.damage(18));
       }
+      if (this.buffs['skibidi-bounce'] > 0) this.ultimate67Triggered = true;
       this.say(this.effects.volleyMessage(this.buffs['skibidi-bounce'] > 0));
     }
   }
@@ -238,16 +289,21 @@ export class Arena {
     const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
     if (result.ignored) return;
     this.hp = result.hp;
+    this.damageTaken += damage;
+    this.tookHitThisWave = true;
     this.effects.tookDamage(this.clock);
     this.lastDamageAt = this.clock;
     this.aura.change(-20, this.clock);
-    if (this.flex.interrupt(this.clock) === 'interrupted') this.say('FLEX interrupted!');
+    if (this.flex.interrupt(this.clock) === 'interrupted') {
+      this.flexInterruptions++; this.say('FLEX interrupted!');
+    }
     if (result.saved) this.say('DELULU SAVED YOU!');
     if (this.hp <= 0) this.mode = 'dead';
   }
 
   private finishFlex(result: FlexResult): void {
     if (result === 'success') {
+      this.flexSuccesses++;
       this.aura.change(25, this.clock);
       for (const enemy of this.enemies) {
         if (distance(enemy, this.pos) > GAME.flexRadius) continue;

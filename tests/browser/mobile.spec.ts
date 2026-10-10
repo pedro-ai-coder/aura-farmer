@@ -28,10 +28,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('portrait touch controls: start, analog movement, FLEX, FOCUS, upgrade and retry', async ({ page }) => {
-  await expect(page.locator('#touch-confirm')).toBeVisible();
+  await expect(page.locator('[data-menu="play"]')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
-  await tap(page, '#touch-confirm');
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
   await expect(page.locator('#joystick-track')).toBeVisible();
   await expect(page.locator('[data-game-action="flex"]')).toBeVisible();
@@ -69,16 +70,17 @@ test('portrait touch controls: start, analog movement, FLEX, FOCUS, upgrade and 
   await page.evaluate(() => {
     (window.__game.scene.scenes[0] as ArenaScene).arena.mode = 'dead';
   });
-  await expect(page.locator('#touch-confirm')).toHaveText('RETRY');
-  await tap(page, '#touch-confirm');
+  await expect(page.locator('[data-menu="retry"]')).toBeVisible();
+  await page.locator('[data-menu="retry"]').click();
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
 });
 
 test('landscape controls flank the canvas and remain tappable', async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 390 });
-  const play = page.locator('#touch-confirm');
+  const play = page.locator('[data-menu="play"]');
   await expect(play).toBeVisible();
-  await tap(page, '#touch-confirm');
+  await play.click();
+  await page.locator('[data-menu="start"]').click();
   await expect(page.locator('#joystick-track')).toBeVisible();
   const stick = (await page.locator('#joystick-track').boundingBox())!;
   const canvas = (await page.locator('#game').boundingBox())!;
@@ -92,6 +94,10 @@ test('landscape controls flank the canvas and remain tappable', async ({ page })
 });
 
 test('fullscreen button enables immersive landscape, preserves touch controls and exits cleanly', async ({ page }) => {
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
+  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
+  await expect(page.locator('#touch-play-actions')).toBeVisible();
   // Native Fullscreen isn't available in several embedded/mobile browsers.
   // Force rejection to exercise the CSS fallback, independent of CI browser permissions.
   await page.evaluate(() => {
@@ -103,15 +109,13 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   const toggle = page.locator('#fullscreen-toggle');
   await expect(toggle).toBeVisible();
   await expect(toggle).toHaveText('FULL SCREEN');
-  await tap(page, '#fullscreen-toggle');
+  await toggle.tap();
   await expect(page.locator('.play-layout')).toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('EXIT');
   await expect(page.locator('#rotate-notice')).toBeVisible();
 
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(page.locator('#rotate-notice')).toBeHidden();
-  await tap(page, '#touch-confirm');
-  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
   await expect(page.locator('#joystick-track')).toBeVisible();
   const stage = (await page.locator('.play-layout').boundingBox())!;
   const arena = (await page.locator('#game').boundingBox())!;
@@ -136,7 +140,7 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
 
-  await tap(page, '#fullscreen-toggle');
+  await toggle.tap();
   await expect(page.locator('.play-layout')).not.toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('FULL SCREEN');
   await expect(page.locator('#joystick-track')).toBeVisible();

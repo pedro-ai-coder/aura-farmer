@@ -5,6 +5,8 @@ import { BUFFS } from '../data/buffs';
 import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
+import type { CharacterId } from '../data/characters';
+import { runResult } from '../../meta/profile';
 
 export class ArenaScene extends Phaser.Scene {
   readonly arena = new Arena();
@@ -19,6 +21,9 @@ export class ArenaScene extends Phaser.Scene {
   private debug!: Phaser.GameObjects.Text;
   private keyboard!: Record<string, Phaser.Input.Keyboard.Key>;
   private debugVisible = false;
+  private paused = false;
+  private notifiedMode = 'intro';
+  private reportedRun = false;
   private pendingKeys = new Set<string>();
 
   constructor() { super('ArenaScene'); }
@@ -29,6 +34,7 @@ export class ArenaScene extends Phaser.Scene {
     for (const [key, frame] of [
       ['sigma', 48], ['npc', 48], ['hater', 48],
       ['beta', 64], ['boss', 128], ['items', 16], ['icons', 16],
+      ['alpha',48], ['rizzler',48], ['ohio',48], ['fanum',48], ['six-seven',48],
     ] as const) {
       this.load.spritesheet('spr-' + key, 'assets/pixel/' + key + '.png', {
         frameWidth: frame, frameHeight: frame,
@@ -59,7 +65,12 @@ export class ArenaScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(Phaser.Core.Events.BLUR, this.clearKeys, this));
   }
 
+  setPaused(value: boolean): void { this.paused = value; if (value) touchControls.clear(); }
+  startRun(characterId: CharacterId): void { this.arena.start(characterId); this.reportedRun = false; this.paused = false; }
+  resetToIntro(): void { this.arena.start(); this.arena.mode = 'intro'; this.reportedRun=false; this.paused=false; }
+
   update(_time: number, delta: number): void {
+    if (this.paused) { touchControls.clear(); return; }
     // Preserve short taps even when down/up both arrive between rendered frames.
     const pressed = new Set(this.pendingKeys);
     this.pendingKeys.clear();
@@ -78,6 +89,15 @@ export class ArenaScene extends Phaser.Scene {
     });
     this.draw();
     this.pixelWorld.sync(this.arena);
+    if (this.notifiedMode !== this.arena.mode) {
+      this.notifiedMode = this.arena.mode;
+      window.dispatchEvent(new CustomEvent('aura:mode', {detail:this.arena.mode}));
+    }
+    if (this.arena.mode === 'playing') this.reportedRun=false;
+    if ((this.arena.mode === 'dead' || this.arena.mode === 'win') && !this.reportedRun) {
+      this.reportedRun = true;
+      window.dispatchEvent(new CustomEvent('aura:run-finished', {detail:runResult(this.arena)}));
+    }
   }
 
   private clearKeys(): void { this.pendingKeys.clear(); }

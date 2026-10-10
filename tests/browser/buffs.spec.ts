@@ -43,7 +43,10 @@ for (const layout of [
     test.use({ viewport: { width: layout.width, height: layout.height }, isMobile: layout.mobile, hasTouch: layout.mobile });
     test('all six buffs appear in English level-ups and can be selected with the existing controls', async ({ page }) => {
       test.setTimeout(90000);
-      if (layout.mobile) await page.locator('#touch-confirm').tap();
+      if (layout.mobile) {
+        await page.locator('[data-menu="play"]').click();
+        await page.locator('[data-menu="start"]').click();
+      }
       else await page.keyboard.press('Enter');
       await expect.poll(() => state(page, a => a.mode)).toBe('playing');
       for (const [id, name] of newBuffs) {
