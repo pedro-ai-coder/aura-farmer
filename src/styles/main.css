@@ -235,3 +235,128 @@ body {
   .play-layout:fullscreen .fullscreen-toggle,
   .play-layout.is-immersive .fullscreen-toggle { position: relative; z-index: 5; }
 }
+
+/* FULL-BLEED LANDSCAPE V2
+   The canvas spans the entire display; controls are transparent overlays.
+   Phaser still simulates at 960×600 (no collision or input-coordinate changes).
+   A deliberately stretched canvas fills widescreen displays without cropping
+   combat HUD or the arena edges. A dynamic-width Phaser world can replace this
+   presentation-only scaling in a future engine revision. */
+.play-layout:fullscreen,
+.play-layout.is-immersive {
+  display: block;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  height: 100vh; /* legacy fallback; overridden immediately below */
+  height: 100dvh;
+  border: 0;
+  background: #ddd6f0;
+  overflow: hidden;
+  touch-action: none;
+}
+.play-layout:fullscreen #game,
+.play-layout.is-immersive #game {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.play-layout:fullscreen #game canvas,
+.play-layout.is-immersive #game canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: fill !important;
+  image-rendering: pixelated;
+  touch-action: none;
+}
+.play-layout:fullscreen .touch-controls,
+.play-layout.is-immersive .touch-controls {
+  display: contents;
+  pointer-events: none;
+}
+.play-layout:fullscreen .touch-stick,
+.play-layout.is-immersive .touch-stick {
+  position: absolute;
+  z-index: 8;
+  width: clamp(98px, 17vw, 154px);
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.play-layout:fullscreen .joystick-track,
+.play-layout.is-immersive .joystick-track {
+  width: clamp(92px, 15vw, 138px);
+  height: clamp(92px, 15vw, 138px);
+  background: #30274799;
+  border-color: #f6f0eacc;
+  pointer-events: auto;
+}
+.play-layout:fullscreen .joystick-thumb,
+.play-layout.is-immersive .joystick-thumb {
+  background: #8b5bd8d9;
+  border-color: #ffcc51;
+}
+.play-layout:fullscreen .touch-caption,
+.play-layout.is-immersive .touch-caption { display: none; }
+.play-layout:fullscreen .touch-panel,
+.play-layout.is-immersive .touch-panel {
+  position: absolute;
+  z-index: 8;
+  right: max(10px, env(safe-area-inset-right));
+  top: max(8px, env(safe-area-inset-top));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: clamp(116px, 19vw, 208px);
+  max-width: none;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  pointer-events: none;
+}
+.play-layout:fullscreen .touch-panel button,
+.play-layout.is-immersive .touch-panel button { pointer-events: auto; }
+.play-layout:fullscreen .fullscreen-toggle,
+.play-layout.is-immersive .fullscreen-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(95px, 100%);
+  min-height: 34px;
+  margin: 0;
+  border-width: 1px;
+  background: #302747df;
+  color: #fff8e7;
+  border-color: #fff8e7;
+  z-index: 20;
+}
+.play-layout:fullscreen .touch-button,
+.play-layout.is-immersive .touch-button {
+  min-height: clamp(48px, 11vh, 70px);
+  border-radius: 18px;
+  background-color: #302747e0;
+  box-shadow: 0 2px 0 #302747;
+}
+.play-layout:fullscreen .touch-upgrades,
+.play-layout.is-immersive .touch-upgrades { width: 100%; }
+.play-layout:fullscreen .touch-play-actions,
+.play-layout.is-immersive .touch-play-actions { gap: 12px; }
+@media (orientation: portrait) {
+  .play-layout:fullscreen .rotate-notice,
+  .play-layout.is-immersive .rotate-notice {
+    inset: 20% 8%;
+    z-index: 10;
+    pointer-events: none;
+  }
+}
