@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { Arena } from '../core/arena';
 import type { EnemyType } from '../data/enemies';
 import { getCharacter } from '../data/characters';
+import { ENEMIES } from '../data/enemies';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -151,6 +152,45 @@ export function createPixelTextures(scene: Phaser.Scene): void {
   c.fillStyle = '#f6f0ea'; c.fillRect(0,0,960,82);
   c.fillStyle = '#302747'; c.fillRect(0,79,960,4);
   c.fillStyle = '#c6b6e5'; c.fillRect(12,91,936,3);
+
+  // Calm top-down arena dressing. Pixel clusters sit below gameplay entities,
+  // deliberately desaturated so danger colors and XP remain unambiguous.
+  for (let row = 0; row < 14; row++) {
+    for (let col = 0; col < 28; col++) {
+      const x = 26 + col * 33, y = 102 + row * 34;
+      const id = (col * 37 + row * 19 + col * row * 3) % 41;
+      if (id === 3 || id === 13) {
+        c.fillStyle = '#c3b3df'; c.fillRect(x+4,y+10,9,2);
+        c.fillRect(x+11,y+12,3,4); c.fillRect(x+8,y+16,2,3);
+        c.fillStyle = '#e9e3f6'; c.fillRect(x+5,y+8,4,1);
+      } else if (id === 23) {
+        c.fillStyle = '#b9c7dc'; c.fillRect(x+6,y+13,7,2);
+        c.fillStyle = '#eee8f6'; c.fillRect(x+8,y+11,5,2);
+      } else if (id === 35) {
+        c.fillStyle = '#c6b6e5'; c.fillRect(x+3,y+9,2,5); c.fillRect(x+5,y+11,5,2);
+        c.fillStyle = '#e9e3f6'; c.fillRect(x+2,y+8,3,1);
+      }
+    }
+  }
+  // Four flat ornamental stone emblems (decals, not solid obstacles).
+  for (const [x,y] of [[52,127],[866,127],[52,535],[866,535]]) {
+    c.fillStyle = '#c2b3dd'; c.fillRect(x,y,46,28);
+    c.fillStyle = '#e6def2'; c.fillRect(x+3,y+3,40,21);
+    c.fillStyle = '#d2c5e8'; c.fillRect(x+6,y+6,34,16);
+    c.fillStyle = '#ae99d3'; c.fillRect(x+20,y+5,5,17);
+    c.fillRect(x+11,y+12,23,4);
+    c.fillStyle = '#f6f0ea'; c.fillRect(x+21,y+8,2,9);
+  }
+  // Double-line arcade frame and illuminated corners.
+  c.fillStyle = '#76609e'; c.fillRect(12,91,936,2);
+  c.fillStyle = '#44345f'; c.fillRect(12,585,936,4);
+  for (const x of [20,915]) {
+    for (const y of [100,554]) {
+      c.fillStyle = '#8b5bd8'; c.fillRect(x,y,22,3);
+      c.fillRect(x,y,3,20);
+      c.fillStyle = '#ffcc51'; c.fillRect(x+3,y+3,6,2);
+    }
+  }
   if (!scene.textures.exists('px-floor')) scene.textures.addCanvas('px-floor',base);
 }
 
@@ -161,12 +201,20 @@ export class PixelWorld {
   private drops: Phaser.GameObjects.Image[] = [];
   private shots: Phaser.GameObjects.Image[] = [];
   private orbiter: Phaser.GameObjects.Image;
+  private shadowLayer: Phaser.GameObjects.Graphics;
+  private actionLayer: Phaser.GameObjects.Graphics;
+  private previousEnemies = new Map<number,{x:number;y:number;hp:number;type:EnemyType}>();
+  private hitFlashes = new Map<number,number>();
+  private impacts: Array<{x:number;y:number;until:number;type:EnemyType}> = [];
+  private facingRight = true;
   private lastX = 480;
   private lastY = 330;
 
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
     scene.add.image(480,300,'px-floor').setDepth(-10);
+    this.shadowLayer = scene.add.graphics().setDepth(.65);
+    this.actionLayer = scene.add.graphics().setDepth(1.65);
     this.player = scene.add.image(480,330,scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
     this.orbiter = scene.add.image(480,330,scene.textures.exists('spr-items') ? 'spr-items' : 'px-orbiter',3).setDepth(1.1).setVisible(false);
   }
@@ -175,7 +223,9 @@ export class PixelWorld {
     const pose = a.flex.state === 'charging' ? 'flex'
       : a.clock > 0 && a.clock - a.lastDamageAt < 180 ? 'hurt'
       : frame === 0 ? 'walk1' : 'walk2';
-    const playerMoving = Math.hypot(a.pos.x - this.lastX, a.pos.y - this.lastY) > .18;
+    const moveX = a.pos.x - this.lastX;
+    if (Math.abs(moveX) > .18) this.facingRight = moveX > 0;
+    const playerMoving = Math.hypot(moveX, a.pos.y - this.lastY) > .18;
     this.lastX = a.pos.x; this.lastY = a.pos.y;
     const characterSprite = 'spr-' + a.characterId;
     const hasCharacterSheet = this.scene.textures.exists(characterSprite);
@@ -186,8 +236,16 @@ export class PixelWorld {
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
       this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
-    this.player.setPosition(a.pos.x, a.pos.y).setTint(hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+    this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
+      .setTint(hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+    if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
+    this.shadowLayer.clear();
+    this.actionLayer.clear();
+    if (a.mode === 'playing' || a.mode === 'upgrades' || a.mode === 'between') {
+      this.shadowLayer.fillStyle(0x302747,.23).fillEllipse(a.pos.x,a.pos.y+17,33,9);
+      this.shadowLayer.fillStyle(0xffcc51,.17).fillEllipse(a.pos.x,a.pos.y+17,19,5);
+    }
     const alive = new Set<number>();
     for (const enemy of a.enemies) {
       alive.add(enemy.id);
@@ -201,9 +259,44 @@ export class PixelWorld {
       const spriteKey = 'spr-' + enemy.type;
       if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
       else img.setTexture('px-'+enemy.type+'-'+bob);
+      const previous = this.previousEnemies.get(enemy.id);
+      if (previous && enemy.hp < previous.hp) this.hitFlashes.set(enemy.id,a.clock+105);
+      if (previous && Math.abs(enemy.x-previous.x)>0.15) img.setFlipX(enemy.x>previous.x);
       img.setPosition(enemy.x,enemy.y);
+      if ((this.hitFlashes.get(enemy.id)??0)>a.clock) img.setTintFill(0xfff2e7);
+      else img.clearTint();
+      this.previousEnemies.set(enemy.id,{x:enemy.x,y:enemy.y,hp:enemy.hp,type:enemy.type});
+      const boss = enemy.type === 'boss';
+      this.shadowLayer.fillStyle(0x302747,boss ? .32 : .20)
+        .fillEllipse(enemy.x,enemy.y+(boss?31:enemy.type==='beta'?19:13),boss?88:enemy.type==='beta'?42:29,boss?16:9);
+      if (boss) {
+        const w=112, x=enemy.x-w/2, y=enemy.y-65, health=Phaser.Math.Clamp(enemy.hp/ENEMIES.boss.hp,0,1);
+        this.actionLayer.fillStyle(0x302747,.94).fillRoundedRect(x-2,y-2,w+4,13,4);
+        this.actionLayer.fillStyle(0xffebdb,1).fillRect(x,y,w,9);
+        this.actionLayer.fillStyle(0xea568a,1).fillRect(x,y,Math.max(0,w*health),9);
+        this.actionLayer.fillStyle(0xffcc51,1).fillRect(x+1,y+1,Math.max(0,(w-2)*health),2);
+      }
+      if (enemy.type==='hater' && enemy.nextShot-a.clock>0 && enemy.nextShot-a.clock<360) {
+        this.actionLayer.lineStyle(2,0xe75154,.6).strokeCircle(enemy.x,enemy.y,27+(enemy.nextShot-a.clock)/40);
+      }
     }
-    for(const [id,img] of this.enemies) if(!alive.has(id)){img.destroy();this.enemies.delete(id);}
+    for(const [id,img] of this.enemies) if(!alive.has(id)){
+      const last = this.previousEnemies.get(id);
+      if (last && a.mode === 'playing' && this.impacts.length < 24)
+        this.impacts.push({x:last.x,y:last.y,until:a.clock+310,type:last.type});
+      img.destroy(); this.enemies.delete(id); this.previousEnemies.delete(id); this.hitFlashes.delete(id);
+    }
+    this.impacts=this.impacts.filter(fx=>fx.until>a.clock);
+    for(const fx of this.impacts) {
+      const p=1-(fx.until-a.clock)/310, radius=7+17*p;
+      const color=fx.type==='npc'?0x89839e:fx.type==='beta'?0x69bfa8:0xea568a;
+      this.actionLayer.lineStyle(p<.5?3:2,color,(1-p)*.65).strokeCircle(fx.x,fx.y,radius);
+      for(let j=0;j<4;j++){
+        const angle=j*Math.PI/2+.2;
+        this.actionLayer.fillStyle(j===0?0xffcc51:color,(1-p)*.88)
+          .fillRect(fx.x+Math.cos(angle)*radius-2,fx.y+Math.sin(angle)*radius-2,4,4);
+      }
+    }
     const atlas = this.scene.textures.exists('spr-items');
     while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
     this.shots.forEach((img,i)=>{
@@ -217,7 +310,11 @@ export class PixelWorld {
     while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-xp').setDepth(.8));
     this.drops.forEach((img,i)=>{
       const drop=a.drops[i]; img.setVisible(!!drop);
-      if(drop) { if(atlas)img.setTexture('spr-items',2); img.setPosition(drop.x,drop.y); }
+      if(drop) {
+        if(atlas)img.setTexture('spr-items',2);
+        img.setPosition(drop.x,drop.y-2-Math.sin(a.clock/230+i)*2);
+        img.setRotation(Math.sin(a.clock/460+i)*.10);
+      }
     });
     if (this.scene.textures.exists('spr-items')) this.orbiter.setTexture('spr-items',3);
     this.orbiter.setVisible(a.buffs['ohio-orbiter']>0);
