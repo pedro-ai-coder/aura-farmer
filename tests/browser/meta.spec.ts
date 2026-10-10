@@ -10,6 +10,10 @@ async function load(page:Page):Promise<void> {
   await page.goto('/');
   await expect(page.locator('#meta-shell')).toBeVisible();
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => {
+    const scene=window.__game.scene.scenes[0];
+    return ['sigma','alpha','rizzler','ohio','fanum','six-seven'].every(id => scene.textures.exists('spr-'+id));
+  })).toBe(true);
 }
 test('new home, character selection, run results, local save and leaderboard survive refresh',async({page})=>{
   await load(page);
