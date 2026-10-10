@@ -148,3 +148,24 @@ test('collision causes defeat and Enter restarts with full HP and no upgrades', 
   await press(page, 'Enter');
   expect(await read(page, a => [a.mode, a.hp, a.buffs.speed])).toEqual(['playing', 100, 0]);
 });
+
+
+test('pixel-cartoon assets load with the light Lavender Pop arena and remain visible', async ({ page }) => {
+  const proof = await page.evaluate(() => {
+    const scene = window.__game.scene.scenes[0] as ArenaScene;
+    const required = [
+      'px-floor', 'px-player-idle', 'px-player-flex',
+      'px-npc-0', 'px-hater-0', 'px-beta-0', 'px-boss-0',
+      'px-xp', 'px-shot', 'px-hostile',
+    ];
+    const missing = required.filter(key => !scene.textures.exists(key));
+    const canvas = scene.textures.get('px-floor').getSourceImage() as HTMLCanvasElement;
+    const pixel = [...canvas.getContext('2d')!.getImageData(0, 0, 1, 1).data].slice(0, 3);
+    const texturesVisible = scene.children.list.filter(x => x.type === 'Image' && (x as Phaser.GameObjects.Image).visible).length;
+    return { missing, pixel, texturesVisible };
+  });
+  expect(proof.missing).toEqual([]);
+  expect(proof.pixel).toEqual([246, 240, 234]); // approved Cream: #F6F0EA
+  expect(proof.texturesVisible).toBeGreaterThanOrEqual(2); // player + arena
+  await page.screenshot({ path: 'test-results/pixel-cartoon.png' });
+});
