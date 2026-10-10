@@ -160,37 +160,62 @@ export class PixelWorld {
   private drops: Phaser.GameObjects.Image[] = [];
   private shots: Phaser.GameObjects.Image[] = [];
   private orbiter: Phaser.GameObjects.Image;
+  private lastX = 480;
+  private lastY = 330;
 
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
     scene.add.image(480,300,'px-floor').setDepth(-10);
-    this.player = scene.add.image(480,330,'px-player-idle').setDepth(1.2);
-    this.orbiter = scene.add.image(480,330,'px-orbiter').setDepth(1.1).setVisible(false);
+    this.player = scene.add.image(480,330,scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
+    this.orbiter = scene.add.image(480,330,scene.textures.exists('spr-items') ? 'spr-items' : 'px-orbiter',3).setDepth(1.1).setVisible(false);
   }
   sync(a: Arena): void {
     const frame = Math.floor(a.clock / 180) % 2;
     const pose = a.flex.state === 'charging' ? 'flex'
       : a.clock > 0 && a.clock - a.lastDamageAt < 180 ? 'hurt'
       : frame === 0 ? 'walk1' : 'walk2';
-    this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'))
-      .setPosition(a.pos.x, a.pos.y);
+    const playerMoving = Math.hypot(a.pos.x - this.lastX, a.pos.y - this.lastY) > .18;
+    this.lastX = a.pos.x; this.lastY = a.pos.y;
+    if (this.scene.textures.exists('spr-sigma')) {
+      // 0/1 idle, 2/3 run, 4 crossed-arm FLEX, 5 hurt.
+      const actorFrame = a.mode !== 'playing' ? frame :
+        pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
+      this.player.setTexture('spr-sigma',actorFrame);
+    } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
+    this.player.setPosition(a.pos.x, a.pos.y);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     const alive = new Set<number>();
     for (const enemy of a.enemies) {
       alive.add(enemy.id);
       let img = this.enemies.get(enemy.id);
       if (!img) {
-        img = this.scene.add.image(enemy.x,enemy.y,'px-'+enemy.type+'-0').setDepth(1);
+        const spriteKey = 'spr-' + enemy.type;
+        img = this.scene.add.image(enemy.x,enemy.y,this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
         this.enemies.set(enemy.id,img);
       }
       const bob = Math.floor((a.clock + enemy.id*77) / 260) % 2;
-      img.setTexture('px-'+enemy.type+'-'+bob).setPosition(enemy.x,enemy.y);
+      const spriteKey = 'spr-' + enemy.type;
+      if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
+      else img.setTexture('px-'+enemy.type+'-'+bob);
+      img.setPosition(enemy.x,enemy.y);
     }
     for(const [id,img] of this.enemies) if(!alive.has(id)){img.destroy();this.enemies.delete(id);}
-    while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,'px-shot').setDepth(1.4));
-    this.shots.forEach((img,i)=>{const shot=a.shots[i];img.setVisible(!!shot);if(shot)img.setTexture(shot.hostile?'px-hostile':'px-shot').setPosition(shot.x,shot.y);});
-    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,'px-xp').setDepth(.8));
-    this.drops.forEach((img,i)=>{const drop=a.drops[i];img.setVisible(!!drop);if(drop)img.setPosition(drop.x,drop.y);});
+    const atlas = this.scene.textures.exists('spr-items');
+    while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
+    this.shots.forEach((img,i)=>{
+      const shot=a.shots[i]; img.setVisible(!!shot);
+      if(shot) {
+        if(atlas) img.setTexture('spr-items',shot.hostile?1:0);
+        else img.setTexture(shot.hostile?'px-hostile':'px-shot');
+        img.setPosition(shot.x,shot.y);
+      }
+    });
+    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-xp').setDepth(.8));
+    this.drops.forEach((img,i)=>{
+      const drop=a.drops[i]; img.setVisible(!!drop);
+      if(drop) { if(atlas)img.setTexture('spr-items',2); img.setPosition(drop.x,drop.y); }
+    });
+    if (this.scene.textures.exists('spr-items')) this.orbiter.setTexture('spr-items',3);
     this.orbiter.setVisible(a.buffs['ohio-orbiter']>0);
     if(a.buffs['ohio-orbiter'])this.orbiter.setPosition(a.orb.x,a.orb.y);
   }
