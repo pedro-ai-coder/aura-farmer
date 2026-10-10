@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { ArenaScene } from './game/scenes/ArenaScene';
 import './styles/main.css';
+import { setupMobileFullscreen } from './game/input/mobileFullscreen';
+
+setupMobileFullscreen();
 
 new Phaser.Game({
   type: Phaser.AUTO,

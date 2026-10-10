@@ -90,3 +90,45 @@ test('landscape controls flank the canvas and remain tappable', async ({ page })
   await tap(page, '[data-game-action="focus"]');
   await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
 });
+
+test('fullscreen button enables immersive landscape, preserves touch controls and exits cleanly', async ({ page }) => {
+  // Native Fullscreen isn't available in several embedded/mobile browsers.
+  // Force rejection to exercise the CSS fallback, independent of CI browser permissions.
+  await page.evaluate(() => {
+    Object.defineProperty(Element.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: () => Promise.reject(new Error('Fullscreen not supported')),
+    });
+  });
+  const toggle = page.locator('#fullscreen-toggle');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveText('FULL SCREEN');
+  await tap(page, '#fullscreen-toggle');
+  await expect(page.locator('.play-layout')).toHaveClass(/is-immersive/);
+  await expect(toggle).toHaveText('EXIT');
+  await expect(page.locator('#rotate-notice')).toBeVisible();
+
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(page.locator('#rotate-notice')).toBeHidden();
+  await tap(page, '#touch-confirm');
+  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
+  await expect(page.locator('#joystick-track')).toBeVisible();
+  const stage = (await page.locator('.play-layout').boundingBox())!;
+  const arena = (await page.locator('#game').boundingBox())!;
+  const stick = (await page.locator('#joystick-track').boundingBox())!;
+  const focus = (await page.locator('[data-game-action="focus"]').boundingBox())!;
+  expect(stage.width).toBeGreaterThanOrEqual(840);
+  expect(stage.height).toBeLessThanOrEqual(391);
+  expect(stick.x + stick.width).toBeLessThanOrEqual(arena.x + 5);
+  expect(focus.x).toBeGreaterThanOrEqual(arena.x + arena.width - 5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+
+  await tap(page, '[data-game-action="focus"]');
+  await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
+  await page.screenshot({ path: 'test-results/immersive-landscape.png' });
+
+  await tap(page, '#fullscreen-toggle');
+  await expect(page.locator('.play-layout')).not.toHaveClass(/is-immersive/);
+  await expect(toggle).toHaveText('FULL SCREEN');
+  await expect(page.locator('#joystick-track')).toBeVisible();
+});

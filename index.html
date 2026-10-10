@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#130d29" />
+    <meta name="theme-color" content="#302747" />
     <meta name="description" content="Aura Farmer: farm Aura, dodge cringe, and defeat the haters. Play on desktop or phone." />
     <title>Aura Farmer — Pixel Cartoon Update</title>
   </head>
@@ -20,6 +20,7 @@
             <span class="touch-caption">MOVE</span>
           </div>
           <div id="touch-panel" class="touch-panel">
+            <button type="button" id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Toggle fullscreen landscape mode" aria-pressed="false">FULL SCREEN</button>
             <div id="touch-play-actions" class="touch-play-actions" hidden>
               <button type="button" class="touch-button touch-flex" data-game-action="flex" aria-label="Flex">FLEX</button>
               <button type="button" class="touch-button touch-focus" data-game-action="focus" aria-label="Sigma Focus">FOCUS</button>
@@ -34,8 +35,10 @@
             </div>
           </div>
         </div>
+        <div id="rotate-notice" class="rotate-notice" aria-hidden="true">ROTATE YOUR PHONE<span>Turn your device sideways to play in landscape</span></div>
       </div>
-      <p class="mobile-hint">For a larger play area, rotate your phone sideways.</p>
+      <p id="mobile-fullscreen-status" class="sr-only" role="status" aria-live="polite"></p>
+      <p class="mobile-hint">For the best experience, tap FULL SCREEN and rotate your phone sideways.</p>
       <p class="controls">Keyboard: WASD / arrows = move · E = FLEX (risky move) · SPACE = Sigma Focus · 1/2/3 = choose upgrade · ENTER = start / restart</p>
       <p class="note">Solo browser prototype · Cartoon 2D graphics · No login or downloads required.</p>
     </main>

@@ -109,3 +109,129 @@ body {
   .touch-button { min-height: 51px; padding: 7px 4px; font-size: clamp(11px, 1.8vw, 14px); }
   .touch-upgrades { gap: 8px; }
 }
+
+/* Immersive phone mode: use the native Fullscreen API where available.
+   CSS fixed-position fallback remains available for embedded/iOS browsers. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.play-layout { position: relative; }
+.fullscreen-toggle {
+  display: none;
+  flex: none;
+  width: 100%;
+  min-height: 36px;
+  border: 2px solid #302747;
+  border-radius: 10px;
+  padding: 5px 8px;
+  background: #f5e75d;
+  color: #302747;
+  font: 900 11px ui-rounded, system-ui, sans-serif;
+  letter-spacing: .6px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.fullscreen-toggle:focus-visible { outline: 3px solid #24af7a; outline-offset: 2px; }
+.rotate-notice { display: none; }
+
+@media (max-width: 900px), (pointer: coarse) {
+  .fullscreen-toggle { display: block; margin-bottom: 7px; }
+}
+
+/* Always allow EXIT and access to every touch action in landscape. */
+.play-layout:fullscreen,
+.play-layout.is-immersive {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+           max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(92px, 16vw) minmax(0, 1fr) minmax(118px, 20vw);
+  align-items: center;
+  gap: 6px;
+  background: #302747;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.play-layout:fullscreen #game,
+.play-layout.is-immersive #game {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  border-radius: 8px;
+  max-height: calc(100dvh - 12px);
+  box-shadow: none;
+  align-self: center;
+}
+.play-layout:fullscreen #game canvas,
+.play-layout.is-immersive #game canvas {
+  width: 100% !important;
+  max-height: calc(100dvh - 12px);
+  height: auto !important;
+  object-fit: contain;
+}
+.play-layout:fullscreen .touch-controls,
+.play-layout.is-immersive .touch-controls { display: contents; }
+.play-layout:fullscreen .touch-stick,
+.play-layout.is-immersive .touch-stick {
+  grid-column: 1; grid-row: 1; width: 100%; min-width: 0;
+}
+.play-layout:fullscreen .touch-panel,
+.play-layout.is-immersive .touch-panel {
+  grid-column: 3; grid-row: 1; width: 100%; max-width: none;
+  display: flex; flex-direction: column; gap: 4px; justify-content: center;
+}
+.play-layout:fullscreen .fullscreen-toggle,
+.play-layout.is-immersive .fullscreen-toggle {
+  display: block; min-height: 33px; margin-bottom: 3px;
+}
+.play-layout:fullscreen .joystick-track,
+.play-layout.is-immersive .joystick-track {
+  width: clamp(84px, 12vw, 142px);
+  height: clamp(84px, 12vw, 142px);
+}
+.play-layout:fullscreen .touch-button,
+.play-layout.is-immersive .touch-button {
+  min-height: 46px;
+  padding: 6px 4px;
+  font-size: clamp(11px, 1.6vw, 15px);
+}
+.play-layout:fullscreen .touch-play-actions,
+.play-layout.is-immersive .touch-play-actions { gap: 7px; }
+.play-layout:fullscreen .touch-upgrades,
+.play-layout.is-immersive .touch-upgrades { gap: 6px; }
+
+/* If the browser refuses landscape lock, explain how to rotate rather than
+   rotating the canvas with CSS (which would also distort touch coordinates). */
+@media (orientation: portrait) {
+  .play-layout:fullscreen .rotate-notice,
+  .play-layout.is-immersive .rotate-notice {
+    display: flex;
+    position: absolute;
+    z-index: 4;
+    inset: 17% 8%;
+    pointer-events: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px solid #ffcc51;
+    border-radius: 16px;
+    background: #302747f2;
+    color: #fff8e7;
+    font: 900 19px ui-rounded, system-ui, sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  .play-layout:fullscreen .rotate-notice span,
+  .play-layout.is-immersive .rotate-notice span {
+    font-size: 13px; font-weight: 500; line-height: 1.4;
+  }
+  .play-layout:fullscreen .fullscreen-toggle,
+  .play-layout.is-immersive .fullscreen-toggle { position: relative; z-index: 5; }
+}
