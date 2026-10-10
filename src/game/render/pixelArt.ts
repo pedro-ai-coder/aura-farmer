@@ -116,7 +116,9 @@ function orb(c: PixelContext, hostile: boolean): void {
   block(c, core, 7, 8, 10, 9); block(c, '#fff8e7', 10, 9, 4, 4);
 }
 function createKey(scene: Phaser.Scene, key: string, size: number, draw: (c: PixelContext) => void): void {
-  if (!scene.textures.exists(key)) scene.textures.addCanvas(key, pixelCanvas(size, draw));
+  if (!scene.textures.exists(key)) {
+    scene.textures.addCanvas(key, pixelCanvas(size, draw)).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
 }
 export function createPixelTextures(scene: Phaser.Scene): void {
   (['idle','walk1','walk2','flex','hurt'] as const).forEach(p => createKey(scene, 'px-player-'+p, 48, c => player(c, p)));
