@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Arena } from '../core/arena';
 import type { EnemyType } from '../data/enemies';
+import { getCharacter } from '../data/characters';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -182,7 +183,7 @@ export class PixelWorld {
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
       this.player.setTexture('spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
-    this.player.setPosition(a.pos.x, a.pos.y);
+    this.player.setPosition(a.pos.x, a.pos.y).setTint(getCharacter(a.characterId).color);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     const alive = new Set<number>();
     for (const enemy of a.enemies) {
