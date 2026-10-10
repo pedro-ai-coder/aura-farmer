@@ -110,7 +110,9 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
 
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(page.locator('#rotate-notice')).toBeHidden();
-  await expect(page.locator('#joystick-track')).toHaveClass(/joystick-track/);
+  await tap(page, '#touch-confirm');
+  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
+  await expect(page.locator('#joystick-track')).toBeVisible();
   const stage = (await page.locator('.play-layout').boundingBox())!;
   const arena = (await page.locator('#game').boundingBox())!;
   const stick = (await page.locator('#joystick-track').boundingBox())!;
@@ -121,8 +123,6 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   expect(focus.x).toBeGreaterThanOrEqual(arena.x + arena.width - 5);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
-  await tap(page, '#touch-confirm');
-  await expect.poll(() => state(page, a => a.mode)).toBe('playing');
   await tap(page, '[data-game-action="focus"]');
   await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
