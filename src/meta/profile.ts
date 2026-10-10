@@ -7,7 +7,7 @@ export type RunResult = {
   wave: number; kills: number; level: number; durationMs: number; xpCollected: number;
   flexSuccesses: number; flexInterruptions: number; auraBursts: number;
   maxAura: number; damageTaken: number; cleanWave: boolean; bossDefeated: boolean;
-  ultimate67Triggered: boolean; score: number;
+  ultimate67Triggered: boolean; sixSevenTriggered: boolean; score: number;
 };
 export type AchievementId =
   'first-run' | 'first-win' | 'sigma-win' | 'flex10' | 'flex3' | 'kill67' |
@@ -26,16 +26,20 @@ export const ACHIEVEMENTS: ReadonlyArray<{ id: AchievementId; name: string; desc
   { id:'ultimate-67', name:'Ultimate 67', description:'Trigger Six Seven with Skibidi Bounce.' },
   { id:'boss-loss', name:'Skill Issue', description:'Fall to the Big Hater on wave five.' },
 ];
+export type LifetimeStats = {
+  runs: number; wins: number; xpCollected: number; flexSuccesses: number; auraBursts: number;
+  winningCharacters: CharacterId[];
+};
 export type ProfileV1 = {
   schemaVersion: 1; selectedCharacterId: CharacterId;
   unlockedCharacters: CharacterId[]; achievements: AchievementId[];
-  runHistory: RunResult[]; settings: { reduceMotion: boolean };
+  runHistory: RunResult[]; lifetime: LifetimeStats; settings: { reduceMotion: boolean };
 };
 const KEY = 'aura-farmer:profile:v1';
 export function newProfile(): ProfileV1 {
   return { schemaVersion:1, selectedCharacterId:'sigma',
     unlockedCharacters:['sigma','alpha','rizzler','ohio'],
-    achievements:[],runHistory:[],settings:{reduceMotion:false} };
+    achievements:[],runHistory:[],lifetime:{runs:0,wins:0,xpCollected:0,flexSuccesses:0,auraBursts:0,winningCharacters:[]},settings:{reduceMotion:false} };
 }
 export function readProfile(): ProfileV1 {
   try {
@@ -52,7 +56,19 @@ export function readProfile(): ProfileV1 {
     if (Array.isArray(data.unlockedCharacters)) for (const c of data.unlockedCharacters) if (isCharacterId(c)) unlocked.add(c);
     const selectedCharacterId = isCharacterId(data.selectedCharacterId) && unlocked.has(data.selectedCharacterId)
       ? data.selectedCharacterId : 'sigma';
-    return { schemaVersion:1,selectedCharacterId, unlockedCharacters:[...unlocked],
+    const previous=data.lifetime;
+    const legacyTotal=(key:'xpCollected'|'flexSuccesses'|'auraBursts')=>results.reduce((n,r)=>n+(r[key]||0),0);
+    const lifetime: LifetimeStats = {
+      runs:Number.isFinite(previous?.runs)?Math.max(0,previous!.runs):results.length,
+      wins:Number.isFinite(previous?.wins)?Math.max(0,previous!.wins):results.filter(r=>r.won).length,
+      xpCollected:Number.isFinite(previous?.xpCollected)?Math.max(0,previous!.xpCollected):legacyTotal('xpCollected'),
+      flexSuccesses:Number.isFinite(previous?.flexSuccesses)?Math.max(0,previous!.flexSuccesses):legacyTotal('flexSuccesses'),
+      auraBursts:Number.isFinite(previous?.auraBursts)?Math.max(0,previous!.auraBursts):legacyTotal('auraBursts'),
+      winningCharacters:Array.isArray(previous?.winningCharacters)
+        ? [...new Set(previous.winningCharacters.filter(isCharacterId))]
+        : [...new Set(results.filter(r=>r.won).map(r=>r.characterId))],
+    };
+    return { schemaVersion:1,selectedCharacterId, unlockedCharacters:[...unlocked],lifetime,
       achievements:Array.isArray(data.achievements)
         ? [...new Set(data.achievements.filter((a):a is AchievementId => allowed.has(a)))] : [],
       runHistory:results,
@@ -75,30 +91,36 @@ export function runResult(arena: Arena): RunResult {
     xpCollected:arena.xpCollected,flexSuccesses:arena.flexSuccesses,flexInterruptions:arena.flexInterruptions,
     auraBursts:arena.auraBursts,maxAura:arena.maxAura,damageTaken:arena.damageTaken,
     cleanWave:arena.cleanWave,bossDefeated:arena.bossDefeated,
-    ultimate67Triggered:arena.ultimate67Triggered,score };
+    ultimate67Triggered:arena.ultimate67Triggered,sixSevenTriggered:arena.sixSevenTriggered,score };
 }
 export function recordRun(profile: ProfileV1, result: RunResult): { profile: ProfileV1; gained: AchievementId[]; unlocked: CharacterId[] } {
   if (profile.runHistory.some(r => r.id === result.id)) return {profile,gained:[],unlocked:[]};
   const history = [...profile.runHistory, result].slice(-40);
-  const total = (key: 'xpCollected'|'flexSuccesses'|'auraBursts') => history.reduce((n,r)=>n+(r[key]||0),0);
-  const winnerIds = new Set(history.filter(r=>r.won).map(r=>r.characterId));
+  const winnerIds = new Set([...profile.lifetime.winningCharacters,...(result.won?[result.characterId]:[])]);
+  const lifetime: LifetimeStats = {
+    runs:profile.lifetime.runs+1, wins:profile.lifetime.wins+(result.won?1:0),
+    xpCollected:profile.lifetime.xpCollected+result.xpCollected,
+    flexSuccesses:profile.lifetime.flexSuccesses+result.flexSuccesses,
+    auraBursts:profile.lifetime.auraBursts+result.auraBursts,
+    winningCharacters:[...winnerIds],
+  };
   const unlocked = new Set(profile.unlockedCharacters);
   // Unlocks are earned locally; only *verified* future backend results will enter public rankings.
-  if (total('xpCollected') >= 500) unlocked.add('fanum');
-  if (history.some(r=>r.kills>=67 && r.ultimate67Triggered)) unlocked.add('six-seven');
+  if (lifetime.xpCollected >= 500) unlocked.add('fanum');
+  if (history.some(r=>r.kills>=67 && r.sixSevenTriggered)) unlocked.add('six-seven');
   const done = new Set(profile.achievements);
   const check: Record<AchievementId,boolean> = {
     'first-run':true,'first-win':history.some(r=>r.won),'sigma-win':winnerIds.has('sigma'),
-    'flex10':total('flexSuccesses')>=10,'flex3':result.flexSuccesses>=3,
-    'kill67':result.kills>=67,'loot500':total('xpCollected')>=500,
-    'god-aura':total('auraBursts')>=10,'character-arc':winnerIds.size>=3,
+    'flex10':lifetime.flexSuccesses>=10,'flex3':result.flexSuccesses>=3,
+    'kill67':result.kills>=67,'loot500':lifetime.xpCollected>=500,
+    'god-aura':lifetime.auraBursts>=10,'character-arc':winnerIds.size>=3,
     'clean-wave':result.cleanWave,'ultimate-67':result.ultimate67Triggered,
     'boss-loss':!result.won&&result.wave===5&&result.bossDefeated===false,
   };
   const gained: AchievementId[] = [];
   for (const a of ACHIEVEMENTS) if(check[a.id]&&!done.has(a.id)){done.add(a.id);gained.push(a.id);}
   const newlyUnlocked = [...unlocked].filter(id=>!profile.unlockedCharacters.includes(id));
-  const next: ProfileV1 = { ...profile, runHistory:history, achievements:[...done],
+  const next: ProfileV1 = { ...profile, runHistory:history, lifetime, achievements:[...done],
     unlockedCharacters:[...unlocked] };
   return { profile:next,gained,unlocked:newlyUnlocked };
 }
