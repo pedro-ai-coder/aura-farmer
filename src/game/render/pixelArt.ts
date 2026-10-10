@@ -258,7 +258,7 @@ export class PixelWorld {
       } else if (a.mode === 'win') {
         animation = 'flex_success';
         elapsed = a.clock;
-      } else if (a.mode === 'playing' && a.clock > 0 && a.clock - a.lastDamageAt < 180) {
+      } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
         animation = 'hurt';
         elapsed = a.clock - a.lastDamageAt;
       } else if (a.mode === 'playing' && a.flex.state === 'charging') {
