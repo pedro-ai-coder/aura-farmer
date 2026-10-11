@@ -5,6 +5,7 @@ import { getCharacter } from '../data/characters';
 import { ENEMIES } from '../data/enemies';
 import { SIGMA_B1, sigmaB1Frame, type SigmaPose } from './sigmaB1';
 import { ALPHA_B2, alphaB2Frame, type AlphaPose } from './alphaB2';
+import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -240,6 +241,7 @@ export class PixelWorld {
     const hasDefaultSheet = this.scene.textures.exists('spr-sigma');
     const sigmaB1 = a.characterId === 'sigma' && this.scene.textures.exists(SIGMA_B1.texture);
     const alphaB2 = a.characterId === 'alpha' && this.scene.textures.exists(ALPHA_B2.texture);
+    const rizzlerB3 = a.characterId === 'rizzler' && this.scene.textures.exists(RIZZLER_B3.texture);
     if (a.characterId !== this.lastCharacter || a.clock < this.lastClock) {
       this.lastCharacter = a.characterId;
       this.deathStartedAt = -1;
@@ -305,6 +307,35 @@ export class PixelWorld {
         animation = 'move';
       }
       this.player.setTexture(ALPHA_B2.texture, alphaB2Frame(animation, elapsed));
+    } else if (rizzlerB3) {
+      if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
+      this.lastFlexSuccesses = a.flexSuccesses;
+      if (a.mode !== 'dead') this.deathStartedAt = -1;
+      let animation: RizzlerPose = 'idle';
+      let elapsed = a.clock;
+      if (a.mode === 'dead') {
+        if (this.deathStartedAt < 0) this.deathStartedAt = this.scene.time.now;
+        animation = 'death';
+        elapsed = this.scene.time.now - this.deathStartedAt;
+      } else if (a.mode === 'win') {
+        animation = 'flex_success';
+      } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
+        animation = 'hurt';
+        elapsed = a.clock - a.lastDamageAt;
+      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+        animation = 'flex_charge';
+      } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
+                 a.clock - this.flexSuccessStartedAt < 345) {
+        animation = 'flex_success';
+        elapsed = a.clock - this.flexSuccessStartedAt;
+      } else if (a.mode === 'playing' && a.effects.rizzPulseUntil > a.clock) {
+        // Visual-only cast using the existing 300ms crowd-control pulse.
+        animation = 'cast';
+        elapsed = Math.max(0, 300 - (a.effects.rizzPulseUntil - a.clock));
+      } else if (a.mode === 'playing' && playerMoving) {
+        animation = 'move';
+      }
+      this.player.setTexture(RIZZLER_B3.texture, rizzlerB3Frame(animation, elapsed));
     } else if (hasCharacterSheet || hasDefaultSheet) {
       // Legacy atlas stays in place as a safe fallback and for other characters.
       const actorFrame = a.mode !== 'playing' ? frame :
@@ -312,7 +343,7 @@ export class PixelWorld {
       this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(sigmaB1 || alphaB2 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();
