@@ -5,6 +5,7 @@ import { BUFFS } from '../data/buffs';
 import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
+import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
 
@@ -24,11 +25,23 @@ export class ArenaScene extends Phaser.Scene {
   private paused = false;
   private notifiedMode = 'intro';
   private reportedRun = false;
+  private notifiedWave = 0;
+  private notifiedBurstEnd = 0;
   private pendingKeys = new Set<string>();
+  private lastWaveUi = '';
 
   constructor() { super('ArenaScene'); }
 
   preload(): void {
+    const loading=document.querySelector<HTMLElement>('#af-loading');
+    const track=loading?.querySelector<HTMLElement>('[role="progressbar"]');
+    const fill=document.querySelector<HTMLElement>('#af-loading-fill');
+    this.load.on('progress',(fraction:number)=>{
+      const value=Math.round(fraction*100);
+      if(fill) fill.style.width=value+'%';
+      track?.setAttribute('aria-valuenow',String(value));
+    });
+    this.load.once('complete',()=>{ if(loading) loading.hidden=true; });
     // Original static PNG sprite sheets shipped with the application.
     // Keep px-* runtime textures available as an explicit fallback.
     for (const [key, frame] of [
@@ -50,12 +63,12 @@ export class ArenaScene extends Phaser.Scene {
       this.buffIcons = Array.from({ length: 16 }, () =>
         this.add.image(0,0,'spr-icons',0).setDepth(3).setScale(1.5).setVisible(false));
     }
-    this.hud = [24, 245, 565, 745].map(x => this.label(x, 12, 16));
-    this.status = this.label(24, 62, 12);
+    this.hud = [66, 274, 591, 780].map(x => this.label(x, 14, 15));
+    this.status = this.label(44, 65, 12);
     this.overlay = this.label(480, 300, 20).setOrigin(.5).setAlign('center').setWordWrapWidth(650).setLineSpacing(12).setDepth(5);
     this.feedback = this.label(480, 559, 15).setOrigin(.5).setDepth(3);
     this.debug = this.label(940, 111, 12).setOrigin(1, 0).setDepth(3);
-    for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#302747');
+    for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#fff8e7');
     this.overlay.setDepth(5).setColor('#fff8e7');
     this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
     for (const [name, key] of Object.entries(this.keyboard)) {
@@ -89,6 +102,15 @@ export class ArenaScene extends Phaser.Scene {
     });
     this.draw();
     this.pixelWorld.sync(this.arena);
+    if(this.arena.mode==='playing' && this.notifiedWave!==this.arena.wave){
+      this.notifiedWave=this.arena.wave;
+      window.dispatchEvent(new CustomEvent('aura:wave',{detail:this.arena.wave}));
+    }
+    if(this.arena.mode==='playing' && this.arena.aura.burstUntil>this.arena.clock &&
+       this.arena.aura.burstUntil>this.notifiedBurstEnd){
+      this.notifiedBurstEnd=this.arena.aura.burstUntil;
+      window.dispatchEvent(new CustomEvent('aura:burst'));
+    }
     if (this.notifiedMode !== this.arena.mode) {
       this.notifiedMode = this.arena.mode;
       window.dispatchEvent(new CustomEvent('aura:mode', {detail:this.arena.mode}));
@@ -106,23 +128,10 @@ export class ArenaScene extends Phaser.Scene {
     return this.add.text(x, y, '', { fontFamily: 'Arial, sans-serif', fontSize: size, fontStyle: 'bold', color: '#fff6e8' }).setDepth(2);
   }
 
-  private bar(x: number, y: number, width: number, value: number, color: number): void {
-    this.g.fillStyle(0x130f26).fillRoundedRect(x, y, width, 10, 5);
-    if (value > 0) this.g.fillStyle(color).fillRoundedRect(x, y, Math.max(5, width * Phaser.Math.Clamp(value, 0, 1)), 10, 5);
-  }
-
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
-    // Layered arcade HUD panels with legible dark text on Cloud Cream.
-    for (const [x,w] of [[18,199],[238,288],[555,164],[735,211]]) {
-      g.fillStyle(0x302747,.15).fillRoundedRect(x+2,6,w,53,9);
-      g.fillStyle(0xfff8e7,.97).fillRoundedRect(x,4,w,53,8);
-      g.lineStyle(2,0x76609e,.82).strokeRoundedRect(x,4,w,53,8);
-      g.fillStyle(0xc6b6e5,.45).fillRect(x+9,33,w-18,2);
-    }
-    g.fillStyle(0x302747,.93).fillRoundedRect(18,59,924,20,5);
-    g.lineStyle(1,0x76609e,.92).strokeRoundedRect(18,59,924,20,5);
+    drawHudChrome(g);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
@@ -156,15 +165,10 @@ export class ArenaScene extends Phaser.Scene {
     this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
-    this.bar(24, 40, 180, a.hp / stats.maxHp, ART.hostile);
-    this.bar(245, 40, 270, a.aura.value / 100, burst ? ART.aura : ART.hoodie);
-    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), ART.xp);
-    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x2cb4c7);
-    // Consistent segmented bars make HP, Aura and wave time readable at a glance.
-    for (const [x,w,n] of [[24,180,5],[245,270,5],[565,140,5],[745,190,5]]) {
-      g.lineStyle(1,0xfff8e7,.64);
-      for(let j=1;j<n;j++) g.lineBetween(x+w*j/n,40,x+w*j/n,50);
-    }
+    drawHudMeter(g,66,139,a.hp / stats.maxHp,0xff5b65);
+    drawHudMeter(g,274,241,a.aura.value / 100,burst ? 0xffc84d : 0xb948ff);
+    drawHudMeter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x7cff6b);
+    drawHudMeter(g,780,153,1 - a.waveClock / GAME.waveDurationMs,0x4fd9ff);
     const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
     const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
     this.status.setColor('#fff8e7').setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
@@ -175,7 +179,7 @@ export class ArenaScene extends Phaser.Scene {
       ? 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nDrag the joystick to move · auto-attack\nTap FLEX near 3 enemies · FOCUS slows enemies\nCollect XP, upgrade, and defeat the BIG HATER.\n\nTap PLAY below to start'
       : 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
     // Level Up is presented entirely by the HTML dialog, never a second Phaser modal.
-    if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
+    // Between-wave celebration belongs to the single responsive HTML layer.
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
     if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
     // The HTML GameShell owns HOME, PAUSE and RESULTS. Do not display an
@@ -191,9 +195,9 @@ export class ArenaScene extends Phaser.Scene {
     }
     this.modalBg.clear();
     if (message) {
-      this.modalBg.fillStyle(0x302747, .72).fillRect(0, 82, 960, 518);
-      this.modalBg.fillStyle(0x44345f, .98).fillRoundedRect(110, 118, 740, 438, 18);
-      this.modalBg.lineStyle(3, 0xffcc51).strokeRoundedRect(110, 118, 740, 438, 18);
+      this.modalBg.fillStyle(0x0c1425, .72).fillRect(0, 82, 960, 518);
+      this.modalBg.fillStyle(0x132841, .98).fillRoundedRect(110, 118, 740, 438, 18);
+      this.modalBg.lineStyle(3, 0xe9ac54).strokeRoundedRect(110, 118, 740, 438, 18);
     }
     if (touchControls.visible) {
       if (a.mode === 'between' || a.mode === 'dead' || a.mode === 'win') {
@@ -201,6 +205,14 @@ export class ArenaScene extends Phaser.Scene {
       }
     }
     touchControls.setMode(a.mode, a.choices, a.buffs, a.pendingUpgrades);
+    if(a.mode==='between'){
+      const key=`${a.wave}:${a.kills}:${a.xp.level}`;
+      if(key!==this.lastWaveUi){
+        this.lastWaveUi=key;
+        document.querySelector<HTMLElement>('#wave-title')!.textContent=`WAVE ${a.wave} COMPLETE`;
+        document.querySelector<HTMLElement>('#wave-stats')!.textContent=`${a.kills} kills · Level ${a.xp.level}`;
+      }
+    }
     this.overlay.setPosition(480, 337).setFontSize(a.mode === 'upgrades' ? 18 : 20).setText(message);
   }
 }
