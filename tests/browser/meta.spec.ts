@@ -4,7 +4,7 @@ import type { ArenaScene } from '../../src/game/scenes/ArenaScene';
 declare global {interface Window {__game: Phaser.Game}}
 async function load(page:Page):Promise<void> {
   await page.route('**/src/main.ts',async route=>{
-    const response=await route.fetch();
+    const response=await route.fetch({maxRetries:2});
     await route.fulfill({response,body:(await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(')});
   });
   await page.goto('/');
