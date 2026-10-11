@@ -36,7 +36,7 @@ test('Alpha Chad B2: full native atlas, portrait and strike/death animation',asy
   await page.evaluate(()=>{
     const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
     a.enemies=[];a.shots=[];a.drops=[];
-    a.jawUntil=a.clock+160;
+    a.jawUntil=a.clock+3000; // hold the attack pose long enough for deterministic Chromium capture
   });
   await expect.poll(async()=>{
     const h=await hero();return h!==null&&h.frame>=10&&h.frame<=15;
