@@ -128,11 +128,6 @@ export class ArenaScene extends Phaser.Scene {
     return this.add.text(x, y, '', { fontFamily: 'Arial, sans-serif', fontSize: size, fontStyle: 'bold', color: '#fff6e8' }).setDepth(2);
   }
 
-  private bar(x: number, y: number, width: number, value: number, color: number): void {
-    this.g.fillStyle(0x130f26).fillRoundedRect(x, y, width, 10, 5);
-    if (value > 0) this.g.fillStyle(color).fillRoundedRect(x, y, Math.max(5, width * Phaser.Math.Clamp(value, 0, 1)), 10, 5);
-  }
-
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
