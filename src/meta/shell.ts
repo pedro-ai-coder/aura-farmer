@@ -21,6 +21,9 @@ export class GameShell {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-menu]');
       if (button) this.handle(button.dataset.menu ?? '', button.dataset.character);
     });
+    window.addEventListener('aura:fullscreen-mode', () => {
+      if (this.screen !== null) this.render();
+    });
     this.menuButton.addEventListener('click', () => {
       if (this.screen === null) { this.scene.setPaused(true); this.screen='pause'; this.render(); }
     });
@@ -96,7 +99,7 @@ export class GameShell {
           <div class="meta-menu">${this.button('play','▶ PLAY CLASSIC','primary')}
           ${this.button('characters','CHARACTERS')}${this.button('achievements','ACHIEVEMENTS')}
           ${this.button('leaderboards','LEADERBOARDS')}${this.button('settings','SETTINGS')}
-          ${this.button('fullscreen','⛶ FULL SCREEN','mobile-meta')}</div>
+          ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
           <p class="meta-foot">GUEST · OFFLINE SAVE · NO LOGIN REQUIRED</p>`;
       }
       case 'characters': {
@@ -136,7 +139,9 @@ export class GameShell {
         <div class="meta-actions">${this.button('home','BACK')}</div>`;
       case 'pause': return this.header('PAUSED')+`<h1>TAKE AN AURA BREAK</h1>
         <p class="meta-sub">Combat is paused.</p><div class="meta-actions">
-        ${this.button('resume','RESUME','primary')}${this.button('exit','QUIT RUN')}</div>`;
+        ${this.button('resume','RESUME','primary')}${this.button('exit','QUIT RUN')}
+        ${document.querySelector('.play-layout')?.classList.contains('is-immersive')
+          ? this.button('fullscreen','EXIT FULL SCREEN','meta-fullscreen-exit') : ''}</div>`;
       case 'exit': return this.header('QUIT RUN?')+`<h1>YOUR RUN WILL BE LOST</h1>
         <div class="meta-actions">${this.button('resume','KEEP PLAYING','primary')}
         ${this.button('confirm-exit','QUIT TO HOME')}</div>`;
@@ -161,6 +166,7 @@ export class GameShell {
     }
   }
   private render():void {
+    document.querySelector('.play-layout')?.classList.toggle('is-menu-open',this.screen!==null);
     this.root.hidden=this.screen===null;
     this.menuButton.hidden=this.screen!==null;
     if(this.screen===null){this.root.innerHTML='';return;}

@@ -178,6 +178,11 @@ export class ArenaScene extends Phaser.Scene {
     if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
     if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
+    // The HTML GameShell owns HOME, PAUSE and RESULTS. Do not display an
+    // additional Phaser modal underneath it, especially on narrow phones.
+    if (document.querySelector<HTMLElement>('#meta-shell')?.hidden === false) {
+      message = '';
+    }
     this.buffIcons.forEach(icon => icon.setVisible(false));
     for (const [i,buff] of BUFFS.filter(b => a.buffs[b.id] > 0).slice(0,this.buffIcons.length).entries()) {
       const image = this.buffIcons[i];

@@ -18,6 +18,7 @@ export function setupMobileFullscreen(): void {
     stage.classList.toggle('is-immersive', next !== 'off');
     button.textContent = next === 'off' ? 'FULL SCREEN' : 'EXIT';
     button.setAttribute('aria-pressed', String(next !== 'off'));
+    window.dispatchEvent(new Event('aura:fullscreen-mode'));
     notice.textContent = next === 'off' ? '' : isLandscape()
       ? 'Landscape play mode' : 'Rotate your phone sideways for landscape play';
   }
