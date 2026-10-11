@@ -14,7 +14,9 @@ export class TouchControls {
   private stickBox = document.querySelector<HTMLElement>('#touch-stick')!;
   private playActions = document.querySelector<HTMLElement>('#touch-play-actions')!;
   private confirmActions = document.querySelector<HTMLElement>('#touch-confirm-actions')!;
-  private upgradeActions = document.querySelector<HTMLElement>('#touch-upgrade-actions')!;
+  private upgradeOverlay = document.querySelector<HTMLElement>('#upgrade-overlay')!;
+  private upgradeSubtitle = document.querySelector<HTMLElement>('#upgrade-subtitle')!;
+  private stage = document.querySelector<HTMLElement>('.play-layout')!;
   private confirmButton = document.querySelector<HTMLButtonElement>('#touch-confirm')!;
   private upgradeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-game-action^="choice"]'));
   private pointerId: number | null = null;
@@ -92,14 +94,19 @@ export class TouchControls {
     return { x: this.x, y: this.y, flex: actions.has('flex'), focus: actions.has('focus'), confirm: actions.has('confirm'), choice };
   }
 
-  setMode(mode: Mode, choices: BuffDefinition[]): void {
-    const key = `${mode}:${mode === 'upgrades' ? choices.map(c => c.id).join(',') : ''}`;
+  setMode(mode: Mode, choices: BuffDefinition[], stacks: Readonly<Partial<Record<BuffDefinition['id'],number>>> = {}, pendingUpgrades = 1): void {
+    const key = `${mode}:${mode === 'upgrades'
+      ? choices.map(c => `${c.id}:${stacks[c.id] ?? 0}`).join(',') + ':' + pendingUpgrades : ''}`;
     if (this.displayState === key) return;
     this.displayState = key;
 
     this.stickBox.hidden = mode !== 'playing';
     this.playActions.hidden = mode !== 'playing';
-    this.upgradeActions.hidden = mode !== 'upgrades';
+    this.upgradeOverlay.hidden = mode !== 'upgrades';
+    this.stage.classList.toggle('is-upgrading',mode === 'upgrades');
+    this.upgradeSubtitle.textContent = pendingUpgrades > 1
+      ? `${pendingUpgrades} upgrades remaining · Choose one to continue`
+      : 'Choose one upgrade to continue · Or press 1, 2 or 3';
     this.confirmActions.hidden = mode === 'playing' || mode === 'upgrades';
     if (mode !== 'playing') this.resetStick();
 
@@ -108,7 +115,31 @@ export class TouchControls {
     this.upgradeButtons.forEach((button, i) => {
       const buff = choices[i];
       button.hidden = !buff;
-      if (buff) button.textContent = `${i + 1}. ${buff.name}`;
+      if (!buff) return;
+      const number = document.createElement('span');
+      number.className='upgrade-number';
+      number.textContent=String(i+1);
+      const heading = document.createElement('strong');
+      heading.className='upgrade-name';
+      heading.textContent=buff.name;
+      const rarity = document.createElement('span');
+      rarity.className='upgrade-rarity';
+      rarity.textContent=buff.rarity;
+      const level = document.createElement('span');
+      level.className='upgrade-stack';
+      level.textContent=`${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)}/${buff.maxStacks}`;
+      const description = document.createElement('span');
+      description.className='upgrade-description';
+      description.textContent=buff.description;
+      const top = document.createElement('span');
+      top.className='upgrade-top';
+      top.append(number,rarity);
+      const bottom = document.createElement('span');
+      bottom.className='upgrade-bottom';
+      bottom.append(heading,level);
+      button.replaceChildren(top,bottom,description);
+      button.dataset.rarity=buff.rarity.toLowerCase();
+      button.setAttribute('aria-label',`Choose ${buff.name}, ${buff.rarity}, ${buff.description}`);
     });
   }
 }

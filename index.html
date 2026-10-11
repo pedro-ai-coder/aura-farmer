@@ -28,13 +28,22 @@
             <div id="touch-confirm-actions" hidden>
               <button type="button" id="touch-confirm" class="touch-button touch-confirm" data-game-action="confirm">PLAY</button>
             </div>
-            <div id="touch-upgrade-actions" class="touch-upgrades" hidden aria-label="Choose your upgrade">
-              <button type="button" class="touch-button" data-game-action="choice0" aria-label="Choose first upgrade">1</button>
-              <button type="button" class="touch-button" data-game-action="choice1" aria-label="Choose second upgrade">2</button>
-              <button type="button" class="touch-button" data-game-action="choice2" aria-label="Choose third upgrade">3</button>
-            </div>
           </div>
         </div>
+        <section id="upgrade-overlay" class="upgrade-overlay" aria-labelledby="upgrade-title" hidden>
+          <div class="upgrade-dialog" role="group" aria-describedby="upgrade-subtitle">
+            <header class="upgrade-header">
+              <div><span class="upgrade-kicker">LEVEL UP</span><h2 id="upgrade-title">CHOOSE YOUR BUFF</h2></div>
+              <span class="upgrade-paused">GAME PAUSED</span>
+            </header>
+            <p id="upgrade-subtitle" class="upgrade-subtitle">Choose one upgrade to continue.</p>
+            <div id="touch-upgrade-actions" class="touch-upgrades" aria-label="Choose your upgrade">
+              <button type="button" class="upgrade-choice" data-game-action="choice0" aria-label="Choose first upgrade">1</button>
+              <button type="button" class="upgrade-choice" data-game-action="choice1" aria-label="Choose second upgrade">2</button>
+              <button type="button" class="upgrade-choice" data-game-action="choice2" aria-label="Choose third upgrade">3</button>
+            </div>
+          </div>
+        </section>
         <button type="button" id="menu-open" class="menu-open" hidden aria-label="Pause game and open menu">☰ MENU</button>
         <section id="meta-shell" class="meta-shell" aria-label="Aura Farmer menu"></section>
         <div id="rotate-notice" class="rotate-notice" aria-hidden="true">ROTATE YOUR PHONE<span>Turn your device sideways to play in landscape</span></div>

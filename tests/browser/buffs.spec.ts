@@ -60,7 +60,11 @@ for (const layout of [
           a.drops = [{ ...a.pos, xp: 20 + (a.xp.level - 1) * 13 - a.xp.xp }];
         }, id);
         await expect.poll(() => state(page, a => a.mode)).toBe('upgrades');
-        await expect.poll(() => canvasText(page)).toContain(name);
+        await expect(page.locator('#upgrade-overlay')).toBeVisible();
+        await expect(page.locator('#upgrade-overlay')).toContainText(name);
+        await expect(page.locator('#menu-open')).toBeHidden();
+        // No duplicate Phaser Level Up modal exists behind the interactive cards.
+        expect(await canvasText(page)).not.toContain('LEVEL UP · CHOOSE YOUR BUFF');
         const clock = await state(page, a => a.clock);
         await page.waitForTimeout(80);
         expect(await state(page, a => a.clock)).toBe(clock);
