@@ -29,7 +29,7 @@ test('Sigma B1 loads 25 native 48px frames, menu portrait and in-game sprite',as
   await expect(page.locator('[data-character="sigma"]')).toHaveAttribute('aria-pressed','true');
   const portrait=page.locator('.meta-avatar img[src$="sigma-portrait.png"]').first();
   await expect(portrait).toBeVisible();
-  expect(await portrait.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBe(48);
+  await expect.poll(() => portrait.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBe(48);
   await page.locator('[data-menu="start"]').click();
   await expect.poll(()=>page.evaluate(()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;
