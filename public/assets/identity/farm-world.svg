@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Moonlit fantasy farmland with glowing crops, village and corrupted crystals">
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#102455"/><stop offset=".52" stop-color="#2852a0"/><stop offset="1" stop-color="#22354e"/></linearGradient>
+<radialGradient id="moon"><stop stop-color="#fffbc9"/><stop offset=".7" stop-color="#d4f7ff"/><stop offset="1" stop-color="#8cbbff" stop-opacity=".3"/></radialGradient>
+<linearGradient id="field" x2="0" y2="1"><stop stop-color="#2c6a55"/><stop offset="1" stop-color="#0f303e"/></linearGradient>
+<linearGradient id="cottage" x2="0" y2="1"><stop stop-color="#d9a067"/><stop offset="1" stop-color="#784536"/></linearGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="13"/></filter>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<circle cx="980" cy="160" r="170" fill="#93bff9" opacity=".35" filter="url(#glow)"/><circle cx="980" cy="160" r="96" fill="url(#moon)"/>
+<path d="M0 380L150 230 290 365 420 260 550 380 730 226 860 361 1050 260 1300 370 1470 252 1600 335V610H0" fill="#192b5a"/>
+<path d="M0 430Q370 320 680 450T1600 390V900H0" fill="#152950"/>
+<g opacity=".8" fill="#1e3c58"><path d="M1100 280l90-75 130 45-34 30-46 50-100-10z"/><path d="M240 250l120-50 96 35-50 62-138 3z"/></g>
+<g fill="#294b56" stroke="#132b44" stroke-width="9"><path d="M1100 295Q1190 350 1300 300L1280 340 1200 365 1140 337z"/><path d="M250 259Q348 320 450 260l-28 70-123 10z"/></g>
+<path d="M0 620Q450 450 820 600T1600 520V900H0" fill="url(#field)"/>
+<path d="M0 715Q270 610 640 690T1450 652L1600 690V900H0" fill="#1f4b45"/>
+<path d="M0 816Q500 670 970 760T1600 734V900H0" fill="#193a42"/>
+<g stroke="#14243b" stroke-width="13" stroke-linejoin="round">
+<path d="M150 570V425l102-88 106 88v145z" fill="url(#cottage)"/><path d="M129 434l121-123 127 123" fill="none"/><path d="M201 569V479h54v90" fill="#633d3c"/>
+<path d="M412 565V386l101-70 108 72v180z" fill="url(#cottage)"/><path d="M391 394l124-98 127 98" fill="none"/><path d="M475 563V478h59v85" fill="#5a3c36"/>
+<path d="M635 565V454l75-70 75 70v120z" fill="url(#cottage)"/><path d="M621 457l88-91 92 91" fill="none"/>
+</g>
+<g fill="#ffda73" stroke="#573b39" stroke-width="8"><rect x="282" y="449" width="41" height="47" rx="3"/><rect x="431" y="430" width="37" height="46" rx="3"/><rect x="555" y="430" width="37" height="46" rx="3"/><rect x="665" y="472" width="39" height="41" rx="3"/><rect x="723" y="472" width="39" height="41" rx="3"/></g>
+<g stroke="#1c3043" stroke-width="11" stroke-linecap="round">
+<path d="M750 376v-187"/><path d="M750 210l-100-55m100 55l109-55m-109 55l-100 86m100-86l109 89" stroke="#b77e52" stroke-width="17"/>
+<path d="M0 680h850m-850 60h850m-760-60v78m124-78v78m124-78v78m124-78v78m124-78v78m124-78v78" stroke="#7b503d"/>
+</g>
+<g fill="#c05bff" stroke="#3c176c" stroke-width="8">
+<path d="M1180 610l67-250 75 240-68 115z"/><path d="M1315 670l95-337 69 370-115 55z"/><path d="M1460 640l72-225 88 285-95 90z"/><path d="M1040 710l44-150 60 160-50 50z"/>
+</g>
+<g fill="#ff63e7" opacity=".85"><path d="M1248 398l-25 184 38 81z"/><path d="M1410 372l-42 297 60-31z"/><path d="M1530 456l-24 200 65 41z"/></g>
+<g fill="#83ff93" stroke="#173e39" stroke-width="5"><path d="M110 755q14-37 42-18l-14 41z"/><path d="M170 774q-12-35-38-38l12 42z"/><path d="M345 799q15-37 38-23l-12 40z"/><path d="M510 746q12-41 39-23l-11 42z"/><path d="M570 782q-18-36-37-32l14 46z"/></g>
+<g fill="#70eeff" opacity=".75"><circle cx="130" cy="735" r="7"/><circle cx="480" cy="720" r="9"/><circle cx="712" cy="765" r="7"/><circle cx="935" cy="700" r="9"/><circle cx="1030" cy="745" r="7"/></g>
+<g fill="#f7d773"><circle cx="250" cy="230" r="3"/><circle cx="530" cy="125" r="3"/><circle cx="1130" cy="100" r="4"/><circle cx="1465" cy="186" r="3"/><circle cx="690" cy="85" r="4"/></g>
+</svg>

@@ -3,15 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#302747" />
+    <meta name="theme-color" content="#0e1320" />
     <meta name="description" content="Aura Farmer: farm Aura, dodge cringe, and defeat the haters. Play on desktop or phone." />
-    <title>Aura Farmer — Character Update</title>
+    <title>Aura Farmer — Grow Your Legend</title>
   </head>
   <body>
     <main id="app">
-      <div class="masthead"><span class="tag">PIXEL CARTOON</span><strong>AURA <em>FARMER</em></strong><span class="tag">NO AURA? SKILL ISSUE.</span></div>
+      <div class="masthead"><span class="tag">✦ ARCADE SURVIVAL</span><strong>AURA <em>FARMER</em></strong><span class="tag">FARM · FIGHT · HARVEST</span></div>
       <div class="play-layout">
         <div id="game" aria-label="Aura Farmer game"></div>
+        <div id="af-loading" class="af-loading" role="status" aria-live="polite">
+          <div class="af-loading-inner"><span class="af-loading-label">AURA <b>FARMER</b></span>
+            <strong>GROW YOUR LEGEND</strong><span id="af-loading-stage">Cultivating the fields…</span>
+            <div class="af-loading-track" role="progressbar" aria-label="Loading game assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="af-loading-fill"></span></div>
+            <small>TIP ✦ Every great farmer starts with one seed.</small>
+          </div>
+        </div>
+        <div id="af-spotlight" class="af-spotlight" role="status" aria-live="polite" hidden>
+          <span id="af-spotlight-kicker"></span><strong id="af-spotlight-title"></strong><small id="af-spotlight-subtitle"></small>
+        </div>
         <div id="touch-controls" class="touch-controls" aria-label="Mobile game controls">
           <div id="touch-stick" class="touch-stick" hidden>
             <div id="joystick-track" class="joystick-track" role="group" aria-label="Drag to move">

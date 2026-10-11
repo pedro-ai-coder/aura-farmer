@@ -90,22 +90,38 @@ export class GameShell {
       ? id + '-portrait' : id;
   }
   private header(label:string):string {
-    return `<header class="meta-header"><span>AURA <b>FARMER</b></span><small>${label}</small></header>`;
+    return `<header class="meta-header"><span class="af-wordmark"><span>AURA</span> <b>FARMER</b><i aria-hidden="true">✦</i></span><small>${label}</small></header>`;
   }
   private inner():string {
     switch(this.screen) {
       case 'home': {
         const c=getCharacter(this.profile.selectedCharacterId);
-        return this.header('NO AURA? SKILL ISSUE.')+`<h1>MAIN CHARACTER ENERGY</h1>
-          <p class="meta-sub">Welcome back. Progress saves on this device.</p>
-          <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${this.portraitName(c.id)}.png" alt="" loading="lazy"></span>
-          <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
-          <div class="meta-cta">${this.button('play','▶ PLAY CLASSIC','primary')}
-          ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
-          <div class="meta-menu">
-          ${this.button('characters','CHARACTERS')}${this.button('achievements','ACHIEVEMENTS')}
-          ${this.button('leaderboards','LEADERBOARDS')}${this.button('settings','SETTINGS')}</div>
-          <p class="meta-foot">GUEST · OFFLINE SAVE · NO LOGIN REQUIRED</p>`;
+        return this.header('FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
+          <div class="af-home-nav">
+            <span class="af-eyebrow">✦ AN ARCADE SURVIVAL ADVENTURE</span>
+            <h1>MAIN CHARACTER ENERGY</h1>
+            <p class="meta-sub">Grow your Aura. Defend the fields. Become the legend.</p>
+            <div class="meta-cta">${this.button('play','✦ PLAY CLASSIC','primary')}
+            ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
+            <nav class="meta-menu" aria-label="Main menu">
+              ${this.button('characters','♟ HEROES')}${this.button('achievements','★ ACHIEVEMENTS')}
+              ${this.button('leaderboards','♛ RANKINGS')}${this.button('settings','⚙ SETTINGS')}
+            </nav>
+            <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${this.portraitName(c.id)}.png" alt="" loading="lazy"></span>
+              <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
+            <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
+          </div>
+          <div class="af-home-art" aria-hidden="true">
+            <span class="af-sun-glow"></span><img class="af-hero-art" src="/assets/identity/hero.svg" alt="">
+            <span class="af-sprout-icon">✿</span><span class="af-art-caption">GROW YOUR LEGEND</span>
+          </div>
+          <aside class="af-home-event" aria-label="World event">
+            <span class="af-event-tag">✦ WORLD EVENT</span>
+            <strong>WITHERROOT<br>INVASION</strong>
+            <small>The corrupted fields are stirring. Face the threat in Classic mode.</small>
+            <span class="af-event-footer">✦ THE FARM NEEDS YOU</span>
+          </aside>
+        </div>`;
       }
       case 'characters': {
         const selected=this.profile.selectedCharacterId;

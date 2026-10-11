@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { ArenaScene } from './game/scenes/ArenaScene';
 import './styles/main.css';
+import './styles/identity.css';
+import { setupSpotlights } from './meta/spotlight';
 import { setupMobileFullscreen } from './game/input/mobileFullscreen';
 import { setupGameShell } from './meta/shell';
 
@@ -18,3 +20,4 @@ const game = new Phaser.Game({
 });
 
 setupGameShell(game);
+setupSpotlights();

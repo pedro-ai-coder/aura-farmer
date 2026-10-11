@@ -24,11 +24,22 @@ export class ArenaScene extends Phaser.Scene {
   private paused = false;
   private notifiedMode = 'intro';
   private reportedRun = false;
+  private notifiedWave = 0;
+  private notifiedBurstEnd = 0;
   private pendingKeys = new Set<string>();
 
   constructor() { super('ArenaScene'); }
 
   preload(): void {
+    const loading=document.querySelector<HTMLElement>('#af-loading');
+    const track=loading?.querySelector<HTMLElement>('[role="progressbar"]');
+    const fill=document.querySelector<HTMLElement>('#af-loading-fill');
+    this.load.on('progress',(fraction:number)=>{
+      const value=Math.round(fraction*100);
+      if(fill) fill.style.width=value+'%';
+      track?.setAttribute('aria-valuenow',String(value));
+    });
+    this.load.once('complete',()=>{ if(loading) loading.hidden=true; });
     // Original static PNG sprite sheets shipped with the application.
     // Keep px-* runtime textures available as an explicit fallback.
     for (const [key, frame] of [
@@ -55,7 +66,7 @@ export class ArenaScene extends Phaser.Scene {
     this.overlay = this.label(480, 300, 20).setOrigin(.5).setAlign('center').setWordWrapWidth(650).setLineSpacing(12).setDepth(5);
     this.feedback = this.label(480, 559, 15).setOrigin(.5).setDepth(3);
     this.debug = this.label(940, 111, 12).setOrigin(1, 0).setDepth(3);
-    for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#302747');
+    for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#fff8e7');
     this.overlay.setDepth(5).setColor('#fff8e7');
     this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
     for (const [name, key] of Object.entries(this.keyboard)) {
@@ -89,6 +100,15 @@ export class ArenaScene extends Phaser.Scene {
     });
     this.draw();
     this.pixelWorld.sync(this.arena);
+    if(this.arena.mode==='playing' && this.notifiedWave!==this.arena.wave){
+      this.notifiedWave=this.arena.wave;
+      window.dispatchEvent(new CustomEvent('aura:wave',{detail:this.arena.wave}));
+    }
+    if(this.arena.mode==='playing' && this.arena.aura.burstUntil>this.arena.clock &&
+       this.arena.aura.burstUntil>this.notifiedBurstEnd){
+      this.notifiedBurstEnd=this.arena.aura.burstUntil;
+      window.dispatchEvent(new CustomEvent('aura:burst'));
+    }
     if (this.notifiedMode !== this.arena.mode) {
       this.notifiedMode = this.arena.mode;
       window.dispatchEvent(new CustomEvent('aura:mode', {detail:this.arena.mode}));
@@ -114,15 +134,15 @@ export class ArenaScene extends Phaser.Scene {
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
-    // Layered arcade HUD panels with legible dark text on Cloud Cream.
+    // Aura Farmer identity: dark glass panels, crystal-cyan edges and warm harvest highlights.
     for (const [x,w] of [[18,199],[238,288],[555,164],[735,211]]) {
-      g.fillStyle(0x302747,.15).fillRoundedRect(x+2,6,w,53,9);
-      g.fillStyle(0xfff8e7,.97).fillRoundedRect(x,4,w,53,8);
-      g.lineStyle(2,0x76609e,.82).strokeRoundedRect(x,4,w,53,8);
-      g.fillStyle(0xc6b6e5,.45).fillRect(x+9,33,w-18,2);
+      g.fillStyle(0x0e1320,.55).fillRoundedRect(x+3,8,w,53,10);
+      g.fillStyle(0x142239,.96).fillRoundedRect(x,4,w,53,9);
+      g.lineStyle(2,0x3b7390,.9).strokeRoundedRect(x,4,w,53,9);
+      g.fillStyle(0x4fd9ff,.32).fillRect(x+10,34,w-20,2);
     }
-    g.fillStyle(0x302747,.93).fillRoundedRect(18,59,924,20,5);
-    g.lineStyle(1,0x76609e,.92).strokeRoundedRect(18,59,924,20,5);
+    g.fillStyle(0x0e1320,.92).fillRoundedRect(18,59,924,20,7);
+    g.lineStyle(1,0x3b7390,.95).strokeRoundedRect(18,59,924,20,7);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
@@ -156,10 +176,10 @@ export class ArenaScene extends Phaser.Scene {
     this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
-    this.bar(24, 40, 180, a.hp / stats.maxHp, ART.hostile);
-    this.bar(245, 40, 270, a.aura.value / 100, burst ? ART.aura : ART.hoodie);
-    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), ART.xp);
-    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x2cb4c7);
+    this.bar(24, 40, 180, a.hp / stats.maxHp, 0xff5b5b);
+    this.bar(245, 40, 270, a.aura.value / 100, burst ? 0xffc84d : 0xb948ff);
+    this.bar(565, 40, 140, a.xp.xp / xpToNextLevel(a.xp.level), 0x7cff6b);
+    this.bar(745, 40, 190, 1 - a.waveClock / GAME.waveDurationMs, 0x4fd9ff);
     // Consistent segmented bars make HP, Aura and wave time readable at a glance.
     for (const [x,w,n] of [[24,180,5],[245,270,5],[565,140,5],[745,190,5]]) {
       g.lineStyle(1,0xfff8e7,.64);

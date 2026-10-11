@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" aria-label="Original Aura Farmer hero, red scarf and glowing farming axe">
+<defs><linearGradient id="blue" x2="1" y2="1"><stop stop-color="#e5ffff"/><stop offset=".5" stop-color="#4fd9ff"/><stop offset="1" stop-color="#2669ff"/></linearGradient><linearGradient id="hair" x2="0" y2="1"><stop stop-color="#b87735"/><stop offset="1" stop-color="#492817"/></linearGradient></defs>
+<ellipse cx="310" cy="617" rx="186" ry="29" fill="#0d1836" opacity=".6"/>
+<g stroke="#132039" stroke-width="13" stroke-linejoin="round">
+<path d="M202 330l-114 58 110-9 52-25z" fill="#f15c54"/>
+<path d="M246 423l-63 155 62 19 70-132z" fill="#273951"/><path d="M335 421l59 153 65-18-34-171z" fill="#273951"/>
+<path d="M175 555l79 6-7 52-112 1z" fill="#714b33"/><path d="M374 548l79-1 40 59-121 11z" fill="#714b33"/>
+<path d="M243 294l143-18 50 192-205 14-18-118z" fill="#e8dcc3"/>
+<path d="M286 321l91-17-2 156-89 7z" fill="#28496a"/>
+<path d="M223 323l-57 72-34-26 52-116z" fill="#eac3a0"/><path d="M393 313l58 68-23 38-73-71z" fill="#eac3a0"/>
+<path d="M186 370l-55-8-14 50 62 17z" fill="#4a4f64"/><path d="M423 398l61-20 23 46-55 25z" fill="#4a4f64"/>
+<path d="M234 252q0-100 95-98 105-5 101 106-10 86-92 102-104-9-104-110z" fill="#edb88e"/>
+<path d="M222 245l-36-55 62 14-14-69 77 33 26-69 34 60 82-25-29 67 54 17-61 47-40-33-58 5-50-9z" fill="url(#hair)"/>
+<path d="M263 272l44-8m64-7l36 1" stroke="#33241b"/><path d="M278 290l17 7m83-8l16-6" stroke="#132039" stroke-width="17"/><path d="M322 326q37 28 75-11" fill="none" stroke="#733f32" stroke-width="9"/>
+<path d="M247 352l89 40 100-62 3 45-85 70-94-32z" fill="#db453b"/>
+<path d="M216 446l247-15" stroke="#7d5737" stroke-width="28"/><circle cx="352" cy="437" r="25" fill="url(#blue)"/>
+</g>
+<g transform="rotate(-25 165 460)">
+<path d="M159 325v266" stroke="#12253b" stroke-width="37" stroke-linecap="round"/><path d="M159 325v266" stroke="#d5a056" stroke-width="21" stroke-linecap="round"/>
+<path d="M156 295Q33 285 27 405q80-38 157-11 71-88 28-131z" fill="url(#blue)" stroke="#0d284d" stroke-width="14" stroke-linejoin="round"/>
+<path d="M49 384q52-54 130-16" fill="none" stroke="#e4ffff" stroke-width="11" stroke-linecap="round"/>
+</g>
+<g fill="#7cff6b"><path d="M514 248q-12-65 40-92 19 68-40 92z"/><path d="M517 250q-63-25-80-77 63-4 80 77z"/></g><circle cx="514" cy="276" r="43" fill="#ecffd0" stroke="#1a4937" stroke-width="9"/><circle cx="497" cy="268" r="6" fill="#173b39"/><circle cx="531" cy="268" r="6" fill="#173b39"/><path d="M505 288q12 14 25 0" fill="none" stroke="#173b39" stroke-width="6"/>
+</svg>
