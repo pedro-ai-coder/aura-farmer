@@ -8,6 +8,7 @@ import { ART, PixelWorld } from '../render/pixelArt';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
+import { runtimeArtPreview, RUNTIME_FILES } from '../render/runtimeArt';
 
 export class ArenaScene extends Phaser.Scene {
   readonly arena = new Arena();
@@ -33,6 +34,11 @@ export class ArenaScene extends Phaser.Scene {
   constructor() { super('ArenaScene'); }
 
   preload(): void {
+    if (runtimeArtPreview()) {
+      for (const [key,file,width,height] of RUNTIME_FILES) {
+        this.load.svg(key,'assets/runtime/'+file,{width,height});
+      }
+    }
     const loading=document.querySelector<HTMLElement>('#af-loading');
     const track=loading?.querySelector<HTMLElement>('[role="progressbar"]');
     const fill=document.querySelector<HTMLElement>('#af-loading-fill');

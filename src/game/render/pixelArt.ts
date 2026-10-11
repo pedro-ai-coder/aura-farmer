@@ -6,6 +6,7 @@ import { ENEMIES } from '../data/enemies';
 import { SIGMA_B1, sigmaB1Frame, type SigmaPose } from './sigmaB1';
 import { ALPHA_B2, alphaB2Frame, type AlphaPose } from './alphaB2';
 import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
+import { runtimeArtPreview, RUNTIME_TEXTURES } from './runtimeArt';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -199,6 +200,7 @@ export function createPixelTextures(scene: Phaser.Scene): void {
 
 /** Reusable display objects; simulation/hitboxes stay in the Arena core. */
 export class PixelWorld {
+  private readonly runtime = runtimeArtPreview();
   private player: Phaser.GameObjects.Image;
   private enemies = new Map<number, Phaser.GameObjects.Image>();
   private drops: Phaser.GameObjects.Image[] = [];
@@ -220,7 +222,8 @@ export class PixelWorld {
 
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
-    scene.add.image(480,300,'px-floor').setDepth(-10);
+    scene.add.image(480,300,this.runtime && scene.textures.exists(RUNTIME_TEXTURES.floor)
+      ? RUNTIME_TEXTURES.floor : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
     this.player = scene.add.image(480,330,scene.textures.exists(SIGMA_B1.texture) ? SIGMA_B1.texture :
@@ -249,7 +252,11 @@ export class PixelWorld {
       this.lastFlexSuccesses = a.flexSuccesses;
     }
     this.lastClock = a.clock;
-    if (sigmaB1) {
+    const previewHero = this.runtime && a.characterId === 'sigma' &&
+      this.scene.textures.exists(RUNTIME_TEXTURES.sigma);
+    if (previewHero) {
+      this.player.setTexture(RUNTIME_TEXTURES.sigma);
+    } else if (sigmaB1) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
       if (a.mode !== 'dead') this.deathStartedAt = -1;
@@ -342,8 +349,14 @@ export class PixelWorld {
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
       this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
+    if (previewHero) {
+      this.player.setDisplaySize(60,60).setOrigin(.5,.59);
+      this.player.setAngle(a.mode==='playing' && playerMoving ? Math.sin(a.clock/135)*3 : 0);
+    } else {
+      this.player.setDisplaySize(48,48).setOrigin(.5,.5).setAngle(0);
+    }
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(previewHero || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();
@@ -358,12 +371,21 @@ export class PixelWorld {
       let img = this.enemies.get(enemy.id);
       if (!img) {
         const spriteKey = 'spr-' + enemy.type;
-        img = this.scene.add.image(enemy.x,enemy.y,this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
+        const previewKey = RUNTIME_TEXTURES[enemy.type];
+        img = this.scene.add.image(enemy.x,enemy.y,this.runtime && this.scene.textures.exists(previewKey)
+          ? previewKey : this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
         this.enemies.set(enemy.id,img);
       }
       const bob = Math.floor((a.clock + enemy.id*77) / 260) % 2;
       const spriteKey = 'spr-' + enemy.type;
-      if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
+      const previewKey = RUNTIME_TEXTURES[enemy.type];
+      const previewEnemy = this.runtime && this.scene.textures.exists(previewKey);
+      if (previewEnemy) {
+        img.setTexture(previewKey);
+        const base = enemy.type==='boss' ? 124 : enemy.type==='beta' ? 58 : 46;
+        img.setDisplaySize(base,base).setOrigin(.5,.55);
+        img.setScale(img.scaleX,Math.abs(img.scaleY)*(1+0.02*Math.sin(a.clock/195+enemy.id)));
+      } else if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
       else img.setTexture('px-'+enemy.type+'-'+bob);
       const previous = this.previousEnemies.get(enemy.id);
       if (previous && enemy.hp < previous.hp) this.hitFlashes.set(enemy.id,a.clock+105);
@@ -395,7 +417,7 @@ export class PixelWorld {
     this.impacts=this.impacts.filter(fx=>fx.until>a.clock);
     for(const fx of this.impacts) {
       const p=1-(fx.until-a.clock)/310, radius=7+17*p;
-      const color=fx.type==='npc'?0x89839e:fx.type==='beta'?0x69bfa8:0xea568a;
+      const color=fx.type==='npc'?0x79bc51:fx.type==='beta'?0xc775fa:0xee5bd0;
       this.actionLayer.lineStyle(p<.5?3:2,color,(1-p)*.65).strokeCircle(fx.x,fx.y,radius);
       for(let j=0;j<4;j++){
         const angle=j*Math.PI/2+.2;
@@ -403,12 +425,14 @@ export class PixelWorld {
           .fillRect(fx.x+Math.cos(angle)*radius-2,fx.y+Math.sin(angle)*radius-2,4,4);
       }
     }
+    const previewDrops = this.runtime && this.scene.textures.exists(RUNTIME_TEXTURES.xp);
     const atlas = this.scene.textures.exists('spr-items');
     while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
     this.shots.forEach((img,i)=>{
       const shot=a.shots[i]; img.setVisible(!!shot);
       if(shot) {
-        if(atlas) img.setTexture('spr-items',shot.hostile?1:0);
+        if (previewDrops) img.setTexture(shot.hostile?RUNTIME_TEXTURES.hostile:RUNTIME_TEXTURES.friendly);
+        else if(atlas) img.setTexture('spr-items',shot.hostile?1:0);
         else img.setTexture(shot.hostile?'px-hostile':'px-shot');
         img.setPosition(shot.x,shot.y);
       }
@@ -417,7 +441,8 @@ export class PixelWorld {
     this.drops.forEach((img,i)=>{
       const drop=a.drops[i]; img.setVisible(!!drop);
       if(drop) {
-        if(atlas)img.setTexture('spr-items',2);
+        if(previewDrops) img.setTexture(RUNTIME_TEXTURES.xp).setDisplaySize(18,18);
+        else if(atlas)img.setTexture('spr-items',2);
         img.setPosition(drop.x,drop.y-2-Math.sin(a.clock/230+i)*2);
         img.setRotation(Math.sin(a.clock/460+i)*.10);
       }
