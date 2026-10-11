@@ -96,10 +96,11 @@ export class GameShell {
           <p class="meta-sub">Welcome back. Progress saves on this device.</p>
           <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${c.id === 'sigma' ? 'sigma-portrait' : c.id}.png" alt="" loading="lazy"></span>
           <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
-          <div class="meta-menu">${this.button('play','▶ PLAY CLASSIC','primary')}
-          ${this.button('characters','CHARACTERS')}${this.button('achievements','ACHIEVEMENTS')}
-          ${this.button('leaderboards','LEADERBOARDS')}${this.button('settings','SETTINGS')}
+          <div class="meta-cta">${this.button('play','▶ PLAY CLASSIC','primary')}
           ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
+          <div class="meta-menu">
+          ${this.button('characters','CHARACTERS')}${this.button('achievements','ACHIEVEMENTS')}
+          ${this.button('leaderboards','LEADERBOARDS')}${this.button('settings','SETTINGS')}</div>
           <p class="meta-foot">GUEST · OFFLINE SAVE · NO LOGIN REQUIRED</p>`;
       }
       case 'characters': {
@@ -114,7 +115,9 @@ export class GameShell {
         }).join('');
         return this.header('CHOOSE YOUR FARMER')+`<div class="meta-grid characters">${cards}</div>
           <p class="meta-sub">${getCharacter(selected).description} · ${getCharacter(selected).weapon}</p>
-          <div class="meta-actions">${this.button('home','BACK')}${this.button('start','START RUN →','primary')}</div>`;
+          <div class="meta-actions meta-character-actions">${this.button('home','BACK')}
+          ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}
+          ${this.button('start','START RUN →','primary')}</div>`;
       }
       case 'achievements': return this.header('ACHIEVEMENTS')+
         `<p class="meta-sub">${this.profile.achievements.length}/${ACHIEVEMENTS.length} unlocked · Saved on this device</p>
@@ -166,7 +169,12 @@ export class GameShell {
     }
   }
   private render():void {
-    document.querySelector('.play-layout')?.classList.toggle('is-menu-open',this.screen!==null);
+    const stage=document.querySelector('.play-layout');
+    const frontMenu=['home','characters','achievements','leaderboards','settings','reset'].includes(this.screen ?? '');
+    stage?.classList.toggle('is-menu-open',this.screen!==null);
+    stage?.classList.toggle('is-front-menu',frontMenu);
+    if (this.screen !== null) this.root.dataset.screen=this.screen;
+    else delete this.root.dataset.screen;
     this.root.hidden=this.screen===null;
     this.menuButton.hidden=this.screen!==null;
     if(this.screen===null){this.root.innerHTML='';return;}
