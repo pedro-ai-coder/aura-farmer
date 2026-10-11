@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,
+  retries: process.env.CI ? 1 : 0, // recover from transient Vite/Chromium ECONNRESET on CI
   workers: 1,
   timeout: 45000,
   expect: { timeout: 15000 },
