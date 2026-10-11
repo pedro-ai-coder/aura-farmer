@@ -174,7 +174,7 @@ export class ArenaScene extends Phaser.Scene {
     if (a.mode === 'intro') message = touchControls.visible
       ? 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nDrag the joystick to move · auto-attack\nTap FLEX near 3 enemies · FOCUS slows enemies\nCollect XP, upgrade, and defeat the BIG HATER.\n\nTap PLAY below to start'
       : 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
-    if (a.mode === 'upgrades') message = `LEVEL UP · CHOOSE YOUR BUFF\nGame paused · ${a.pendingUpgrades} upgrade(s) left\n\n${a.choices.map((b, i) => `[${i + 1}] ${b.name} · ${a.buffs[b.id] + 1}/${b.maxStacks}\n${b.description}`).join('\n\n')}`;
+    // Level Up is presented entirely by the HTML dialog, never a second Phaser modal.
     if (a.mode === 'between') message = `WAVE ${a.wave} COMPLETE\n\n${a.kills} kills · Level ${a.xp.level}\n+20 HP next wave\n\nPress ENTER to continue`;
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
     if (a.mode === 'win') message = `GOD AURA — VICTORY!\n\nBIG HATER defeated · 5 waves cleared\n${a.kills} kills · Level ${a.xp.level}\n\nPress ENTER to play again`;
@@ -196,12 +196,11 @@ export class ArenaScene extends Phaser.Scene {
       this.modalBg.lineStyle(3, 0xffcc51).strokeRoundedRect(110, 118, 740, 438, 18);
     }
     if (touchControls.visible) {
-      if (a.mode === 'upgrades') message += '\n\nTap a buff button below.';
       if (a.mode === 'between' || a.mode === 'dead' || a.mode === 'win') {
         message = message.replace(/Press ENTER[^\n]*/g, 'Use the button below to continue');
       }
     }
-    touchControls.setMode(a.mode, a.choices);
+    touchControls.setMode(a.mode, a.choices, a.buffs, a.pendingUpgrades);
     this.overlay.setPosition(480, 337).setFontSize(a.mode === 'upgrades' ? 18 : 20).setText(message);
   }
 }
