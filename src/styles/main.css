@@ -894,3 +894,146 @@ body {
   .play-layout.is-front-menu .meta-feature {padding:6px;}
   .play-layout.is-front-menu .meta-panel h1 {font-size:18px;margin:8px 0;}
 }
+
+/* Upgrade gate: exactly one authoritative UI layer. The Phaser canvas never
+   paints a second Level Up modal; choice buttons are inside this dialog. */
+.play-layout.is-upgrading #menu-open,
+.play-layout.is-upgrading #touch-stick,
+.play-layout.is-upgrading #touch-play-actions,
+.play-layout.is-upgrading #touch-confirm-actions,
+.play-layout.is-upgrading #fullscreen-toggle {
+  display:none!important;
+  pointer-events:none!important;
+}
+.upgrade-overlay {
+  position:absolute;
+  inset:0;
+  z-index:30;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:clamp(7px,1.8vw,20px);
+  background:#30274791;
+  pointer-events:auto;
+  overscroll-behavior:contain;
+}
+.upgrade-overlay[hidden] {display:none!important;}
+.upgrade-dialog {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:min(940px,100%);
+  max-height:100%;
+  overflow:auto;
+  border:3px solid #302747;
+  border-radius:20px;
+  background:linear-gradient(160deg,#fff8ed,#eee6fa);
+  padding:clamp(12px,2vw,22px);
+  box-shadow:0 5px 0 #8b5bd8,0 12px 30px #30274770;
+}
+.upgrade-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:9px 13px;
+  background:#302747;
+  color:#fff8e7;
+  border:2px solid #8b5bd8;
+  border-radius:11px;
+}
+.upgrade-kicker {
+  display:inline-block;
+  padding:2px 7px;
+  border-radius:5px;
+  background:#ffcc51;
+  color:#302747;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.13em;
+}
+.upgrade-header h2 {
+  margin:4px 0 0;
+  font-size:clamp(15px,2vw,22px);
+  line-height:1.1;
+  letter-spacing:.03em;
+}
+.upgrade-paused {
+  font-size:clamp(9px,1.1vw,12px);
+  font-weight:900;
+  white-space:nowrap;
+  letter-spacing:.1em;
+  color:#e5daf4;
+}
+.upgrade-subtitle {
+  margin:0;
+  text-align:center;
+  font-size:clamp(11px,1.3vw,14px);
+  font-weight:750;
+  color:#655176;
+}
+.upgrade-dialog .touch-upgrades {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(7px,1.5vw,15px);
+  width:100%;
+  flex:1;
+  min-height:0;
+}
+.upgrade-choice {
+  appearance:none;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:12px;
+  padding:clamp(10px,1.5vw,16px);
+  border:2px solid #675188;
+  border-radius:13px;
+  background:linear-gradient(150deg,#fffdf7,#e6dbf4);
+  color:#302747;
+  box-shadow:0 4px 0 #44345f;
+  text-align:left;
+  cursor:pointer;
+  font:inherit;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  min-width:0;
+  min-height:145px;
+}
+.upgrade-choice[data-rarity="rare"] {border-color:#8b5bd8;}
+.upgrade-choice[data-rarity="epic"] {border-color:#d8a11e;background:linear-gradient(140deg,#fff6c9,#f1e4f5);}
+.upgrade-choice[data-rarity="legendary"] {border-color:#d8a11e;background:linear-gradient(140deg,#ffeb9a,#f1d2f2);}
+.upgrade-choice:active {transform:translateY(2px);box-shadow:0 2px 0 #44345f;}
+.upgrade-choice:focus-visible {outline:3px solid #ffcc51;outline-offset:2px;}
+.upgrade-top,.upgrade-bottom {display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.upgrade-number {display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:8px;background:#44345f;color:#fff8e7;font-size:15px;font-weight:1000;}
+.upgrade-rarity {font-size:10px;letter-spacing:.1em;font-weight:1000;color:#655176;}
+.upgrade-name {font-size:clamp(13px,1.5vw,18px);line-height:1.15;overflow-wrap:anywhere;}
+.upgrade-stack {white-space:nowrap;font-size:12px;font-weight:900;color:#8060a5;}
+.upgrade-description {display:block;color:#584871;font-size:clamp(11px,1.2vw,14px);line-height:1.35;overflow-wrap:anywhere;}
+@media (orientation:landscape) and (max-height:490px) {
+  .upgrade-overlay {padding:6px;}
+  .upgrade-dialog {gap:7px;padding:8px 10px;border-radius:12px;}
+  .upgrade-header {padding:5px 9px;}
+  .upgrade-kicker {font-size:9px;}
+  .upgrade-header h2 {font-size:15px;margin-top:2px;}
+  .upgrade-paused {font-size:9px;}
+  .upgrade-subtitle {font-size:11px;}
+  .upgrade-dialog .touch-upgrades {gap:8px;}
+  .upgrade-choice {min-height:112px;gap:7px;padding:9px;}
+  .upgrade-number {width:26px;height:26px;font-size:12px;}
+  .upgrade-rarity {font-size:9px;}
+  .upgrade-name {font-size:13px;}
+  .upgrade-stack {font-size:11px;}
+  .upgrade-description {font-size:11px;line-height:1.2;}
+}
+@media (orientation:portrait) and (max-width:900px) {
+  .upgrade-overlay {position:fixed;inset:0;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));}
+  .upgrade-dialog {max-height:100%;width:min(490px,100%);}
+  .upgrade-dialog .touch-upgrades {grid-template-columns:1fr;}
+  .upgrade-choice {min-height:105px;gap:7px;padding:10px;}
+  .upgrade-description {font-size:12px;}
+}
