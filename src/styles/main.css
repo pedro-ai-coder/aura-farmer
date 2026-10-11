@@ -678,3 +678,219 @@ body {
     height: 44px;
   }
 }
+
+/* v0.5.2 — Dedicated responsive FRONT MENU / CHARACTERS shell.
+   Previously the menu was limited to the height of a 960x600 game canvas,
+   causing portrait/landscape cut-off and controls visible underneath. */
+.play-layout.is-front-menu {
+  background:linear-gradient(150deg,#eee6f9 0%,#d7c7ec 48%,#ede4f7 100%);
+  border-radius:18px;
+  overflow:hidden;
+  min-height: min(720px, calc(100dvh - 95px));
+}
+.play-layout.is-front-menu #game,
+.play-layout.is-front-menu .touch-controls,
+.play-layout.is-front-menu .menu-open {
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+.play-layout.is-front-menu .meta-shell {
+  position:absolute;inset:0;z-index:35;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(7px,2.3vmin,15px);
+  background:transparent;
+  overflow:hidden;
+}
+.play-layout.is-front-menu .meta-panel {
+  display:flex;
+  flex-direction:column;
+  width:min(720px,100%);
+  max-width:100%;
+  max-height:100%;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  padding:clamp(10px,1.8vmin,20px);
+}
+.meta-cta {
+  display:grid;grid-template-columns:minmax(0,2.2fr) minmax(125px,1fr);
+  gap:9px;margin-top:11px;
+}
+.meta-cta .meta-button,
+.meta-cta .meta-button.mobile-meta {display:block;}
+.meta-cta .primary {min-width:0;}
+.meta-panel .meta-menu { margin-top:9px; }
+.meta-character-actions {
+  grid-template-columns:minmax(65px,1fr) minmax(110px,1.4fr) minmax(130px,2fr);
+}
+.meta-character-actions .primary {background:#ffcc51;}
+.meta-character-actions .mobile-meta {display:block;}
+.meta-header {flex:none;position:sticky;top:0;z-index:2;}
+.meta-actions {position:sticky;bottom:0;z-index:2;flex:none;
+  padding:6px 0 2px;margin-top:8px;
+  background:linear-gradient(180deg,#f2eaf600,#eee5f4 17%);
+}
+.meta-panel .meta-feature {flex:none;}
+.meta-panel .meta-sub {flex:none;}
+.meta-panel .characters {
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  padding:3px 3px 5px;
+}
+.meta-panel .meta-achievements,
+.meta-panel .meta-leaderboard {
+  flex:1;min-height:85px;
+}
+.meta-shell[data-screen="characters"] .meta-panel {overflow:hidden;}
+.meta-shell[data-screen="characters"] .meta-grid.characters {flex:1;}
+
+/* The left/right landscape game columns are a non-immersive fallback only.
+   MENU sits in the right column above FULL SCREEN, not on top of FLEX. */
+@media (orientation:landscape) and (max-height:650px) {
+  .play-layout:not(.is-immersive):not(:fullscreen):not(.is-front-menu) .menu-open {
+    top:5px;right:8px;left:auto;
+    min-height:39px;
+    padding:5px 10px;
+    font-size:11px;
+    z-index:25;
+  }
+  .play-layout:not(.is-immersive):not(:fullscreen):not(.is-front-menu) .touch-panel {
+    padding-top:45px;
+  }
+  .play-layout.is-front-menu {
+    display:block;
+    width:100%;
+    min-height:calc(100dvh - 8px);
+    height:calc(100dvh - 8px);
+    border-radius:9px;
+  }
+  .play-layout.is-front-menu #game {position:absolute;inset:0;opacity:0;}
+  .play-layout.is-front-menu .meta-shell {padding:7px;}
+  .play-layout.is-front-menu .meta-panel {
+    width:min(960px,100%);
+    height:100%;
+    max-height:100%;
+    padding:8px 11px;
+    border-width:2px;
+    box-shadow:0 3px 0 #8b5bd8,0 5px 0 #302747;
+    border-radius:13px;
+  }
+  .play-layout.is-front-menu .meta-header {
+    padding:6px 10px;
+    font-size:13px;
+  }
+  .play-layout.is-front-menu .meta-header small {font-size:10px;}
+  .play-layout.is-front-menu h1 {
+    margin:7px 0 3px;
+    font-size:16px;
+  }
+  .play-layout.is-front-menu .meta-sub {
+    margin:4px 0 6px;
+    font-size:10px;
+  }
+  .play-layout.is-front-menu .meta-foot {
+    margin:6px 0 0;
+    font-size:9px;
+  }
+  .play-layout.is-front-menu .meta-feature {
+    margin-top:5px;
+    padding:5px 8px;
+    gap:10px;
+  }
+  .play-layout.is-front-menu .meta-feature .meta-avatar {
+    width:40px;height:40px;
+  }
+  .play-layout.is-front-menu .meta-cta,
+  .play-layout.is-front-menu .meta-menu {
+    margin-top:7px;gap:6px;
+  }
+  .play-layout.is-front-menu .meta-button {
+    min-height:38px;
+    padding:7px 5px;
+    font-size:11px;
+    box-shadow:0 2px 0 #44345f;
+  }
+  .play-layout.is-front-menu .meta-grid.characters {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-auto-rows:minmax(86px,1fr);
+    align-content:stretch;
+    margin-top:5px;
+    gap:5px;
+  }
+  .play-layout.is-front-menu .meta-character {
+    min-height:0;
+    padding:5px 6px;
+    gap:2px;
+    font-size:11px;
+    border-radius:7px;
+    box-shadow:0 2px 0 #44345f;
+  }
+  .play-layout.is-front-menu .meta-character .meta-avatar {
+    width:32px;height:32px;
+    border-width:2px;
+  }
+  .play-layout.is-front-menu .meta-character small,
+  .play-layout.is-front-menu .meta-character-description {font-size:9px;line-height:1.12;}
+  .play-layout.is-front-menu .meta-character-description {
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .play-layout.is-front-menu .meta-character.selected::after {
+    width:17px;height:17px;top:4px;right:4px;
+  }
+  .play-layout.is-front-menu .meta-character-actions {
+    grid-template-columns:.7fr 1.2fr 1.5fr;
+    margin-top:3px;
+    gap:5px;
+    padding:4px 0 1px;
+  }
+  .play-layout.is-front-menu .meta-actions {padding:3px 0 1px;}
+}
+
+/* Portrait: use the remaining physical viewport instead of tying the panel
+   to a tiny canvas. Main play and full-screen actions are always visible. */
+@media (orientation:portrait) and (max-width:900px) {
+  .play-layout.is-front-menu {
+    width:100%;
+    min-height:max(560px,calc(100dvh - 100px));
+    border-radius:12px;
+  }
+  .play-layout.is-front-menu #game {height:0;visibility:hidden;}
+  .play-layout.is-front-menu .meta-shell {padding:8px 7px;}
+  .play-layout.is-front-menu .meta-panel {
+    width:100%;
+    max-height:calc(100dvh - 118px);
+    padding:12px;
+  }
+  .play-layout.is-front-menu .meta-grid.characters {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-auto-rows:minmax(114px,1fr);
+    gap:6px;
+  }
+  .play-layout.is-front-menu .meta-character {
+    min-height:106px;
+    padding:7px;
+    gap:4px;
+  }
+  .play-layout.is-front-menu .meta-character .meta-avatar {width:43px;height:43px;}
+  .play-layout.is-front-menu .meta-character-actions {
+    grid-template-columns:1fr 1.25fr;
+  }
+  .play-layout.is-front-menu .meta-character-actions .primary {grid-column:1 / -1;grid-row:1;}
+  .play-layout.is-front-menu .meta-character-actions .meta-button:not(.primary) {grid-row:2;}
+  .play-layout.is-front-menu .meta-cta {
+    grid-template-columns:minmax(0,1.6fr) minmax(120px,1fr);
+  }
+}
+/* Even small phones retain enough vertical space for a scrollable roster.
+   The active START RUN control stays visible in the sticky footer. */
+@media (orientation:portrait) and (max-height:700px) {
+  .play-layout.is-front-menu {min-height:calc(100dvh - 82px);}
+  .play-layout.is-front-menu .meta-panel {max-height:calc(100dvh - 98px);}
+  .play-layout.is-front-menu .meta-feature {padding:6px;}
+  .play-layout.is-front-menu .meta-panel h1 {font-size:18px;margin:8px 0;}
+}
