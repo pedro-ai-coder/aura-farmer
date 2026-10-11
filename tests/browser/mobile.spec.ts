@@ -112,6 +112,7 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   await toggle.tap();
   await expect(page.locator('.play-layout')).toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('EXIT');
+  await expect(toggle).toBeHidden(); // Fullscreen navigation now lives in the pause menu
   await expect(page.locator('#rotate-notice')).toBeVisible();
 
   await page.setViewportSize({ width: 844, height: 390 });
@@ -134,14 +135,33 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   expect(stick.x + stick.width).toBeLessThan(arena.x + arena.width / 2);
   expect(focus.x).toBeGreaterThan(arena.x + arena.width / 2);
   expect(focus.x + focus.width).toBeLessThanOrEqual(arena.x + arena.width + 2);
+  // Keep all navigation off the HUD and away from the main touch targets.
+  const menu = (await page.locator('#menu-open').boundingBox())!;
+  const flex = (await page.locator('[data-game-action="flex"]').boundingBox())!;
+  const waveHudBottom = gameCanvas.y + gameCanvas.height * (80 / 600);
+  expect(menu.y).toBeGreaterThanOrEqual(waveHudBottom - 2);
+  expect(menu.x).toBeGreaterThan(gameCanvas.x + gameCanvas.width / 2);
+  expect(menu.y + menu.height).toBeLessThan(flex.y);
+  expect(flex.y + flex.height).toBeLessThanOrEqual(focus.y + 1);
+  expect(stick.width).toBeLessThanOrEqual(125);
+  expect(stick.height).toBeLessThanOrEqual(125);
+  expect(flex.width).toBeLessThanOrEqual(155);
+  expect(focus.width).toBeLessThanOrEqual(155);
+  await expect(toggle).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
   await tap(page, '[data-game-action="focus"]');
   await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
 
-  await toggle.tap();
+  await page.locator('#menu-open').tap();
+  await expect(page.locator('#meta-shell')).toContainText('PAUSED');
+  await expect(page.locator('[data-menu="fullscreen"]')).toHaveText('EXIT FULL SCREEN');
+  await expect(page.locator('#joystick-track')).toBeHidden();
+  await page.locator('[data-menu="fullscreen"]').click();
   await expect(page.locator('.play-layout')).not.toHaveClass(/is-immersive/);
   await expect(toggle).toHaveText('FULL SCREEN');
+  await expect(page.locator('#meta-shell')).toContainText('PAUSED');
+  await page.locator('[data-menu="resume"]').click();
   await expect(page.locator('#joystick-track')).toBeVisible();
 });
