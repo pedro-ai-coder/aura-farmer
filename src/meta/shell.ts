@@ -98,8 +98,8 @@ export class GameShell {
         const c=getCharacter(this.profile.selectedCharacterId);
         return this.header('FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
-            <span class="af-eyebrow">✦ AN ARCADE SURVIVAL ADVENTURE</span>
-            <h1>MAIN CHARACTER ENERGY</h1>
+            <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
+            <h1>GROW YOUR LEGEND</h1>
             <p class="meta-sub">Grow your Aura. Defend the fields. Become the legend.</p>
             <div class="meta-cta">${this.button('play','✦ PLAY CLASSIC','primary')}
             ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
