@@ -94,7 +94,7 @@ export class GameShell {
         const c=getCharacter(this.profile.selectedCharacterId);
         return this.header('NO AURA? SKILL ISSUE.')+`<h1>MAIN CHARACTER ENERGY</h1>
           <p class="meta-sub">Welcome back. Progress saves on this device.</p>
-          <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${c.id === 'sigma' ? 'sigma-portrait' : c.id}.png" alt="" loading="lazy"></span>
+          <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${c.id === 'sigma' ? 'sigma-portrait' : c.id === 'alpha' ? 'alpha-portrait' : c.id}.png" alt="" loading="lazy"></span>
           <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
           <div class="meta-cta">${this.button('play','▶ PLAY CLASSIC','primary')}
           ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
@@ -109,7 +109,7 @@ export class GameShell {
           const unlocked=this.unlocked.has(c.id);
           return `<button type="button" class="meta-character ${selected===c.id?'selected':''}" data-menu="choose"
             data-character="${c.id}" ${unlocked?'':'disabled'} aria-pressed="${selected===c.id}" style="--avatar:${c.cssColor}">
-            <span class="meta-avatar"><img src="/assets/pixel/${c.id === 'sigma' ? 'sigma-portrait' : c.id}.png" alt="" loading="lazy"></span><strong>${c.name}</strong>
+            <span class="meta-avatar"><img src="/assets/pixel/${c.id === 'sigma' ? 'sigma-portrait' : c.id === 'alpha' ? 'alpha-portrait' : c.id}.png" alt="" loading="lazy"></span><strong>${c.name}</strong>
             <small>${c.role} · ${c.difficulty}</small>
             <span class="meta-character-description">${unlocked?c.passive:'🔒 '+c.unlockedBy}</span></button>`;
         }).join('');

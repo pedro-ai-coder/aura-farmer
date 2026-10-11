@@ -1037,3 +1037,6 @@ body {
   .upgrade-choice {min-height:105px;gap:7px;padding:10px;}
   .upgrade-description {font-size:12px;}
 }
+
+/* B2: dedicated Alpha Chad 48px portrait, not the legacy six-frame strip. */
+.meta-avatar img[src$="alpha-portrait.png"] { width:100%; height:100%; object-fit:contain; }

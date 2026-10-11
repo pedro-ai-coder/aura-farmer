@@ -1,0 +1,59 @@
+{
+  "name": "Alpha Chad B2",
+  "authoring": "original programmatic native-pixel art",
+  "status": "Integration candidate; final layered manual pixel-art polishing not complete",
+  "atlas": "alpha-b2.png",
+  "portrait": "alpha-portrait.png",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "frames": 31,
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "tags": [
+    {
+      "name": "idle",
+      "from": 0,
+      "to": 3,
+      "ms": 175
+    },
+    {
+      "name": "move",
+      "from": 4,
+      "to": 9,
+      "ms": 95
+    },
+    {
+      "name": "punch",
+      "from": 10,
+      "to": 15,
+      "ms": 28
+    },
+    {
+      "name": "flex_charge",
+      "from": 16,
+      "to": 19,
+      "ms": 155
+    },
+    {
+      "name": "flex_success",
+      "from": 20,
+      "to": 22,
+      "ms": 115
+    },
+    {
+      "name": "hurt",
+      "from": 23,
+      "to": 24,
+      "ms": 90
+    },
+    {
+      "name": "death",
+      "from": 25,
+      "to": 30,
+      "ms": 115
+    }
+  ],
+  "notes": "48x48 indexed PNG. Separate one-frame portrait. Original editable generator in art/source/alpha/generate.mjs. No external artwork; no layered .aseprite master yet."
+}
