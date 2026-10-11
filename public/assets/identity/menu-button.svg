@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100">
+<defs><linearGradient id="wood" x2="0" y2="1"><stop stop-color="#f4bb5c"/><stop offset=".35" stop-color="#945326"/><stop offset="1" stop-color="#69361b"/></linearGradient><linearGradient id="plate" x2="0" y2="1"><stop stop-color="#244e7c"/><stop offset=".55" stop-color="#0c294f"/><stop offset="1" stop-color="#061c3b"/></linearGradient></defs>
+<path d="M21 18H255L271 35V79L257 93H22L8 79V36z" fill="#1b0f14" opacity=".75"/>
+<path d="M20 13H258L274 31V75L257 92H22L5 75V30z" fill="url(#wood)" stroke="#3e210f" stroke-width="5"/>
+<path d="M32 23H245L260 35V70L246 82H31L18 70V34z" fill="url(#plate)" stroke="#ffca74" stroke-width="3"/>
+<path d="M35 29h208" stroke="#65c9f0" stroke-width="2" opacity=".7"/>
+<g fill="none" stroke="#fff4d8" stroke-width="7" stroke-linecap="round"><path d="M51 42h30M51 53h30M51 64h30"/></g>
+<text x="104" y="66" fill="#fef8e5" font-family="Arial,system-ui,sans-serif" font-weight="900" font-size="36" letter-spacing="2">MENU</text>
+<g stroke="#1b5b30" stroke-width="3"><path d="M19 24Q2 4 15 5q15 0 13 16" fill="#65db59"/><path d="M242 14Q263-5 267 8q-2 14-25 17" fill="#90ed53"/><path d="M264 72q24-7 15 12-10 12-24-1" fill="#71df56"/><path d="M14 70Q-5 84 12 92q17-2 13-15" fill="#66d054"/></g>
+<path d="M248 8l10 15-10 16-11-16z" fill="#77e9ff" stroke="#d1fcff" stroke-width="2"/><path d="M248 10v25l-7-12z" fill="#2288d6"/>
+<g fill="#fff0ac" stroke="#8f6428" stroke-width="1.6"><circle cx="24" cy="22" r="5"/><circle cx="259" cy="80" r="5"/></g>
+</svg>

@@ -15,6 +15,7 @@ export class TouchControls {
   private playActions = document.querySelector<HTMLElement>('#touch-play-actions')!;
   private confirmActions = document.querySelector<HTMLElement>('#touch-confirm-actions')!;
   private upgradeOverlay = document.querySelector<HTMLElement>('#upgrade-overlay')!;
+  private waveOverlay = document.querySelector<HTMLElement>('#wave-overlay')!;
   private upgradeSubtitle = document.querySelector<HTMLElement>('#upgrade-subtitle')!;
   private stage = document.querySelector<HTMLElement>('.play-layout')!;
   private confirmButton = document.querySelector<HTMLButtonElement>('#touch-confirm')!;
@@ -103,11 +104,13 @@ export class TouchControls {
     this.stickBox.hidden = mode !== 'playing';
     this.playActions.hidden = mode !== 'playing';
     this.upgradeOverlay.hidden = mode !== 'upgrades';
+    this.waveOverlay.hidden = mode !== 'between';
     this.stage.classList.toggle('is-upgrading',mode === 'upgrades');
+    this.stage.classList.toggle('is-between',mode === 'between');
     this.upgradeSubtitle.textContent = pendingUpgrades > 1
       ? `${pendingUpgrades} upgrades remaining · Choose one to continue`
       : 'Choose one upgrade to continue · Or press 1, 2 or 3';
-    this.confirmActions.hidden = mode === 'playing' || mode === 'upgrades';
+    this.confirmActions.hidden = mode === 'playing' || mode === 'upgrades' || mode === 'between';
     if (mode !== 'playing') this.resetStick();
 
     this.confirmButton.textContent = mode === 'intro' ? 'PLAY' : mode === 'between' ? 'NEXT WAVE' : mode === 'dead' ? 'RETRY' : 'PLAY AGAIN';
@@ -137,7 +140,19 @@ export class TouchControls {
       const bottom = document.createElement('span');
       bottom.className='upgrade-bottom';
       bottom.append(heading,level);
-      button.replaceChildren(top,bottom,description);
+      // A controlled icon mapping avoids guessing artwork from arbitrary labels.
+      const glyphs:Record<string,string>={
+        drip:'shield','thick-skin':'heart',delulu:'spirit',alpha:'blade',sigma:'orb',
+        speed:'speed','touch-grass':'leaf','mewing':'star','locked-in':'bolt',
+        'six-seven':'crown','mewing-jaw':'blade','ohio-orbiter':'orb',
+        'crash-out':'bolt','skibidi-bounce':'orb',mogged:'star','rizz-aura':'spirit'
+      };
+      const glyph=glyphs[buff.id] ?? 'star';
+      const art=document.createElement('span');
+      art.className='upgrade-art';
+      art.setAttribute('aria-hidden','true');
+      art.innerHTML=`<svg viewBox="0 0 24 24"><use href="/assets/identity/ui-icons.svg#${glyph}"></use></svg>`;
+      button.replaceChildren(top,art,bottom,description);
       button.dataset.rarity=buff.rarity.toLowerCase();
       button.setAttribute('aria-label',`Choose ${buff.name}, ${buff.rarity}, ${buff.description}`);
     });
