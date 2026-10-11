@@ -383,8 +383,7 @@ export class PixelWorld {
       if (previewEnemy) {
         img.setTexture(previewKey);
         const base = enemy.type==='boss' ? 124 : enemy.type==='beta' ? 58 : 46;
-        img.setDisplaySize(base,base).setOrigin(.5,.55);
-        img.setScale(img.scaleX,Math.abs(img.scaleY)*(1+0.02*Math.sin(a.clock/195+enemy.id)));
+        img.setDisplaySize(base,base*(1+0.02*Math.sin(a.clock/195+enemy.id))).setOrigin(.5,.55);
       } else if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
       else img.setTexture('px-'+enemy.type+'-'+bob);
       const previous = this.previousEnemies.get(enemy.id);
