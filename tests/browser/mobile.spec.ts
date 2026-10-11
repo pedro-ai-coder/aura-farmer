@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
     await route.fulfill({ response, body: (await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(') });
   });
   await page.goto('/');
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeAttached(); // front menus intentionally hide the combat stage
   await expect.poll(() => state(page, a => a.mode)).toBe('intro');
 });
 
