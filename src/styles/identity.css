@@ -133,3 +133,17 @@ body{background:radial-gradient(circle at 55% 10%,#2b4d70 0%,#121c33 47%,#0e1320
 .af-loading[data-variant="witherroot"]{background:linear-gradient(102deg,#101a36ef 0%,#5a144f97 65%,#230f3ee8),url('/assets/identity/farm-world.svg') center/cover}
 .af-loading[data-variant="witherroot"] .af-loading-inner{border-color:#d578f5;box-shadow:0 0 40px #b948ff66,0 6px 0 #100923}
 .af-loading[data-variant="witherroot"] #af-loading-fill{background:linear-gradient(90deg,#4fd9ff,#b948ff)}
+
+/* Character portrait crop: Ohio, Fanum and Six-Seven ship as six 48px-wide
+   frames in a single 288×48 PNG. Show frame 0 at its full aspect ratio. */
+.meta-avatar {position:relative;isolation:isolate;}
+.meta-avatar img[data-portrait-strip]{
+  position:absolute;inset:0 auto auto 0;
+  display:block;width:600%;height:100%;max-width:none;
+  object-fit:fill;object-position:left top;image-rendering:pixelated;
+}
+.meta-avatar .meta-avatar-fallback{display:none;position:absolute;inset:0;
+  place-items:center;color:#fff8e7;font:900 clamp(12px,1.8vw,18px) ui-rounded,system-ui,sans-serif;
+  letter-spacing:0;text-shadow:0 2px 0 #102139;background:#324965;}
+.meta-avatar.is-portrait-fallback .meta-avatar-fallback{display:grid;}
+.meta-avatar img[hidden]{display:none!important;}

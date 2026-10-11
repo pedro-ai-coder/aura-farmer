@@ -89,6 +89,31 @@ export class GameShell {
     return id === 'sigma' || id === 'alpha' || id === 'rizzler'
       ? id + '-portrait' : id;
   }
+  /**
+   * Ohio / Fanum / Six-Seven have 6-frame 288×48 animation strips, not standalone
+   * portraits. Display their first 48×48 frame without stretching the entire
+   * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
+   */
+  private portrait(id: CharacterId): string {
+    const strip = id === 'ohio' || id === 'fanum' || id === 'six-seven';
+    const fallback: Record<CharacterId,string> = {
+      sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
+    };
+    return `<span class="meta-avatar-fallback" aria-hidden="true">${fallback[id]}</span>
+      <img src="/assets/pixel/${this.portraitName(id)}.png"
+        data-character-portrait="${id}" ${strip ? 'data-portrait-strip="6"' : ''}
+        alt="" loading="lazy" decoding="async">`;
+  }
+  private bindPortraitFallbacks(): void {
+    this.root.querySelectorAll<HTMLImageElement>('img[data-character-portrait]').forEach(image => {
+      const fallback = (): void => {
+        image.hidden = true;
+        image.closest('.meta-avatar')?.classList.add('is-portrait-fallback');
+      };
+      if (image.complete && image.naturalWidth === 0) fallback();
+      else image.addEventListener('error', fallback, {once:true});
+    });
+  }
   private header(label:string):string {
     return `<header class="meta-header"><span class="af-wordmark"><span>AURA</span> <b>FARMER</b><i aria-hidden="true">✦</i></span><small>${label}</small></header>`;
   }
@@ -107,7 +132,7 @@ export class GameShell {
               ${this.button('characters','♟ HEROES')}${this.button('achievements','★ ACHIEVEMENTS')}
               ${this.button('leaderboards','♛ RANKINGS')}${this.button('settings','⚙ SETTINGS')}
             </nav>
-            <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}"><img src="/assets/pixel/${this.portraitName(c.id)}.png" alt="" loading="lazy"></span>
+            <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}">${this.portrait(c.id)}</span>
               <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
             <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
           </div>
@@ -129,7 +154,7 @@ export class GameShell {
           const unlocked=this.unlocked.has(c.id);
           return `<button type="button" class="meta-character ${selected===c.id?'selected':''}" data-menu="choose"
             data-character="${c.id}" ${unlocked?'':'disabled'} aria-pressed="${selected===c.id}" style="--avatar:${c.cssColor}">
-            <span class="meta-avatar"><img src="/assets/pixel/${this.portraitName(c.id)}.png" alt="" loading="lazy"></span><strong>${c.name}</strong>
+            <span class="meta-avatar">${this.portrait(c.id)}</span><strong>${c.name}</strong>
             <small>${c.role} · ${c.difficulty}</small>
             <span class="meta-character-description">${unlocked?c.passive:'🔒 '+c.unlockedBy}</span></button>`;
         }).join('');
@@ -199,6 +224,7 @@ export class GameShell {
     this.menuButton.hidden=this.screen!==null;
     if(this.screen===null){this.root.innerHTML='';return;}
     this.root.innerHTML=`<div class="meta-panel">${this.inner()}${this.statusMessage?`<p role="status" class="meta-warning">${this.statusMessage}</p>`:''}</div>`;
+    this.bindPortraitFallbacks();
   }
 }
 export function setupGameShell(game:Phaser.Game):void {new GameShell(game);}
