@@ -14,7 +14,6 @@ export class TouchControls {
   private stickBox = document.querySelector<HTMLElement>('#touch-stick')!;
   private playActions = document.querySelector<HTMLElement>('#touch-play-actions')!;
   private confirmActions = document.querySelector<HTMLElement>('#touch-confirm-actions')!;
-  private upgradeActions = document.querySelector<HTMLElement>('#touch-upgrade-actions')!;
   private upgradeOverlay = document.querySelector<HTMLElement>('#upgrade-overlay')!;
   private upgradeSubtitle = document.querySelector<HTMLElement>('#upgrade-subtitle')!;
   private stage = document.querySelector<HTMLElement>('.play-layout')!;
