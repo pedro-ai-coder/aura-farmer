@@ -544,3 +544,137 @@ body {
 
 /* Sigma B1 has a true 48×48 single-frame portrait, not a six-frame strip. */
 .meta-avatar img[src$="sigma-portrait.png"] { width:100%; height:100%; object-fit:contain; }
+
+/* UI OVERLAP FIX (2026-10): The HTML menu is the single navigation surface.
+   Never put EXIT on the wave/HUD, and keep action controls in the two
+   bottom corners away from the HUD and its wave/timer indicators. */
+.play-layout.is-menu-open #touch-stick,
+.play-layout.is-menu-open #touch-play-actions,
+.play-layout.is-menu-open #touch-confirm-actions,
+.play-layout.is-menu-open #touch-upgrade-actions {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.play-layout.is-menu-open .meta-shell {
+  background: #3027478c;
+  pointer-events: auto;
+}
+
+/* MENU is the only navigation button shown while gameplay is fullscreen.
+   EXIT FULL SCREEN is offered *inside the pause menu*, not over the wave bar. */
+.play-layout:fullscreen #fullscreen-toggle,
+.play-layout.is-immersive #fullscreen-toggle {
+  display: none !important;
+}
+.play-layout:fullscreen .menu-open,
+.play-layout.is-immersive .menu-open {
+  top: clamp(72px, 16vh, 116px);
+  right: max(10px, env(safe-area-inset-right));
+  left: auto;
+  min-width: 88px;
+  min-height: 44px;
+  padding: 7px 9px;
+  border: 2px solid #302747;
+  border-radius: 12px;
+  color: #fff8e7;
+  background: #302747d9;
+  box-shadow: 0 3px 0 #8b5bd8a6;
+  font: 850 12px ui-rounded, system-ui, sans-serif;
+  letter-spacing: .035em;
+}
+.play-layout:fullscreen .touch-stick,
+.play-layout.is-immersive .touch-stick {
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(13px, env(safe-area-inset-bottom));
+  width: clamp(88px, 21vh, 124px);
+  justify-content: flex-start;
+  pointer-events: none;
+}
+.play-layout:fullscreen .joystick-track,
+.play-layout.is-immersive .joystick-track {
+  width: clamp(88px, 21vh, 124px);
+  height: clamp(88px, 21vh, 124px);
+  border-width: 2px;
+  background: #30274772;
+  border-color: #fff8e79e;
+  box-shadow: inset 0 0 0 7px #30274717;
+  pointer-events: auto;
+}
+.play-layout:fullscreen .joystick-thumb,
+.play-layout.is-immersive .joystick-thumb {
+  width: 34px;
+  height: 34px;
+  border-width: 2px;
+  background: #8b5bd8e6;
+}
+.play-layout:fullscreen .touch-panel,
+.play-layout.is-immersive .touch-panel {
+  top: auto;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(13px, env(safe-area-inset-bottom));
+  width: clamp(106px, 15vw, 150px);
+  max-height: calc(100dvh - 130px);
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+.play-layout:fullscreen .touch-play-actions,
+.play-layout.is-immersive .touch-play-actions {
+  gap: 8px;
+}
+.play-layout:fullscreen .touch-play-actions .touch-button,
+.play-layout.is-immersive .touch-play-actions .touch-button {
+  display: block;
+  min-height: 48px;
+  height: clamp(48px, 9.5vh, 58px);
+  border-radius: 13px;
+  border-width: 2px;
+  padding: 6px 4px;
+  font-size: clamp(11px, 2.8vh, 15px);
+  box-shadow: 0 3px 0 #3027479c;
+  opacity: .90;
+}
+.play-layout:fullscreen .touch-flex,
+.play-layout.is-immersive .touch-flex {
+  background: linear-gradient(145deg, #ffdf73, #df9b35);
+  color: #302747;
+}
+.play-layout:fullscreen .touch-focus,
+.play-layout.is-immersive .touch-focus {
+  background: linear-gradient(145deg, #66dbdf, #278aab);
+  color: #fff8e7;
+}
+.play-layout:fullscreen #touch-upgrade-actions,
+.play-layout.is-immersive #touch-upgrade-actions {
+  gap: 6px;
+}
+.play-layout:fullscreen #touch-upgrade-actions .touch-button,
+.play-layout.is-immersive #touch-upgrade-actions .touch-button {
+  min-height: 44px;
+  height: auto;
+  font-size: 11px;
+  padding: 7px 3px;
+}
+.play-layout:fullscreen .meta-panel,
+.play-layout.is-immersive .meta-panel { box-shadow: 0 6px 0 #3027478c, 0 14px 35px #30274777; }
+.meta-fullscreen-exit { grid-column: 1 / -1; }
+
+/* On short landscape screens the buttons remain large enough to tap,
+   but never reach the status bar or force the player offscreen. */
+@media (orientation: landscape) and (max-height: 420px) {
+  .play-layout:fullscreen .touch-panel,
+  .play-layout.is-immersive .touch-panel {
+    max-height: calc(100dvh - 85px);
+  }
+  .play-layout:fullscreen .menu-open,
+  .play-layout.is-immersive .menu-open {
+    top: 16vh;
+    min-height: 40px;
+    padding: 5px 8px;
+  }
+  .play-layout:fullscreen .touch-play-actions .touch-button,
+  .play-layout.is-immersive .touch-play-actions .touch-button {
+    min-height: 44px;
+    height: 44px;
+  }
+}
