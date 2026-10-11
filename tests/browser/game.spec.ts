@@ -175,7 +175,7 @@ test('pixel-cartoon assets load with the light Lavender Pop arena and remain vis
   expect(proof.spriteFrames['spr-sigma']).toBeGreaterThan(5);
   expect(proof.spriteFrames['spr-boss']).toBeGreaterThan(3);
   expect(proof.spriteFrames['spr-icons']).toBeGreaterThan(16);
-  expect(proof.displayed).toContain('spr-sigma');
+  expect(proof.displayed).toContain('spr-sigma-b1');
   expect(proof.pixel).toEqual([246, 240, 234]); // approved Cream: #F6F0EA
   expect(proof.texturesVisible).toBeGreaterThanOrEqual(2); // player + arena
   await page.screenshot({ path: 'test-results/pixel-cartoon.png' });

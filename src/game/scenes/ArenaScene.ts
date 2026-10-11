@@ -32,7 +32,7 @@ export class ArenaScene extends Phaser.Scene {
     // Original static PNG sprite sheets shipped with the application.
     // Keep px-* runtime textures available as an explicit fallback.
     for (const [key, frame] of [
-      ['sigma', 48], ['npc', 48], ['hater', 48],
+      ['sigma', 48], ['sigma-b1',48], ['npc', 48], ['hater', 48],
       ['beta', 64], ['boss', 128], ['items', 16], ['icons', 16],
       ['alpha',48], ['rizzler',48], ['ohio',48], ['fanum',48], ['six-seven',48],
     ] as const) {

@@ -3,6 +3,7 @@ import type { Arena } from '../core/arena';
 import type { EnemyType } from '../data/enemies';
 import { getCharacter } from '../data/characters';
 import { ENEMIES } from '../data/enemies';
+import { SIGMA_B1, sigmaB1Frame, type SigmaPose } from './sigmaB1';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -209,13 +210,19 @@ export class PixelWorld {
   private facingRight = true;
   private lastX = 480;
   private lastY = 330;
+  private lastClock = 0;
+  private lastCharacter = 'sigma';
+  private lastFlexSuccesses = 0;
+  private flexSuccessStartedAt = -1;
+  private deathStartedAt = -1;
 
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
     scene.add.image(480,300,'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
-    this.player = scene.add.image(480,330,scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
+    this.player = scene.add.image(480,330,scene.textures.exists(SIGMA_B1.texture) ? SIGMA_B1.texture :
+      scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
     this.orbiter = scene.add.image(480,330,scene.textures.exists('spr-items') ? 'spr-items' : 'px-orbiter',3).setDepth(1.1).setVisible(false);
   }
   sync(a: Arena): void {
@@ -230,14 +237,49 @@ export class PixelWorld {
     const characterSprite = 'spr-' + a.characterId;
     const hasCharacterSheet = this.scene.textures.exists(characterSprite);
     const hasDefaultSheet = this.scene.textures.exists('spr-sigma');
-    if (hasCharacterSheet || hasDefaultSheet) {
-      // 0/1 idle, 2/3 run, 4 crossed-arm FLEX, 5 hurt.
+    const sigmaB1 = a.characterId === 'sigma' && this.scene.textures.exists(SIGMA_B1.texture);
+    if (a.characterId !== this.lastCharacter || a.clock < this.lastClock) {
+      this.lastCharacter = a.characterId;
+      this.deathStartedAt = -1;
+      this.flexSuccessStartedAt = -1;
+      this.lastFlexSuccesses = a.flexSuccesses;
+    }
+    this.lastClock = a.clock;
+    if (sigmaB1) {
+      if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
+      this.lastFlexSuccesses = a.flexSuccesses;
+      if (a.mode !== 'dead') this.deathStartedAt = -1;
+      let animation: SigmaPose = 'idle';
+      let elapsed = a.clock;
+      if (a.mode === 'dead') {
+        if (this.deathStartedAt < 0) this.deathStartedAt = this.scene.time.now;
+        animation = 'death';
+        elapsed = this.scene.time.now - this.deathStartedAt;
+      } else if (a.mode === 'win') {
+        animation = 'flex_success';
+        elapsed = a.clock;
+      } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
+        animation = 'hurt';
+        elapsed = a.clock - a.lastDamageAt;
+      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+        animation = 'flex_charge';
+        elapsed = a.clock;
+      } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
+                 a.clock - this.flexSuccessStartedAt < 345) {
+        animation = 'flex_success';
+        elapsed = a.clock - this.flexSuccessStartedAt;
+      } else if (a.mode === 'playing' && playerMoving) {
+        animation = 'move';
+      }
+      this.player.setTexture(SIGMA_B1.texture, sigmaB1Frame(animation,elapsed));
+    } else if (hasCharacterSheet || hasDefaultSheet) {
+      // Legacy atlas stays in place as a safe fallback and for other characters.
       const actorFrame = a.mode !== 'playing' ? frame :
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
       this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
     } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(sigmaB1 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();

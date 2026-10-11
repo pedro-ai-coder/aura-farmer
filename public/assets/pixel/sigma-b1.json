@@ -1,0 +1,63 @@
+{
+  "asset": "sigma-b1",
+  "status": "Art Sprint B1 review / Sigma pilot",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "totalFrames": 25,
+  "atlas": "sigma-b1.png",
+  "portrait": "sigma-portrait.png",
+  "pivot": {
+    "x": 0.5,
+    "y": 0.5
+  },
+  "sampling": "nearest",
+  "tags": [
+    {
+      "name": "idle",
+      "from": 0,
+      "to": 3,
+      "ms": 175
+    },
+    {
+      "name": "move",
+      "from": 4,
+      "to": 9,
+      "ms": 100
+    },
+    {
+      "name": "hurt",
+      "from": 10,
+      "to": 11,
+      "ms": 90
+    },
+    {
+      "name": "flex_charge",
+      "from": 12,
+      "to": 15,
+      "ms": 160
+    },
+    {
+      "name": "flex_success",
+      "from": 16,
+      "to": 18,
+      "ms": 115
+    },
+    {
+      "name": "death",
+      "from": 19,
+      "to": 24,
+      "ms": 115
+    }
+  ],
+  "artIdentity": {
+    "style": "Pixel Cartoon Brainrot Arcade",
+    "palette": "Lavender Pop",
+    "hoodie": "#44345F",
+    "outline": "#302747",
+    "auraGold": "#FFCC51"
+  },
+  "rights": "Original pixel artwork authored for Aura Farmer; no third-party imagery",
+  "source": "48px transparent indexed PNG pixels are editable in Aseprite/LibreSprite; layered .aseprite master not yet authored",
+  "scope": "Sigma character pilot only; other heroes and enemies retain current sheets",
+  "integration": "preloaded as spr-sigma-b1 and selected only for sigma; spr-sigma and px-player remain fallbacks"
+}
