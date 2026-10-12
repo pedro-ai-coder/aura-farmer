@@ -31,6 +31,15 @@ export class GameShell {
     this.menuButton.addEventListener('click', () => {
       if (this.screen === null) { this.scene.setPaused(true); this.screen='pause'; this.render(); }
     });
+    // Backgrounded tabs should never consume health or wave time behind the
+    // player's back. Return to a visible, explicitly resumable pause menu.
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.screen === null && this.scene.arena.mode === 'playing') {
+        this.scene.setPaused(true);
+        this.screen='pause';
+        this.render();
+      }
+    });
     window.addEventListener('aura:run-finished', (event: Event) => {
       this.finish((event as CustomEvent<RunResult>).detail);
     });

@@ -80,12 +80,20 @@ export class ArenaScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(Phaser.Core.Events.BLUR, this.clearKeys, this));
   }
 
-  setPaused(value: boolean): void { this.paused = value; if (value) touchControls.clear(); }
+  setPaused(value: boolean): void {
+    this.paused = value;
+    if (value) {
+      // A key pressed just before pause must never fire on resume.
+      // Likewise a held joystick must not keep moving behind a menu.
+      touchControls.clear();
+      this.clearKeys();
+    }
+  }
   startRun(characterId: CharacterId): void { this.arena.start(characterId); this.reportedRun = false; this.paused = false; }
   resetToIntro(): void { this.arena.start(); this.arena.mode = 'intro'; this.reportedRun=false; this.paused=false; }
 
   update(_time: number, delta: number): void {
-    if (this.paused) { touchControls.clear(); return; }
+    if (this.paused) { touchControls.clear(); this.clearKeys(); return; }
     // Preserve short taps even when down/up both arrive between rendered frames.
     const pressed = new Set(this.pendingKeys);
     this.pendingKeys.clear();
