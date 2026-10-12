@@ -7,6 +7,7 @@ import { SIGMA_B1, sigmaB1Frame, type SigmaPose } from './sigmaB1';
 import { ALPHA_B2, alphaB2Frame, type AlphaPose } from './alphaB2';
 import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
 import { createGateA, isGateA, gateASigmaKey, gateAEnemyKey, type GateASigmaPose } from './gateAArena';
+import { isGateB, createGateBHeroes, gateBHeroKey, type GateBHero, type GateBHeroPose } from './gateBHeroes';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -201,6 +202,7 @@ export function createPixelTextures(scene: Phaser.Scene): void {
 /** Reusable display objects; simulation/hitboxes stay in the Arena core. */
 export class PixelWorld {
   private readonly gateA = isGateA();
+  private readonly gateB = isGateB();
   private impactSprites: Phaser.GameObjects.Image[] = [];
   private player: Phaser.GameObjects.Image;
   private enemies = new Map<number, Phaser.GameObjects.Image>();
@@ -224,6 +226,7 @@ export class PixelWorld {
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
     createGateA(scene);
+    createGateBHeroes(scene);
     scene.add.image(480,300,this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
@@ -248,9 +251,10 @@ export class PixelWorld {
   private readonly restoreGateATextures = (): void => {
     if (!this.scene.sys.isActive()) return;
     createGateA(this.scene); // regenerate any missing dynamically painted textures
+    if (this.gateB) createGateBHeroes(this.scene);
     const textures = this.scene.textures;
     for (const key of textures.getTextureKeys()) {
-      if (!key.startsWith('ga-')) continue;
+      if (!key.startsWith('ga-') && !key.startsWith('gb-')) continue;
       const texture = textures.get(key);
       if (texture instanceof Phaser.Textures.CanvasTexture) texture.refresh();
     }
@@ -262,6 +266,7 @@ export class PixelWorld {
     const valid = (k: string, f?: string | number): boolean =>
       this.scene.textures.exists(k) && this.scene.textures.get(k).has(String(f ?? '__BASE'));
     if (!valid(key, frame) && this.gateA) createGateA(this.scene);
+    if (!valid(key, frame) && this.gateB) createGateBHeroes(this.scene);
     if (valid(key,frame)) img.setTexture(key,frame);
     else if (valid(fallback)) img.setTexture(fallback);
     else img.setVisible(false);
@@ -290,6 +295,8 @@ export class PixelWorld {
     }
     this.lastClock = a.clock;
     const gaSigma = this.gateA && a.characterId === 'sigma' && this.scene.textures.exists('ga-sigma-idle-0');
+    const gbHero=this.gateB && (a.characterId==='alpha'||a.characterId==='rizzler')
+      && this.scene.textures.exists('gb-'+a.characterId+'-idle-0');
     if (gaSigma) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -340,6 +347,35 @@ export class PixelWorld {
         animation = 'move';
       }
       this.safeTexture(this.player,SIGMA_B1.texture,'px-player-idle',sigmaB1Frame(animation,elapsed));
+    } else if (gbHero) {
+      // The same gameplay state machine drives preview artwork; no combat changes.
+      if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
+      this.lastFlexSuccesses = a.flexSuccesses;
+      if (a.mode !== 'dead') this.deathStartedAt = -1;
+      let pose: GateBHeroPose = 'idle';
+      let elapsed = a.clock;
+      if (a.mode==='dead') {
+        if (this.deathStartedAt < 0) this.deathStartedAt = this.scene.time.now;
+        pose='death'; elapsed=this.scene.time.now-this.deathStartedAt;
+      } else if (a.mode==='win') {
+        pose='flex_success';
+      } else if (a.mode==='playing' && a.lastDamageAt>0 && a.clock-a.lastDamageAt<180) {
+        pose='hurt'; elapsed=a.clock-a.lastDamageAt;
+      } else if (a.mode==='playing' && a.flex.state==='charging') {
+        pose='flex_charge';
+      } else if (a.mode==='playing' && this.flexSuccessStartedAt>=0 &&
+        a.clock-this.flexSuccessStartedAt<360) {
+        pose='flex_success'; elapsed=a.clock-this.flexSuccessStartedAt;
+      } else if (a.mode==='playing' && a.characterId==='alpha' && a.jawUntil>a.clock) {
+        pose='punch'; elapsed=Math.max(0,160-(a.jawUntil-a.clock));
+      } else if (a.mode==='playing' && a.characterId==='rizzler' &&
+        a.effects.rizzPulseUntil>a.clock) {
+        pose='cast'; elapsed=Math.max(0,300-(a.effects.rizzPulseUntil-a.clock));
+      } else if (a.mode==='playing' && playerMoving) {
+        pose='move';
+      }
+      const key=gateBHeroKey(a.characterId as GateBHero,pose,elapsed);
+      this.safeTexture(this.player,key,'px-player-idle');
     } else if (alphaB2) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -407,7 +443,7 @@ export class PixelWorld {
       this.safeTexture(this.player,hasCharacterSheet ? characterSprite : 'spr-sigma','px-player-idle',actorFrame);
     } else this.safeTexture(this.player,'px-player-' + (a.mode === 'playing' ? pose : 'idle'),'px-player-idle');
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(gaSigma || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(gaSigma || gbHero || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();

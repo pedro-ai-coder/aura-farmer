@@ -6,7 +6,8 @@ import Phaser from "phaser";
  * Only enabled with ?gateA=1; gameplay simulation and existing sprites stay intact.
  */
 export const isGateA = (): boolean =>
-  new URLSearchParams(window.location.search).get("gateA") === "1";
+  new URLSearchParams(window.location.search).get("gateA") === "1" ||
+  new URLSearchParams(window.location.search).get("gateB") === "1";
 
 const C = {
   ink: "#192236", shade: "#101b2d", ivory: "#fff0d0",
