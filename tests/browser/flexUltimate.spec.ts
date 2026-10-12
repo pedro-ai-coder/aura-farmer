@@ -67,7 +67,7 @@ test('mobile single FLEX button is disabled while farming and enabled when ready
  await expect(flex).toBeDisabled();
  await page.evaluate(()=>{const a=(window.__game.scene.scenes[0] as ArenaScene).arena;a.aura.change(100,a.clock);});
  await expect(flex).toBeEnabled();
- await flex.tap();
+ await flex.click();
  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.state)).toBe('active');
  await expect(flex).toBeDisabled();
 });

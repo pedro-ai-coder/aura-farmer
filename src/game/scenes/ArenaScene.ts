@@ -89,7 +89,14 @@ export class ArenaScene extends Phaser.Scene {
       this.clearKeys();
     }
   }
-  startRun(characterId: CharacterId): void { this.arena.start(characterId); this.reportedRun = false; this.paused = false; }
+  startRun(characterId: CharacterId): void {
+    this.arena.start(characterId);
+    this.reportedRun=false;this.paused=false;
+    // Spotlight event counters belong to a run, not the entire Phaser Scene.
+    this.notifiedBurstEnd=0;
+    this.notifiedWave=0;
+    this.lastWaveUi='';
+  }
   resetToIntro(): void { this.arena.start(); this.arena.mode = 'intro'; this.reportedRun=false; this.paused=false; }
 
   update(_time: number, delta: number): void {
