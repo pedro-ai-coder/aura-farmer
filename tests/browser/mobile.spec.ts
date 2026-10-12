@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   await expect.poll(() => state(page, a => a.mode)).toBe('intro');
 });
 
-test('portrait touch controls: start, analog movement, FLEX, FOCUS, upgrade and retry', async ({ page }) => {
+test('portrait touch controls: start, analog movement, manual FLEX, upgrade and retry', async ({ page }) => {
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
@@ -46,10 +46,14 @@ test('portrait touch controls: start, analog movement, FLEX, FOCUS, upgrade and 
   await expect.poll(() => state(page, a => a.pos.x)).toBeGreaterThan(initialX + 3);
   await page.mouse.up();
 
-  await tap(page, '[data-game-action="flex"]');
-  await expect.poll(() => state(page, a => a.flex.state)).toBe('cooldown');
-  await tap(page, '[data-game-action="focus"]');
-  await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
+  await expect(page.locator('[data-game-action="focus"]')).toHaveCount(0);
+  await page.evaluate(()=>{
+    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+    a.aura.change(100,a.clock);
+  });
+  await expect.poll(()=>state(page,a=>a.flex.state)).toBe('ready');
+  await tap(page,'[data-game-action="flex"]');
+  await expect.poll(()=>state(page,a=>a.flex.state)).toBe('active');
 
   await page.evaluate(() => {
     const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
@@ -89,8 +93,7 @@ test('landscape controls flank the canvas and remain tappable', async ({ page })
   expect(flex.x).toBeGreaterThan(canvas.x + canvas.width - 4);
   expect(canvas.height).toBeLessThanOrEqual(390);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-  await tap(page, '[data-game-action="focus"]');
-  await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
+  await expect(page.locator('[data-game-action="focus"]')).toHaveCount(0);
 });
 
 test('fullscreen button enables immersive landscape, preserves touch controls and exits cleanly', async ({ page }) => {
@@ -150,8 +153,7 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   await expect(toggle).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
-  await tap(page, '[data-game-action="focus"]');
-  await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
+  await expect(page.locator('[data-game-action="focus"]')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
 
   await page.locator('#menu-open').tap();

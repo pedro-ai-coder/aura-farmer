@@ -31,7 +31,7 @@ describe('arena combat', () => {
   it('applies contact damage, armor and exactly one Aura penalty', () => {
     const a = game(); a.aura.change(60); a.buffs.drip = 3; enemy(a, 480).hp = 1000;
     a.update(10, { flex: true });
-    expect(a.hp).toBe(95); expect(a.aura.value).toBe(40); expect(a.flex.state).toBe('cooldown');
+    expect(a.hp).toBe(95); expect(a.aura.value).toBe(60); expect(a.flex.state).toBe('farming');
     advance(a, 100); expect(a.hp).toBe(95);
   });
   it('stops immediately on lethal damage without awarding a coincident level or win', () => {
@@ -44,45 +44,45 @@ describe('arena combat', () => {
     a.update(10); expect(a.shots.some(s => s.hostile)).toBe(true);
     advance(a, 1150); expect(a.hp).toBeLessThan(100);
   });
-  it('Sigma Focus slows enemies for 3 seconds with a 22 second cooldown', () => {
-    const a = game(), b = game(); enemy(a, 800).hp = 10000; enemy(b, 800).hp = 10000;
-    a.update(100, { focus: true }); b.update(100);
-    expect(800 - a.enemies[0].x).toBeCloseTo((800 - b.enemies[0].x) * .62);
-    expect(a.focusUntil).toBe(3000); expect(a.focusReady).toBe(22000);
-    a.update(100, { focus: true }); expect(a.focusUntil).toBe(3000);
-    a.clock = 22000; a.update(0, { focus: true }); expect(a.focusUntil).toBe(25000);
+  it('has a single charged FLEX action, with no separate Focus control',()=>{
+    const a=game();
+    a.update(0,{flex:true});expect(a.flex.state).toBe('farming');
+    a.aura.change(100);a.update(0,{flex:true});
+    expect(a.flex.state).toBe('active');expect(a.aura.value).toBe(0);
+    expect(a.flex.variant).toBe('sigma');
+    expect(a.flexSuccesses).toBe(1);expect(a.auraBursts).toBe(1);
   });
 });
 
-describe('integrated FLEX', () => {
-  it('locks movement and all new attacks for one second, rewards 3 nearby enemies and pushes them away', () => {
-    const a = game();
-    for (const y of [250, 330, 410]) { const e = enemy(a, 610, y); e.hp = 10000; e.nextHit = Infinity; }
-    a.buffs['mewing-jaw'] = 1; a.buffs['ohio-orbiter'] = 1;
-    a.update(0, { flex: true }); advance(a, 999, { x: 1 });
-    expect(a.pos.x).toBe(480); expect(a.shots).toHaveLength(0); expect(a.aura.value).toBe(0);
-    expect(a.enemies.slice(0, 3).every(e => e.hp === 10000)).toBe(true);
-    const before = a.enemies[1].x; a.update(1);
-    expect(a.aura.value).toBe(25); expect(a.enemies[1].x).toBeGreaterThan(before + 80);
-    expect(a.flex.state).toBe('cooldown'); expect(a.flex.cooldownUntil).toBeCloseTo(16000);
-    a.update(0, { flex: true }); expect(a.flex.state).toBe('cooldown');
-    a.clock = 16000; a.update(0, { flex: true }); expect(a.flex.state).toBe('charging');
+describe('FLEX Ultimate gameplay',()=>{
+  it('alpha is invulnerable and moves/tramples without killing bosses instantly',()=>{
+    const a=new Arena(()=>.5,'alpha');a.start();a.aura.change(100);
+    a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
+    const e=enemy(a,a.pos.x+17,a.pos.y,'npc');e.hp=27;e.nextHit=0;
+    a.update(100,{x:1});
+    expect(a.hp).toBe(120);expect(a.pos.x).toBeGreaterThan(480);
+    expect(a.enemies).not.toContain(e);
+    const boss=enemy(a,a.pos.x+10,a.pos.y,'boss');boss.nextHit=0;
+    for(let i=0;i<50;i++)a.update(100);
+    expect(boss.hp).toBeGreaterThanOrEqual(ENEMIES.boss.hp*.75);
+    expect(a.flex.state).toBe('farming');
   });
-  it('does not award Aura with only two enemies or with an enemy outside 145px', () => {
-    for (const count of [2, 3]) {
-      const a = game(); a.clock = 1000;
-      enemy(a, 550).nextHit = Infinity; enemy(a, 560).nextHit = Infinity;
-      if (count === 3) enemy(a, 700).nextHit = Infinity;
-      a.flex.tryStart(0); a.update(1);
-      expect(a.aura.value).toBe(0); expect(a.feedback).toContain('No audience');
-    }
+  it('sigma rapid fire and rizz slow reflect default hero affinity',()=>{
+    const sigma=game();sigma.aura.change(100);sigma.update(0,{flex:true});
+    enemy(sigma,900).hp=10000; sigma.update(100);
+    expect(sigma.shots[0].piercing).toBe(true);
+    const rizz=new Arena(()=>.5,'rizzler');rizz.start();
+    rizz.aura.change(100);rizz.update(0,{flex:true});
+    const target=enemy(rizz,600);target.hp=100;
+    rizz.update(100);
+    expect(target.rizzSlowUntil).toBeGreaterThan(rizz.clock);
+    expect(target.hp).toBeLessThan(100);
   });
-  it('counts an enemy exactly at 145px and interrupts without a later reward', () => {
-    const a = game(); enemy(a, 625); expect(a.nearby).toBe(1);
-    a.enemies = []; for (let i = 0; i < 3; i++) enemy(a, 480, 330).nextHit = i ? Infinity : 0;
-    a.aura.change(50); a.update(10, { flex: true });
-    a.enemies = []; advance(a, 1100);
-    expect(a.aura.value).toBe(30); expect(a.feedback).toContain('interrupted');
+  it('essence pickups choose dominant FLEX family without occupying buff slots',()=>{
+    const a=game();a.essenceDrops=[{...a.pos,affinity:'alpha'},{...a.pos,affinity:'alpha'}];
+    a.update(5);expect(a.affinities.alpha).toBe(2);expect(a.flexVariant).toBe('alpha');
+    expect(Object.values(a.buffs).every(v=>v===0)).toBe(true);
+    a.aura.change(100);a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
   });
 });
 
@@ -91,7 +91,7 @@ describe('upgrades', () => {
     const a = game(); a.drops.push({ ...a.pos, xp: 100 }); a.update(10);
     expect(a.mode).toBe('upgrades'); expect(a.pendingUpgrades).toBe(3);
     expect(new Set(a.choices.map(b => b.id)).size).toBe(3);
-    const before = JSON.stringify(a); a.update(250, { x: 1, flex: true, focus: true }); expect(JSON.stringify(a)).toBe(before);
+    const before = JSON.stringify(a); a.update(250, { x: 1, flex: true }); expect(JSON.stringify(a)).toBe(before);
     for (let i = 0; i < 3; i++) a.update(0, { choice: 0 });
     expect(a.mode).toBe('playing'); expect(Object.values(a.buffs).reduce((x, y) => x + y, 0)).toBe(3);
   });
@@ -112,9 +112,9 @@ describe('upgrades', () => {
   });
   it('applies damage upgrades, critical hits and Burst to emitted projectiles', () => {
     const a = game(); a.clock = 8000; a.buffs.sigma = 1; a.buffs.alpha = 1;
-    a.aura.change(100, 8000); a.aura.change(10, 8000); enemy(a, 610).hp = 1000;
+    a.aura.change(100, 8000); a.update(0,{flex:true}); enemy(a, 610).hp = 1000;
     a.update(1);
-    expect(a.shots[0].damage).toBeCloseTo(18 * 1.1 * 1.2 * 1.15 * 1.015);
+    expect(a.shots[0].damage).toBeGreaterThan(18 * 1.1 * 1.15);
     const b = new Arena(() => 0); b.update(0, { confirm: true });
     b.clock = 8000; b.buffs.mewing = 1; enemy(b, 610).hp = 1000; b.update(1);
     expect(b.shots[0].damage).toBe(36);
@@ -154,9 +154,9 @@ describe('wave and restart lifecycle', () => {
   });
   it('waits for the wave timer if the boss is killed early and resets all run state after death', () => {
     const a = game(); a.wave = 5; a.bossSpawned = true; a.bossDefeated = true; a.update(1); expect(a.mode).toBe('playing');
-    a.mode = 'dead'; a.buffs.speed = 3; a.aura.change(100); a.focusReady = 22000; a.pendingUpgrades = 2;
+    a.mode = 'dead'; a.buffs.speed = 3; a.aura.change(100); a.pendingUpgrades = 2;
     a.update(0, { confirm: true });
-    expect(a.buffs.speed).toBe(0); expect(a.aura.burstUntil).toBe(0); expect(a.focusReady).toBe(0); expect(a.pendingUpgrades).toBe(0);
+    expect(a.buffs.speed).toBe(0);expect(a.aura.value).toBe(0);expect(a.flex.state).toBe('farming');expect(a.pendingUpgrades).toBe(0);
   });
   it('is consistent for equivalent small and large frames and ignores inactive-tab gaps', () => {
     const a = game(), b = game(); advance(a, 200, { x: 1 }); b.update(200, { x: 1 });

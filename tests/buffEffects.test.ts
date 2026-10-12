@@ -16,7 +16,7 @@ function enemy(a: Arena, id: number, x = 600, y = 330, type: EnemyType = 'npc'):
 }
 function shot(e: Enemy, damage = 10): Shot { return { x: e.x, y: e.y, vx: 0, vy: 0, damage, ttl: 1000, hostile: false }; }
 function hit(a: Arena, e: Enemy, damage = 10) {
-  a.flex.tryStart(a.clock); // Isolate projectile impacts from new auto-fire.
+  // Existing projectiles resolve independently of auto-targeting.
   a.shots.push(shot(e, damage)); a.update(1);
 }
 
@@ -71,11 +71,11 @@ describe('Delulu', () => {
     enemy(a, 1, 480).nextHit = 0; enemy(a, 2, 480).nextHit = 0;
     a.shots.push({ ...shot(a.enemies[0], 100), hostile: true });
     a.update(1, { flex: true });
-    expect(a.mode).toBe('playing'); expect(a.hp).toBe(1); expect(a.aura.value).toBe(30);
-    expect(a.flex.state).toBe('cooldown'); expect(a.effects.deluluUsed).toBe(true);
+    expect(a.mode).toBe('playing'); expect(a.hp).toBe(1); expect(a.aura.value).toBe(50);
+    expect(a.flex.state).toBe('farming'); expect(a.effects.deluluUsed).toBe(true);
     const deadline = a.effects.invulnerableUntil, lastHit = a.lastDamageAt;
     a.enemies[0].nextHit = 0; a.update(1);
-    expect(a.aura.value).toBe(30); expect(a.lastDamageAt).toBe(lastHit);
+    expect(a.aura.value).toBe(50); expect(a.lastDamageAt).toBe(lastHit);
     a.drops.push({ ...a.pos, xp: 20 }); a.update(1); expect(a.mode).toBe('upgrades');
     a.update(250); expect(a.effects.invulnerableUntil).toBe(deadline);
     a.update(0, { choice: 0 }); expect(a.effects.deluluUsed).toBe(true);
@@ -119,7 +119,7 @@ describe('Touch Grass', () => {
 describe('Mogged', () => {
   it.each(['npc', 'boss'] as EnemyType[])('procs once on a full-health %s, even with simultaneous player hits', type => {
     const a = game(); a.buffs.mogged = 2; const e = enemy(a, 1, 600, 330, type);
-    a.flex.tryStart(0); a.shots.push(shot(e, 5), shot(e, 5)); a.update(1);
+    a.shots.push(shot(e, 5), shot(e, 5)); a.update(1);
     expect(e.hp).toBeCloseTo(ENEMIES[type].hp - 6.5 - 5);
     expect(e.playerHit).toBe(true);
   });
@@ -178,7 +178,7 @@ describe('Rizz Aura', () => {
     rizzPulse([e], a.pos, 0); expect(e.rizzSlowUntil).toBe(2500);
     rizzPulse([e], a.pos, 1000); expect(e.rizzSlowUntil).toBe(3500);
     a.update(100); expect(625 - e.x).toBeCloseTo(34 * .1 * .85);
-    const before = e.x; a.update(100, { focus: true }); expect(before - e.x).toBeCloseTo(34 * .1 * .62);
+    const before = e.x; a.update(100);expect(before-e.x).toBeCloseTo(34*.1*.85);
   });
 });
 
@@ -186,7 +186,7 @@ describe('Ultimate 67 and resets', () => {
   it('makes all seven radial projectiles bounce-eligible and announces only the first combined volley', () => {
     const a = game(); a.buffs['six-seven'] = 1; a.buffs['skibidi-bounce'] = 1;
     for (const count of [66, 133]) {
-      a.kills = count; a.flex.state = 'cooldown'; a.flex.cooldownUntil = Infinity;
+      a.kills = count; a.flex.state = 'farming';
       const e = enemy(a, count, 900); e.hp = 1;
       a.shots = [shot(e, 1)]; a.update(1);
       const radial = a.shots.filter(s => s.vx !== 0 || s.vy !== 0);
