@@ -29,3 +29,15 @@ This is the next content priority; #7 (AF-008) can be resumed later. If both pro
 - [ ] PR 3: Fanum Tax Raid (wave 2) and SIX SEVEN SURGE (wave 3), mobile-friendly HUD and tests
 - [ ] Real Android playtest and balancing
 
+
+## v0.6 — Quality & Performance
+
+- [x] Auto-pause active runs when a tab becomes hidden; require explicit resume
+- [x] Clear queued keyboard actions and touch movement when paused
+- [x] Remove redundant Phaser sprite texture rebinding when key/frame are unchanged
+- [x] Native fullscreen controls synchronized with external enter/exit
+- [x] Add desktop/phone Chromium regression coverage and a rules-review document
+- [ ] Physical Android/iOS playtest and sustained FPS/thermal benchmarks (needs devices)
+- [ ] Human difficulty / game-rules review **before** backend or monetization
+
+See [V06_QUALITY_AND_RULES.md](V06_QUALITY_AND_RULES.md).

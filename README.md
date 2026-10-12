@@ -6,7 +6,7 @@ A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. S
 
 **[Play Aura Farmer](https://aura-farmer-ecru.vercel.app)**
 
-The Vercel deployment tracks the `main` branch. Changes appear on the live website after they have been merged and the production build succeeds.
+The Vercel deployment tracks `main`. Visuals are now **Aura Arena by default**; `?visual=legacy` is available for old-art comparison. Changes appear once merged and the production build succeeds.
 
 ## Game menu and progression (v0.4/v0.5)
 
@@ -14,7 +14,7 @@ The updated main menu offers **PLAY CLASSIC**, **CHARACTERS**, **ACHIEVEMENTS**,
 
 - Four starting playable characters: **The Sigma** (balanced), **Alpha Chad** (melee/tank), **The Rizzler** (crowd-control) and **Ohio Kid** (fast/crits/extra shots).
 - Two unlockable characters: **Fanum Lord** (+25% collected XP) and **Six Seven Kid** (starts with Six Seven).
-- The selected character has a different starting kit and numerical profile, not just a cosmetic color. The currently shipped art uses tinted/placeholder Sigma sprites for alternate heroes until dedicated original character atlases are produced.
+- Every character has distinct starting gameplay stats and a dedicated native-pixel code-authored visual study, animation and menu portrait. These studies are not separately hand-painted layered atlas masters.
 - **12 local achievements**, unlock progress, recent run history and personal-best scores persist in browser `localStorage`. The save is per browser/device and clearing site data can erase it. Guests can always play without an account.
 - The in-game **MENU** button pauses the simulation. After victory or defeat, the results panel shows kills, XP, Aura, FLEX performance and score.
 - Online accounts, permanent cloud saves and *verified* public rankings are **not yet implemented**. A client-side submitted score cannot safely become an official online record.
@@ -29,7 +29,7 @@ Open the same game URL on your phone — no app installation required. Use the *
 
 **Fallback:** embedded browsers or iPhone Safari may reject native fullscreen/orientation lock. The game then fills the webpage viewport using CSS and offers a rotate-device prompt, but browser bars may remain visible. Native browser fullscreen and forced landscape cannot be guaranteed on every phone. Do not lock the game globally into landscape; portrait mode remains playable outside immersive mode.
 
-**Art production:** the current sprites include original PNG pixel atlases for the default Sigma and enemies; alternate heroes use color-tinted placeholders until dedicated art is produced, following the approved Art Bible. Editable final Aseprite sprite atlases are planned in [Sprite Production P0](docs/SPRITE_PRODUCTION_P0.md) and tracked separately.
+**Art production:** the default Aura Arena includes six original native-pixel character studies, NPC/Hater/Beta/BIG HATER, a geometric arena and combat FX produced as editable TypeScript/Canvas art. Final layered, artist-created Aseprite masters are still a separate production obligation under [Sprite Production P0](docs/SPRITE_PRODUCTION_P0.md).
 
 ## Run locally
 
@@ -70,4 +70,6 @@ On Linux, `npx playwright install --with-deps chromium` can also install system 
 
 Validation history and limitations: [docs/VALIDATION.md](docs/VALIDATION.md). The Phaser-independent combat simulation lives in `src/game/core/arena.ts`, and the rendering/input scene lives in `src/game/scenes/ArenaScene.ts`.
 
-Human gameplay balance testing is still needed. Multiplayer, Discord, shop and persistence remain future features. Mobile touch and immersive landscape presentation are already implemented; final hand-drawn sprite production is planned separately.
+**v0.6 stability:** hidden browser tabs automatically pause an active run and require RESUME; buffered keys and touch movement are cleared on pause, fullscreen controls follow native fullscreen transitions, and unchanged sprites no longer rebind Phaser textures every frame. See [Quality & rules review](docs/V06_QUALITY_AND_RULES.md). The v0.6 pass deliberately does **not** change damage, timers, wave balance, scoring or progression; those are awaiting player review before backend or monetization.
+
+Human difficulty balancing and performance tests on physical Android/iOS hardware are still needed. Multiplayer, Discord, shop and cloud persistence remain future features.
