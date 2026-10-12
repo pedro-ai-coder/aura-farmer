@@ -10,7 +10,7 @@ async function setup(page:Page,url:string):Promise<void>{
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
 }
 test('Gate B explicitly opts in, while default and Gate A stay stable',async({page})=>{
-  await setup(page,'/');
+  await setup(page,'/?visual=legacy');
   let keys=await page.evaluate(()=>{
     const sc=window.__game.scene.scenes[0] as ArenaScene;
     return sc.textures.getTextureKeys().filter(key=>key.startsWith('gb-'));

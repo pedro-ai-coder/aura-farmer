@@ -7,6 +7,7 @@ import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import { isGateA, drawGateAHudChrome, drawGateAHudMeter } from '../render/gateAArena';
+import { isFinalArt } from '../render/finalArt';
 import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
 
@@ -132,7 +133,7 @@ export class ArenaScene extends Phaser.Scene {
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
-    if(isGateA()) drawGateAHudChrome(g);
+    if(isGateA() || isFinalArt()) drawGateAHudChrome(g);
     else drawHudChrome(g);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
@@ -167,7 +168,7 @@ export class ArenaScene extends Phaser.Scene {
     this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
-    const meter=isGateA() ? drawGateAHudMeter : drawHudMeter;
+    const meter=isGateA() || isFinalArt() ? drawGateAHudMeter : drawHudMeter;
     meter(g,66,139,a.hp / stats.maxHp,0xff697a);
     meter(g,274,241,a.aura.value / 100,burst ? 0xf9c954 : 0xb35be4);
     meter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x36cd94);

@@ -5,7 +5,7 @@ test('identity skin renders a single functional hero menu and real loader comple
   await expect(page.locator('#af-loading')).toBeHidden();
   await expect(page.locator('.af-home-layout')).toBeVisible();
   await expect(page.locator('h1')).toContainText('GROW YOUR LEGEND');
-  await expect(page.locator('.af-home-event')).toContainText('WITHERROOT');
+  await expect(page.locator('.af-home-event')).toContainText('FIVE WAVES');
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
   await page.locator('[data-menu="play"]').click();
   await expect(page.locator('[data-menu="choose"]')).toHaveCount(6);

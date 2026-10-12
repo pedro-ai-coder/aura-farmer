@@ -18,7 +18,7 @@ async function begin(page:Page):Promise<void>{
 test('illustrated MENU remains an actual pause button',async({page})=>{
   await begin(page);
   const button=page.locator('#menu-open');
-  await expect(button).toHaveCSS('background-image',/menu-button\.svg/);
+  await expect(button).toHaveCSS('background-image','none');
   await button.click();
   await expect(page.locator('#meta-shell')).toContainText('PAUSED');
   await page.locator('[data-menu="resume"]').click();
