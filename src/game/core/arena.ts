@@ -161,7 +161,8 @@ export class Arena {
     this.flex.sync(this.clock,this.aura.value);
     const active=this.flexActive,variant=this.flex.variant;
     const v=normalized(input.x??0,input.y??0);
-    const speed=this.stats.speed*this.aura.moveMultiplier*(active&&variant==='alpha'?1.65:1);
+    const alphaBoost=active&&variant==='alpha'?(this.characterId==='cool-kid'?1.85:this.characterId==='alpha'?1.22:1.45):1;
+    const speed=this.stats.speed*this.aura.moveMultiplier*alphaBoost;
     const previousX=this.pos.x,previousY=this.pos.y;
     this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);
     this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);
@@ -291,7 +292,7 @@ export class Arena {
       const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.23)));
       if(this.flexActive&&this.flex.variant==='sigma')shot.piercing=true;
       this.fireReady=this.clock+420/(this.aura.fireRateMultiplier*this.stats.fireRate*
-        (1+(auraShot-1)*.13)*(this.flexActive&&this.flex.variant==='sigma'?2.6:1));
+        (1+(auraShot-1)*.13)*(this.flexActive&&this.flex.variant==='sigma'?(this.characterId==='nerd'?2.35:1.9):1));
     }
     const jawLevel=this.buffs['mewing-jaw'];
     const jawRadius=90+Math.max(0,jawLevel-1)*10;
@@ -339,8 +340,9 @@ export class Arena {
   private damage(base: number): number {
     const stats = this.stats;
     const sigma=this.flexActive&&this.flex.variant==='sigma';
-    return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.45:1)*
-      (this.random()<Math.min(1,stats.critChance+(sigma?.2:0))?2:1);
+    const overclock=sigma?(this.characterId==='nerd'?1.38:this.characterId==='six-seven'?1.12:1.24):1;
+    return base*this.aura.attackMultiplier(this.clock)*stats.damage*overclock*
+      (this.random()<Math.min(.65,stats.critChance+(sigma?(this.characterId==='nerd'?.22:.12):0))?1.7:1);
   }
 
   private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): Shot {
@@ -405,10 +407,13 @@ export class Arena {
     for(const e of [...this.enemies]){
       if(distance(e,this.pos)>ENEMIES[e.type].radius+GAME.playerRadius+12)continue;
       if(this.clock<(this.flexHitAt.get(e.id)??-1))continue;
-      this.flexHitAt.set(e.id,this.clock+350);
-      const base=32*this.stats.damage*(1+this.buffs['mewing-jaw']*.12);
+      this.flexHitAt.set(e.id,this.clock+(this.characterId==='cool-kid'?290:this.characterId==='alpha'?620:420));
+      // Cool Kid clears crowds quickly; Alpha Chad controls space with a heavier shove.
+      // Snapshot family remains fixed during the activation; ordinary build damage is capped.
+      const cool=this.characterId==='cool-kid',chad=this.characterId==='alpha';
+      const base=(cool?42:chad?22:29)*Math.min(1.35,this.stats.damage)*(1+Math.min(3,this.buffs['mewing-jaw'])*.08);
       if(e.type==='boss'){
-        const total=ENEMIES.boss.hp*.25;
+        const total=ENEMIES.boss.hp*(this.characterId==='cool-kid'?.22:this.characterId==='alpha'?.16:.18);
         const already=this.flexBossDamage.get(e.id)??0;
         const actual=Math.min(Math.max(0,total-already),base);
         if(actual<=0)continue;
@@ -418,8 +423,9 @@ export class Arena {
         this.hit(e,base,'flex');
         if(this.enemies.includes(e)){
           const direction=normalized(e.x-this.pos.x,e.y-this.pos.y);
-          e.x=clamp(e.x+direction.x*21,25,935);
-          e.y=clamp(e.y+direction.y*21,105,575);
+          const shove=this.characterId==='alpha'?54:this.characterId==='cool-kid'?15:25;
+          e.x=clamp(e.x+direction.x*shove,25,935);
+          e.y=clamp(e.y+direction.y*shove,105,575);
         }
       }
     }
