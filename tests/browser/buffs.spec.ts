@@ -53,7 +53,8 @@ for (const layout of [
         // Each item is tested in an empty LEGAL build; exhausting every item
         // at once no longer works because the game enforces 3+3 slots.
         await page.evaluate(async buffId=>{
-          const {BUFFS,emptyBuffLevels}=await import('/src/game/data/buffs.ts') as typeof import('../../src/game/data/buffs');
+          const path='/src/game/data/buffs.ts';
+          const {BUFFS,emptyBuffLevels}=await import(path) as typeof import('../../src/game/data/buffs');
           const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
           a.buffs=emptyBuffLevels();a.buffs['aura-shot']=1;
           a.enemies=[];a.shots=[];a.drops=[];a.hp=100;
