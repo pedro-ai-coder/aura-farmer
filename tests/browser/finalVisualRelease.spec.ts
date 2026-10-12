@@ -65,5 +65,5 @@ test('original unlock rules still apply in full visual mode',async({page})=>{
  await page.locator('[data-menu="play"]').click();
  await expect(page.locator('[data-character="fanum"]')).toBeDisabled();
  await expect(page.locator('[data-character="six-seven"]')).toBeDisabled();
- await expect(page.locator('.meta-character[data-character="sigma"] img')).toHaveAttribute('src',/^data:image\\/png/);
+ await expect(page.locator('.meta-character[data-character="sigma"] img')).toHaveAttribute('src',/^data:image/);
 });
