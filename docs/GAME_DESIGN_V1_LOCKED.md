@@ -1,7 +1,7 @@
 # AURA FARMER — Game Design v1.0 (rules baseline)
 
 **Status: gameplay-direction decisions LOCKED — 2026-10-12. Documentation only; NOT IMPLEMENTED.**
-**Owner decision source:** character/weapon design discussion followed by four explicit selections (6 slots, 5 waves ~5 min, small permanent boosts, large scrolling obstacle map).
+**Owner decision source:** character/weapon design discussion followed by four explicit selections (6 slots, 5 waves ~5 min, small permanent boosts, large scrolling obstacle map), then explicit **Option C: hybrid roster and affinity-driven transformations**.
 **Primary rule document for the next gameplay release.** Supersedes *planned* mechanics in older v0.1 / v0.6 documents. For what the current deployed build ACTUALLY does, consult `docs/COMBAT_SPEC.md` (v0.1 baseline) and the TypeScript simulation. Do not claim that any rules below are already live.
 
 ## 1. Locked design contract (do not revise without user direction)
@@ -13,8 +13,9 @@
 5. **One miniboss in every wave**, including wave five, with **one guaranteed ability/evolution reward** on defeat. Wave five ALSO contains a separate final boss, BIG HATER.
 6. **Build evolution and synergy**: weapons have four upgrade levels before one transformed/evolved state; passives have three levels. Evolution requires a max-level weapon and a compatible passive, plus a miniboss Aura Core (or equivalent guaranteed upgrade reward). Evolutions replace, never add, a slot.
 7. **HP and Aura remain distinct**: healing pickups and build-based healing are part of gameplay. Aura continues to be combat momentum and FLEX/Burst fuel, not the HP meter or premium currency.
-8. **Distinct playable combat classes**, while preserving the identities of all six existing Aura Farmer heroes.
+8. **Distinct playable combat classes**, preserving all six existing Aura Farmer hero IDs and unlocks, alongside the planned **hybrid pilot**: new Cool Kid and Nerd starter archetypes evolving into Giga Chad and Sigma Kid under Alpha/Sigma affinity builds.
 9. **No backend/monetization implementation** until this gameplay overhaul has been built, tested, and gameplay rules reviewed.
+10. **Hybrid affinity/evolution direction**: start with three themed run-only essence types (Alpha, Sigma, Rizz) and combine matching pickups, max-level signature weapon, compatible passive and a miniboss Core for one main form transformation per run. **Option C is approved**; specific thresholds, drop rates and recipes are tuning proposals. See [Hybrid Affinities & Evolutions](AFFINITY_EVOLUTION_HYBRID_V1.md).
 
 ## 2. Combat loop and timings
 
@@ -61,7 +62,7 @@
 
 ## 4. Playable classes — starting kits and player agency
 
-Each of six existing heroes owns a distinctive **starting weapon (1 slot)**, an **intrinsic passive** and a **class-special ability (`SPACE`, outside slots)**. Universal `E` = FLEX; movement and auto-attacks remain simple. Unique actives have visible cooldown/readability and cannot replace the player's choice to reposition.
+Each of the six existing Veteran heroes owns a distinctive **starting weapon (1 slot)**, an **intrinsic passive** and a **class-special ability (`SPACE`, outside slots)**. Universal `E` = FLEX; movement and auto-attacks remain simple. Unique actives have visible cooldown/readability and cannot replace the player's choice to reposition.
 
 | Existing hero | Combat identity | Strategic advantage | Weakness / counterbalance |
 |---|---|---|---|
@@ -125,9 +126,9 @@ Candidate maps: Aura Arena Central (first), Ohio Underground (tier 2), Rizz Dist
 
 **Phase 0 — Design baseline (THIS DOCUMENT ONLY):** lock core choices, list tuning variables, preserve old design as historical reference, update roadmap and decision log. No gameplay code, no Vercel preview required.
 
-**Phase 1 — Builds/data migration:** introduce weapon/passive registry, hard 3+3 slots, level 1–4 weapons, level 1–3 passives, legal-choices generator, existing buff mapping, upgrade and evolution UX. Unit tests: no seventh item, no dead choices, evolution slot preservation, consistency with seeded RNG.
+**Phase 1 — Affinity, builds/data migration:** introduce three essence pickups (Alpha/Sigma/Rizz), affinity-weighted legal item offers, weapon/passive registry, hard 3+3 slots, level 1–4 weapons, level 1–3 passives, legal-choices generator, existing buff mapping, upgrade and evolution UX. Unit tests: no seventh item, no dead choices, evolution slot preservation, consistency with seeded RNG.
 
-**Phase 2 — Character identity:** six role-balanced character starting weapons, built-in passives, `SPACE` actives, effects/sprites and class-specific UI. Keep FLEX universally accessible. Test combat, cooldown, auto-attacks, class win viability.
+**Phase 2 — Character identity + hybrid pilot:** retain the six existing Veterans, add Cool Kid and Nerd starter archetypes, build Giga Chad and Sigma Kid visual/form transformations (one per run) alongside six role-balanced Veteran starting weapons, built-in passives, `SPACE` actives, effects/sprites and class-specific UI. Keep FLEX universally accessible. Test combat, cooldown, auto-attacks, class win viability.
 
 **Phase 3 — Wave encounters, minibosses and HP:** five guaranteed minibosses with unique telegraphed attacks, reachable Core choices, heal pickups, boss phase after wave-five miniboss and inter-wave heals. Test forced drop, no reward duplication, time overtime, boss unlock and pickups under full/zero HP.
 
@@ -143,9 +144,17 @@ Each implementation batch (when authorized later) should ship as a feature branc
 
 - Exact wave timings/spawn seconds and boss overtime limits; 5 waves / ~5-minute target **are** locked.
 - Base HP, HP restore percentages, heal drop frequencies and shields.
-- Specific evolution recipes and unlock milestones, and whether **1 reroll per wave** is enabled.
+- Specific evolution recipes, essence rates/thresholds, secondary-affinity effects and unlock milestones, and whether **1 reroll per wave** is enabled.
 - Mastery XP curve and permanent attribute caps; small capped bonuses **are** locked.
 - Specific map dimensions, obstacle count/layout and minimum corridor widths; larger scrolling solid-obstacle arena **is** locked.
 - Difficulties and leaderboards, scoring system and whether competitive runs normalize Mastery stat modifiers.
 
 These require automated balance simulations + hands-on review *after gameplay implementation*. No server, store, subscriptions, ads or purchases are approved at this stage.
+
+## 10. Approved Option C extension — hybrid affinity-driven evolution
+
+**Design choice approved 2026-10-12:** preserve the six already-playable Veteran heroes **and** introduce new Evolver bases, initially **Cool Kid → Giga Chad** via Alpha and **Nerd → Sigma Kid** via Sigma. Three run-only essence pickup types (**Alpha / Sigma / Rizz**) influence legal drop/upgrade choices; they do not replace XP, Aura, HP or the guaranteed miniboss Core, and do not consume 3+3 build slots. Each base character can perform **at most one major form transformation per run**, tied to the same max-level weapon + passive + miniboss Core evolution event. A secondary affinity may enhance a trait, not create a separate form in the initial implementation. Veterans retain IDs/unlocks/history/role access, can use affinity builds and weapon evolutions, and only later require full-form transformation art.
+
+**Canonical detailed extension:** [AFFINITY_EVOLUTION_HYBRID_V1.md](AFFINITY_EVOLUTION_HYBRID_V1.md) — includes pickups, weighted skill offers, sample recipes, two roster tabs, Mastery identity, five-wave pacing, failure safeguards and phased implementation. This section **extends** rather than overrides the previously locked five waves / ~5 minutes, 3 weapons + 3 passives, miniboss per wave, heals, Mastery and larger follow-camera world.
+
+**Approval boundary:** the choice of Option C and general essence/build/form concept is approved. Names, specific roster count in a first prototype, drop percentages, evolve thresholds, cross-affinity procs and transform balance remain proposals for later testing. **Documentation only; no gameplay implementation is authorized in this change.**

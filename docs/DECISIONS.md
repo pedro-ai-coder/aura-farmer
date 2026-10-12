@@ -28,3 +28,13 @@ Is FLEX +25 balanced? Are upgrades too frequent? Is the boss feasible? Do animat
 - D-020: Gameplay and player review precede backend, public leaderboard verification and monetization. Existing achievements/local profile must survive migration.
 
 **Canonical future rules:** [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md). The older D-009 (five 50s waves) and `COMBAT_SPEC.md` describe the **currently implemented** older build; v1.0 fixes only the five-wave/~five-minute target and leaves individual timings to balance QA.
+
+## D-021–D-025 — Hybrid affinity and transformations (2026-10-12)
+
+- **D-021 [APPROVED]** Choose hybrid **Option C**: retain established Aura Farmer heroes while introducing new evolvable starter archetypes; avoid replacing/deleting saved character identities.
+- **D-022 [APPROVED DIRECTION]** Alpha, Sigma and Rizz are the **initial three** affinity themes. Collectible essence progress influences the associated item/upgrade drops, rather than instantly auto-equipping items or adding currency slots. Essence is separate from battle Aura, XP, HP and guaranteed miniboss Aura Cores.
+- **D-023 [PROPOSED PILOT]** Cool Kid (Alpha affinity) → Giga Chad and Nerd (Sigma affinity) → Sigma Kid, with weapon Lv4 + compatible passive + essence progress + a miniboss Core. Each transformation also evolves a weapon **in the same existing slot**. One major form per run.
+- **D-024 [GUARDRAIL]** Preserve 3 weapons + 3 passives, 5 waves ~5 min, 5 minibosses/Cores, heals, capped permanent Mastery and larger scrolling world. Existing six hero save IDs, unlocks, achievements and local history survive migration. Combat Mastery belongs to original selected base, not temporary evolved form.
+- **D-025 [NOT YET LOCKED]** Specific drop percentages, affinity threshold, secondary-affinity bonuses, archetype HP/attack stats, number of further evolved branches, unlock schedule and VFX implementation remain tuning proposals. No gameplay implementation or backend/monetization begins in this documentation change.
+
+See [Hybrid Affinity & Evolution extension](AFFINITY_EVOLUTION_HYBRID_V1.md) and [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md).
