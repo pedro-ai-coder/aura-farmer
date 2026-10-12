@@ -1,3 +1,4 @@
+import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
 import { isGateA, gateAHeroUrl } from '../game/render/gateAArena';
 import type Phaser from 'phaser';
 import type { ArenaScene } from '../game/scenes/ArenaScene';
@@ -95,13 +96,18 @@ export class GameShell {
    * portraits. Display their first 48×48 frame without stretching the entire
    * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
    */
+  private previewPortrait(id: CharacterId): string {
+    if (isGateB() && (id==='alpha'||id==='rizzler')) return gateBPortraitUrl(id);
+    if (isGateA() && id==='sigma') return gateAHeroUrl();
+    return '/assets/pixel/'+this.portraitName(id)+'.png';
+  }
   private portrait(id: CharacterId): string {
     const strip = id === 'ohio' || id === 'fanum' || id === 'six-seven';
     const fallback: Record<CharacterId,string> = {
       sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
     };
     return `<span class="meta-avatar-fallback" aria-hidden="true">${fallback[id]}</span>
-      <img src="${isGateA() && id==='sigma' ? gateAHeroUrl() : '/assets/pixel/'+this.portraitName(id)+'.png'}"
+      <img src="${this.previewPortrait(id)}"
         data-character-portrait="${id}" ${strip ? 'data-portrait-strip="6"' : ''}
         alt="" loading="lazy" decoding="async">`;
   }
@@ -122,13 +128,11 @@ export class GameShell {
     switch(this.screen) {
       case 'home': {
         const c=getCharacter(this.profile.selectedCharacterId);
-        // Match the featured hero to the currently selected fighter. Only Sigma
-        // has Gate A runtime art; the other fighters retain their real portraits.
-        const heroSrc = isGateA()
-          ? c.id === 'sigma' ? gateAHeroUrl() : '/assets/pixel/' + this.portraitName(c.id) + '.png'
-          : '/assets/identity/hero.svg';
+        // Featured portrait follows the selected hero. Gate B gives Alpha/Rizzler
+        // their own artwork, while all other characters retain a valid fallback.
+        const heroSrc = isGateA() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
         const heroStrip = isGateA() && ['ohio','fanum','six-seven'].includes(c.id);
-        return this.header(isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
+        return this.header(isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
             <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
             <h1>GROW YOUR LEGEND</h1>
@@ -149,8 +153,8 @@ export class GameShell {
           </div>
           <aside class="af-home-event" aria-label="World event">
             <span class="af-event-tag">${isGateA() ? '◆ VISUAL TEST BUILD' : '✦ WORLD EVENT'}</span>
-            <strong>${isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
-            <small>${isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
+            <strong>${isGateB() ? 'HERO IDENTITY<br>GATE B' : isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
+            <small>${isGateB() ? 'Alpha Chad and Rizzler: new original poses, portraits, melee/cast. Preview only.' : isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
             <span class="af-event-footer">${isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
           </aside>
         </div>`;

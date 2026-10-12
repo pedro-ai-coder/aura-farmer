@@ -328,3 +328,13 @@
   object-fit:cover;
   object-position:left center;
 }
+
+
+/* Gate B adds hero-specific identity, while Gate A's neutral arena stays. */
+.gate-a-mode .meta-character:has(img[data-character-portrait="alpha"]) img,
+.gate-a-mode .meta-character:has(img[data-character-portrait="rizzler"]) img {
+  image-rendering: pixelated;
+}
+.gate-a-mode .af-home-art .af-hero-art[src^="data:image/png"] {
+  image-rendering: pixelated;
+}
