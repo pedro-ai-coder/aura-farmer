@@ -52,6 +52,7 @@ export class Arena {
   private flexHitAt = new Map<number,number>();
   private flexBossDamage = new Map<number,number>();
   private nextRizzPulse = 0;
+  private nextChadPulse=0;
   private movedDistance = 0;
   bossSpawned = false;
   bossDefeated = false;
@@ -121,7 +122,7 @@ export class Arena {
         this.effects.beginWave();
         this.tookHitThisWave = false;
         this.enemies = []; this.shots = []; this.drops = []; this.essenceDrops = [];
-        this.hp = Math.min(this.stats.maxHp, this.hp + 20); this.mode = 'playing';
+        this.hp = Math.min(this.stats.maxHp, this.hp + 12); this.mode = 'playing';
       }
       return;
     }
@@ -146,6 +147,7 @@ export class Arena {
       this.flexHitAt.clear();
       this.flexBossDamage.clear();
       this.nextRizzPulse=this.clock;
+      this.nextChadPulse=this.clock;
       this.say('FLEX! '+this.flexName);
     }
     // Small steps prevent projectile tunnelling; discard long inactive-tab gaps.
@@ -161,7 +163,7 @@ export class Arena {
     this.flex.sync(this.clock,this.aura.value);
     const active=this.flexActive,variant=this.flex.variant;
     const v=normalized(input.x??0,input.y??0);
-    const speed=this.stats.speed*this.aura.moveMultiplier*(active&&variant==='alpha'?1.65:1);
+    const speed=this.stats.speed*this.aura.moveMultiplier*(active&&variant==='alpha'&&this.characterId!=='alpha'?1.65:1);
     const previousX=this.pos.x,previousY=this.pos.y;
     this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);
     this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);
@@ -173,7 +175,7 @@ export class Arena {
         this.shoot(this.pos,target,this.damage(10));
       }
     }
-    if (this.waveClock < GAME.waveDurationMs && this.spawnClock >= Math.max(300, 1100 - this.wave * 120)) {
+    if (this.waveClock < GAME.waveDurationMs && this.spawnClock >= Math.max(340, 1250 - this.wave * 145)) {
       this.spawnClock = 0;
       if (this.enemies.length < GAME.maxEnemies - (this.wave === 5 && !this.bossSpawned ? 1 : 0)) {
         const types: EnemyType[] = this.wave >= 3 ? ['npc', 'hater', 'beta'] : this.wave >= 2 ? ['npc', 'hater'] : ['npc'];
@@ -204,7 +206,10 @@ export class Arena {
         if (this.mode === 'dead') return;
       }
     }
-    if(active&&variant==='alpha')this.rampage();
+    if(active&&variant==='alpha'){
+      if(this.characterId==='alpha')this.chadFortress();
+      else this.rampage();
+    }
     if(active&&variant==='rizz'&&this.clock>=this.nextRizzPulse){
       this.nextRizzPulse=this.clock+700;
       for(const e of [...this.enemies]){
@@ -215,7 +220,7 @@ export class Arena {
     }
     // Alpha RAMPAGE replaces ordinary auto-fire; prevents five seconds of
     // invulnerable boss DPS stacking outside the per-activation stomp cap.
-    if(!(active&&variant==='alpha'))this.attack();
+    if(!(active&&variant==='alpha'&&this.characterId!=='alpha'))this.attack();
     for (const shot of [...this.shots]) {
       shot.x += shot.vx * dt / 1000; shot.y += shot.vy * dt / 1000; shot.ttl -= dt;
       if (shot.ttl <= 0) { this.removeShot(shot); continue; }
@@ -288,19 +293,19 @@ export class Arena {
     const auraShot=this.buffs['aura-shot'];
     if(auraShot>0 && this.clock>=this.fireReady){
       const target=this.enemies.reduce((x,y)=>distance(x,this.pos)<distance(y,this.pos)?x:y);
-      const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.23)));
+      const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.14)));
       if(this.flexActive&&this.flex.variant==='sigma')shot.piercing=true;
       this.fireReady=this.clock+420/(this.aura.fireRateMultiplier*this.stats.fireRate*
-        (1+(auraShot-1)*.13)*(this.flexActive&&this.flex.variant==='sigma'?2.6:1));
+        (1+(auraShot-1)*.08)*(this.flexActive&&this.flex.variant==='sigma'?2.6:1));
     }
     const jawLevel=this.buffs['mewing-jaw'];
-    const jawRadius=90+Math.max(0,jawLevel-1)*10;
+    const jawRadius=90+Math.max(0,jawLevel-1)*7;
     if(jawLevel>0 && this.clock>=this.jawReady &&
       this.enemies.some(e=>distance(e,this.pos)<jawRadius)){
-      this.jawReady=this.clock+1100/(1+(jawLevel-1)*.12);
+      this.jawReady=this.clock+1100/(1+(jawLevel-1)*.07);
       this.jawUntil=this.clock+175;
       for(const e of [...this.enemies])if(distance(e,this.pos)<jawRadius)
-        this.hit(e,this.damage(26*(1+(jawLevel-1)*.3))*
+        this.hit(e,this.damage(26*(1+(jawLevel-1)*.16))*
           (this.characterId==='alpha'?1.15:1));
     }
     const orbLevel=this.buffs['ohio-orbiter'];
@@ -309,29 +314,29 @@ export class Arena {
       const targets=this.enemies.filter(e=>distance(e,this.orb)<ENEMIES[e.type].radius+range);
       if(targets.length){
         this.orbReady=this.clock+350/(1+(orbLevel-1)*.08);
-        for(const e of [...targets])this.hit(e,this.damage(14*(1+(orbLevel-1)*.26)));
+        for(const e of [...targets])this.hit(e,this.damage(14*(1+(orbLevel-1)*.16)));
       }
     }
     const volleyLevel=this.buffs['six-seven'];
     if(volleyLevel>0 && this.clock>=this.volleyReady){
-      this.volleyReady=this.clock+6500/(1+(volleyLevel-1)*.16);
+      this.volleyReady=this.clock+6500/(1+(volleyLevel-1)*.10);
       const count=5+volleyLevel*2;
       for(let i=0;i<count;i++){
         const angle=i*Math.PI*2/count;
         this.shoot(this.pos,{x:this.pos.x+Math.cos(angle),y:this.pos.y+Math.sin(angle)},
-          this.damage(11+(volleyLevel-1)*4),false,400);
+          this.damage(11+(volleyLevel-1)*2.5),false,400);
       }
     }
     const rizzLevel=this.buffs['rizz-blast'];
     const radius=110+(rizzLevel-1)*19;
     if(rizzLevel>0 && this.clock>=this.rizzBlastReady &&
       this.enemies.some(e=>distance(e,this.pos)<=radius)){
-      this.rizzBlastReady=this.clock+4800/(1+(rizzLevel-1)*.13);
+      this.rizzBlastReady=this.clock+4800/(1+(rizzLevel-1)*.08);
       this.rizzBlastUntil=this.clock+260;
       this.rizzBlastRadius=radius;
       for(const e of [...this.enemies])if(distance(e,this.pos)<=radius){
         e.rizzSlowUntil=this.clock+(e.type==='boss'?400:1050);
-        this.hit(e,this.damage(13+(rizzLevel-1)*7));
+        this.hit(e,this.damage(13+(rizzLevel-1)*4));
       }
     }
   }
@@ -386,8 +391,12 @@ export class Arena {
   }
 
   private hurt(amount:number):void {
-    if(this.flexActive&&this.flex.variant==='alpha')return;
-    const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage;
+    // Cool Kid's Giga Chad Rampage is invulnerable. Alpha Chad instead becomes
+    // a fortified tank: damage still matters, but incoming hits are reduced.
+    if(this.flexActive&&this.flex.variant==='alpha'&&this.characterId!=='alpha')return;
+    const fortified=this.flexActive&&this.flex.variant==='alpha'&&this.characterId==='alpha';
+    const damage = Math.max(fortified?0.5:1,amount-this.stats.armor)*
+      this.stats.incomingDamage*(fortified?.25:1);
     const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
     if (result.ignored) return;
     this.hp = result.hp;
@@ -401,12 +410,27 @@ export class Arena {
     if (this.hp <= 0) this.mode = 'dead';
   }
 
+  private chadFortress():void {
+    if(this.clock<this.nextChadPulse)return;
+    this.nextChadPulse=this.clock+1050;
+    for(const enemy of [...this.enemies]){
+      if(distance(enemy,this.pos)>165)continue;
+      const capped=enemy.type==='boss'?Math.min(22,enemy.hp*.04):28;
+      this.hit(enemy,capped,'flex');
+      if(this.enemies.includes(enemy)&&enemy.type!=='boss'){
+        const direction=normalized(enemy.x-this.pos.x,enemy.y-this.pos.y);
+        enemy.x=clamp(enemy.x+direction.x*28,25,935);
+        enemy.y=clamp(enemy.y+direction.y*28,105,575);
+      }
+    }
+  }
+
   private rampage():void {
     for(const e of [...this.enemies]){
       if(distance(e,this.pos)>ENEMIES[e.type].radius+GAME.playerRadius+12)continue;
       if(this.clock<(this.flexHitAt.get(e.id)??-1))continue;
       this.flexHitAt.set(e.id,this.clock+350);
-      const base=32*this.stats.damage*(1+this.buffs['mewing-jaw']*.12);
+      const base=32*this.stats.damage*(1+this.buffs['mewing-jaw']*.08);
       if(e.type==='boss'){
         const total=ENEMIES.boss.hp*.25;
         const already=this.flexBossDamage.get(e.id)??0;
