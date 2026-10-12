@@ -56,17 +56,17 @@ describe('arena combat', () => {
 
 describe('FLEX Ultimate gameplay',()=>{
   it('alpha is invulnerable and moves/tramples without killing bosses instantly',()=>{
-    const a=new Arena(()=>.5,'alpha');a.start();a.aura.change(100);
+    const a=new Arena(()=>.5,'cool-kid');a.start();a.aura.change(100);
     a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
     const e=enemy(a,a.pos.x+17,a.pos.y,'npc');e.hp=27;e.nextHit=0;
     a.update(100,{x:1});
-    expect(a.hp).toBe(120);expect(a.pos.x).toBeGreaterThan(480);
+    expect(a.hp).toBe(110);expect(a.pos.x).toBeGreaterThan(480);
     expect(a.enemies).not.toContain(e);
     const boss=enemy(a,a.pos.x+10,a.pos.y,'boss');boss.nextHit=0;
     for(let i=0;i<48;i++)a.update(100);
-    // Boss damage from the 5s trample itself is capped at 25%;
+    // Boss damage from the 5s trample itself is capped at 22%;
     // normal weapons are permitted to resume firing AFTER the window ends.
-    expect(boss.hp).toBeGreaterThanOrEqual(ENEMIES.boss.hp*.75);
+    expect(boss.hp).toBeGreaterThanOrEqual(ENEMIES.boss.hp*.78);
     a.update(200);
     expect(a.flex.state).toBe('farming');
   });
@@ -125,7 +125,7 @@ describe('upgrades', () => {
   it('Locked In increases actual auto-fire cadence and taking damage resets the clean streak', () => {
     const a = game(), b = game(); a.clock = b.clock = 8000; a.buffs['locked-in'] = 2;
     enemy(a, 900).hp = 10000; enemy(b, 900).hp = 10000;
-    advance(a, 300); advance(b, 300);
+    advance(a, 330); advance(b, 330);
     expect(a.shots).toHaveLength(2); expect(b.shots).toHaveLength(1);
     enemy(a, a.pos.x, a.pos.y); a.update(1);
     expect(a.stats.fireRate).toBe(1); expect(a.lastDamageAt).toBe(a.clock);

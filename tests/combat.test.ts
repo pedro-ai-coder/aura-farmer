@@ -7,13 +7,13 @@ describe('upgrade damage and timing', () => {
   it('applies Sigma only with 50 Aura and caps Alpha at ten nearby enemies', () => {
     const b = emptyBuffLevels(); b.sigma = 2; b.alpha = 2;
     expect(combatStats(b, 49, 0, 0).damage).toBe(1);
-    expect(combatStats(b, 50, 100, 0).damage).toBeCloseTo(1.3 * 1.3);
-    expect(combatStats(b, 50, 3, 0).damage).toBeCloseTo(1.3 * 1.09);
+    expect(combatStats(b, 50, 100, 0).damage).toBeCloseTo(1 + .11*2 + .009*2*10);
+    expect(combatStats(b, 50, 3, 0).damage).toBeCloseTo(1 + .11*2 + .009*2*3);
   });
   it('activates Mewing and Locked In after 8 clean seconds, resetting after damage', () => {
     const b = emptyBuffLevels(); b.mewing = 2; b['locked-in'] = 2;
     expect(combatStats(b, 0, 0, 7999)).toMatchObject({ critChance: 0, fireRate: 1 });
-    expect(combatStats(b, 0, 0, 8000)).toMatchObject({ critChance: .2, fireRate: 1.5 });
+    expect(combatStats(b, 0, 0, 8000)).toMatchObject({ critChance: .16, fireRate: 1.36 });
     expect(combatStats(b, 0, 0, 0)).toMatchObject({ critChance: 0, fireRate: 1 });
   });
   it('stacks speed, health and armor', () => {

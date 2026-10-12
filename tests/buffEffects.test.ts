@@ -46,13 +46,13 @@ describe('v0.3 catalog and unchanged baseline', () => {
 describe('Crash Out', () => {
   it('uses an inclusive 35% threshold based on current maximum HP', () => {
     const b = emptyBuffLevels(); b['crash-out'] = 1; b['thick-skin'] = 3;
-    expect(combatStats(b, 0, 0, 0, 56)).toMatchObject({ damage: 1.4, incomingDamage: 1.2 });
+    expect(combatStats(b, 0, 0, 0, 56)).toMatchObject({ damage: 1.26, incomingDamage: 1.2 });
     expect(combatStats(b, 0, 0, 0, 56.01)).toMatchObject({ damage: 1, incomingDamage: 1 });
     expect(combatStats(b, 0, 0, 0, 160)).toMatchObject({ damage: 1, incomingDamage: 1 });
   });
   it('affects actual outgoing shots and applies incoming amplification after armor', () => {
     const a = game(); a.hp = 35; a.buffs['crash-out'] = 1; a.buffs.drip = 3;
-    enemy(a, 1, 900); a.update(1); expect(a.shots[0].damage).toBeCloseTo(18 * 1.4);
+    enemy(a, 1, 900); a.update(1); expect(a.shots[0].damage).toBeCloseTo(18 * 1.26);
     enemy(a, 2, 480).nextHit = 0; a.update(1);
     expect(a.hp).toBeCloseTo(35 - (8 - 3) * 1.2);
     a.hp = 36; a.enemies[1].nextHit = 0; a.update(1);

@@ -591,7 +591,7 @@ export class PixelWorld {
       this.shadowLayer.fillStyle(0x302747,boss ? .32 : .20)
         .fillEllipse(enemy.x,enemy.y+(boss?31:enemy.type==='beta'?19:13),boss?88:enemy.type==='beta'?42:29,boss?16:9);
       if (boss) {
-        const w=112, x=enemy.x-w/2, y=Math.max(111,enemy.y-65), health=Phaser.Math.Clamp(enemy.hp/ENEMIES.boss.hp,0,1);
+        const w=112, x=enemy.x-w/2, y=Math.max(111,enemy.y-65), health=Phaser.Math.Clamp(enemy.hp/(enemy.maxHp??ENEMIES.boss.hp),0,1);
         this.actionLayer.fillStyle(0x302747,.94).fillRoundedRect(x-2,y-2,w+4,13,4);
         this.actionLayer.fillStyle(0xffebdb,1).fillRect(x,y,w,9);
         this.actionLayer.fillStyle(0xea568a,1).fillRect(x,y,Math.max(0,w*health),9);
