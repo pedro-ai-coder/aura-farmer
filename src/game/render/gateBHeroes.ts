@@ -5,7 +5,7 @@ import Phaser from 'phaser';
  * Rendered at native 48px with deliberately fixed wardrobe and silhouette.
  */
 export const isGateB = (): boolean =>
-  new URLSearchParams(window.location.search).get('gateB') === '1';
+  ['1','2'].includes(new URLSearchParams(window.location.search).get('gateB')??'');
 export type GateBHero = 'alpha' | 'rizzler';
 export type GateBHeroPose = 'idle'|'move'|'hurt'|'flex_charge'|'flex_success'|'death'|'punch'|'cast';
 const TAGS:Record<GateBHeroPose,{count:number;duration:number}> = {
