@@ -73,3 +73,9 @@ Validation history and limitations: [docs/VALIDATION.md](docs/VALIDATION.md). Th
 **v0.6 stability:** hidden browser tabs automatically pause an active run and require RESUME; buffered keys and touch movement are cleared on pause, fullscreen controls follow native fullscreen transitions, and unchanged sprites no longer rebind Phaser textures every frame. See [Quality & rules review](docs/V06_QUALITY_AND_RULES.md). The v0.6 pass deliberately does **not** change damage, timers, wave balance, scoring or progression; those are awaiting player review before backend or monetization.
 
 Human difficulty balancing and performance tests on physical Android/iOS hardware are still needed. Multiplayer, Discord, shop and cloud persistence remain future features.
+
+## Equipment & weapons (new 3 + 3 system)
+
+The game now enforces **3 weapon slots + 3 passive slots**. Aura Shot is the starting weapon for every hero; Alpha/Cool Kid also carry Mewing Jaw, Rizzler begins with Rizz Pulse, and Six-Seven Kid carries 67 Volley. **Available weapons**: Aura Shot, Mewing Jaw, Ohio Orbiter, 67 Volley, and Rizz Pulse. Equipped weapons level from 1 to 4 and use visible autonomous attacks; passives use up to 3 levels. Category limits apply to actual XP upgrade choices and are enforced inside the simulation, not just the UI. Two small on-screen panels display occupied/empty slots and levels, with weapon/passive category labels in the upgrade dialog. FLEX remains outside the equipment inventory.
+
+This is the [equipment implementation slice](docs/EQUIPMENT_WEAPONS_SLICE.md); miniboss Cores, evolving forms, permanent Mastery and larger scrolling maps are still future work. It does not add backend or monetization.

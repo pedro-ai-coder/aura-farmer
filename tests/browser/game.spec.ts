@@ -69,7 +69,7 @@ test('real keyboard, rendering, natural auto-combat, pickup and upgrade choice',
   await page.screenshot({ path: 'test-results/upgrades.png' });
   await press(page, '1');
   await expect.poll(() => read(page, a => a.mode)).toBe('playing');
-  expect(await read(page, a => Object.values(a.buffs).reduce((x, y) => x + y, 0))).toBe(1);
+  expect(await read(page, a => Object.values(a.buffs).reduce((x, y) => x + y, 0))).toBe(2);
   await page.keyboard.press('F3');
   await expect.poll(() => page.evaluate(() => {
     const texts = window.__game.scene.scenes[0].children.list.filter(x => x.type === 'Text') as Phaser.GameObjects.Text[];

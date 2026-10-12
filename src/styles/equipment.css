@@ -1,0 +1,32 @@
+/* Compact 3+3 equipment that flanks the central FLEX Ultimate. */
+.loadout-hud{position:absolute;inset:0;z-index:5;pointer-events:none;user-select:none}
+.loadout-hud[hidden]{display:none!important}
+.equipment-panel{position:absolute;bottom:12px;width:min(27%,278px);
+ padding:5px 7px 7px;background:#0d1f34ed;border:2px solid #567e9d;
+ border-radius:9px;box-shadow:0 3px 0 #081526b8;color:#fff0d5}
+.weapons-panel{left:11px}.passives-panel{right:11px}
+.equipment-heading{display:flex;justify-content:space-between;align-items:center;
+ margin:0 2px 5px;font-size:10px;font-weight:900;letter-spacing:.1em;color:#b6e6fa}
+.equipment-heading b{color:#ffdc83;font-size:11px}
+.equipment-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.equipment-slot{height:49px;min-width:0;border:1px solid #6a8da8;border-radius:5px;
+ background:#1c3953;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:1px;overflow:hidden;position:relative}
+.equipment-slot.empty{background:#11263d;border-style:dashed;color:#648399;font:900 19px sans-serif}
+.equipment-slot.filled{box-shadow:inset 0 -2px #2c5571}
+.equipment-icon{color:#ffd27e;font:bold 17px system-ui,sans-serif;line-height:18px}
+.passives-panel .equipment-icon{color:#b9dcff}
+.equipment-name{font:bold 9px system-ui,sans-serif;line-height:10px;white-space:nowrap;
+ width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center;padding:0 2px}
+.equipment-level{font:900 8px system-ui,sans-serif;color:#8be9de;line-height:10px}
+.upgrade-rarity{white-space:nowrap;font-size:clamp(9px,1vw,12px)}
+@media(max-width:900px){.equipment-panel{bottom:7px;width:23%;padding:4px}
+ .equipment-slot{height:39px}.equipment-name{display:none}
+ .equipment-icon{font-size:16px}.equipment-heading{font-size:8px}
+ .equipment-level{font-size:8px}}
+@media(max-width:580px){.equipment-panel{bottom:74px;width:38%;padding:3px}
+ .equipment-heading{font-size:8px;margin-bottom:2px}.equipment-heading b{font-size:9px}
+ .equipment-slots{gap:2px}.equipment-slot{height:37px}
+ .equipment-icon{font-size:14px;line-height:16px}.equipment-level{font-size:7px}
+ .weapons-panel{left:6px}.passives-panel{right:6px}}
+@media(prefers-reduced-motion:reduce){.equipment-slot{transition:none!important}}

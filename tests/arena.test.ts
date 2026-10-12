@@ -84,7 +84,7 @@ describe('FLEX Ultimate gameplay',()=>{
   it('essence pickups choose dominant FLEX family without occupying buff slots',()=>{
     const a=game();a.essenceDrops=[{...a.pos,affinity:'alpha'},{...a.pos,affinity:'alpha'}];
     a.update(5);expect(a.affinities.alpha).toBe(2);expect(a.flexVariant).toBe('alpha');
-    expect(Object.values(a.buffs).every(v=>v===0)).toBe(true);
+    expect(Object.values(a.buffs).every((v,i)=>v===0||i===Object.keys(a.buffs).indexOf('aura-shot'))).toBe(true);
     a.aura.change(100);a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
   });
 });
@@ -96,7 +96,7 @@ describe('upgrades', () => {
     expect(new Set(a.choices.map(b => b.id)).size).toBe(3);
     const before = JSON.stringify(a); a.update(250, { x: 1, flex: true }); expect(JSON.stringify(a)).toBe(before);
     for (let i = 0; i < 3; i++) a.update(0, { choice: 0 });
-    expect(a.mode).toBe('playing'); expect(Object.values(a.buffs).reduce((x, y) => x + y, 0)).toBe(3);
+    expect(a.mode).toBe('playing'); expect(Object.values(a.buffs).reduce((x, y) => x + y, 0)).toBe(4);
   });
   it('increases maximum HP and heals, excludes capped upgrades, and handles exhausted choices', () => {
     const a = game(); a.hp = 50; a.mode = 'upgrades'; a.pendingUpgrades = 1;
@@ -159,7 +159,8 @@ describe('wave and restart lifecycle', () => {
     const a = game(); a.wave = 5; a.bossSpawned = true; a.bossDefeated = true; a.update(1); expect(a.mode).toBe('playing');
     a.mode = 'dead'; a.buffs.speed = 3; a.aura.change(100); a.pendingUpgrades = 2;
     a.update(0, { confirm: true });
-    expect(a.buffs.speed).toBe(0);expect(a.aura.value).toBe(0);expect(a.flex.state).toBe('farming');expect(a.pendingUpgrades).toBe(0);
+    expect(a.buffs.speed).toBe(0);expect(a.buffs['aura-shot']).toBe(1);
+    expect(a.aura.value).toBe(0);expect(a.flex.state).toBe('farming');expect(a.pendingUpgrades).toBe(0);
   });
   it('is consistent for equivalent small and large frames and ignores inactive-tab gaps', () => {
     const a = game(), b = game(); advance(a, 200, { x: 1 }); b.update(200, { x: 1 });

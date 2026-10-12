@@ -6,7 +6,8 @@ import { GAME } from './constants';
 import { combatStats } from './combat';
 import { BuffEffects, findBounce, firstHitDamage, rizzPulse, rizzSpeed, type BuffTarget, type BounceState } from './buffEffects';
 import { clamp, distance, normalized, type Vec2 } from './math';
-import { availableBuffs, emptyBuffLevels, type BuffDefinition } from '../data/buffs';
+import { availableBuffs, BUFFS, emptyBuffLevels, type BuffDefinition, type BuffId } from '../data/buffs';
+import {canEquip,equipment,legalUpgrades} from './equipment';
 import { ENEMIES, type EnemyType } from '../data/enemies';
 import { getCharacter, type CharacterId } from '../data/characters';
 
@@ -58,16 +59,22 @@ export class Arena {
   feedback = '';
   feedbackUntil = 0;
   jawUntil = 0;
+  rizzBlastUntil=0;
+  rizzBlastRadius=0;
   private spawnClock = 0;
   private fireReady = 0;
   private jawReady = 0;
   private orbReady = 0;
+  private volleyReady=4800; // Keep the signature 67th-kill burst independent of timed volleys.
+  private rizzBlastReady=0;
   private nextId = 0;
 
   constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma') {
     const selected = getCharacter(characterId);
+    // Every starter carries one real automatic weapon, counted in the loadout.
+    this.buffs['aura-shot']=1;
     if (selected.id === 'alpha'||selected.id==='cool-kid') this.buffs['mewing-jaw'] = 1;
-    if (selected.id === 'rizzler') this.buffs['rizz-aura'] = 1;
+    if (selected.id === 'rizzler') { this.buffs['rizz-aura'] = 1; this.buffs['rizz-blast']=1; }
     if (selected.id === 'six-seven') this.buffs['six-seven'] = 1;
     this.hp = this.stats.maxHp;
   }
@@ -77,6 +84,7 @@ export class Arena {
     this.mode = 'playing';
   }
 
+  get loadout():{weapons:readonly BuffId[];passives:readonly BuffId[]}{return equipment(this.buffs);}
   get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
   get stats() {
     const character = getCharacter(this.characterId);
@@ -119,10 +127,13 @@ export class Arena {
     }
     if (this.mode === 'upgrades') {
       const buff = input.choice === undefined ? undefined : this.choices[input.choice];
-      if (buff) {
+      if (buff && BUFFS.includes(buff) && canEquip(this.buffs,buff)) {
         this.buffs[buff.id]++;
         if (buff.id === 'thick-skin') this.hp = Math.min(this.stats.maxHp, this.hp + 20);
         this.pendingUpgrades--; this.offerUpgrade();
+      } else if (buff) {
+        // Ignore stale/tampered rewards rather than bypassing slot capacity.
+        this.offerUpgrade();
       }
       return;
     }
@@ -272,24 +283,55 @@ export class Arena {
     }
   }
 
-  private attack(): void {
-    if (!this.enemies.length) return;
-    if (this.clock >= this.fireReady) {
-      const target = this.enemies.reduce((a, b) => distance(a, this.pos) < distance(b, this.pos) ? a : b);
-      const shot=this.shoot(this.pos,target,this.damage(18));
+  private attack():void {
+    if(!this.enemies.length)return;
+    const auraShot=this.buffs['aura-shot'];
+    if(auraShot>0 && this.clock>=this.fireReady){
+      const target=this.enemies.reduce((x,y)=>distance(x,this.pos)<distance(y,this.pos)?x:y);
+      const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.23)));
       if(this.flexActive&&this.flex.variant==='sigma')shot.piercing=true;
-      this.fireReady = this.clock + 420 / (this.aura.fireRateMultiplier * this.stats.fireRate *
-        (this.flexActive && this.flex.variant==='sigma'?2.6:1));
+      this.fireReady=this.clock+420/(this.aura.fireRateMultiplier*this.stats.fireRate*
+        (1+(auraShot-1)*.13)*(this.flexActive&&this.flex.variant==='sigma'?2.6:1));
     }
-    if (this.buffs['mewing-jaw'] && this.clock >= this.jawReady && this.enemies.some(e => distance(e, this.pos) < 95)) {
-      this.jawReady = this.clock + 1100; this.jawUntil = this.clock + 160;
-      for (const e of [...this.enemies]) if (distance(e, this.pos) < 95) this.hit(e, this.damage(26) * (this.characterId === 'alpha' ? 1.15 : 1));
+    const jawLevel=this.buffs['mewing-jaw'];
+    const jawRadius=90+Math.max(0,jawLevel-1)*10;
+    if(jawLevel>0 && this.clock>=this.jawReady &&
+      this.enemies.some(e=>distance(e,this.pos)<jawRadius)){
+      this.jawReady=this.clock+1100/(1+(jawLevel-1)*.12);
+      this.jawUntil=this.clock+175;
+      for(const e of [...this.enemies])if(distance(e,this.pos)<jawRadius)
+        this.hit(e,this.damage(26*(1+(jawLevel-1)*.3))*
+          (this.characterId==='alpha'?1.15:1));
     }
-    if (this.buffs['ohio-orbiter'] && this.clock >= this.orbReady) {
-      const targets = this.enemies.filter(e => distance(e, this.orb) < ENEMIES[e.type].radius + 12);
-      if (targets.length) {
-        this.orbReady = this.clock + 350;
-        for (const e of targets) this.hit(e, this.damage(14));
+    const orbLevel=this.buffs['ohio-orbiter'];
+    if(orbLevel>0 && this.clock>=this.orbReady){
+      const range=ENEMIES.npc.radius+12+3*(orbLevel-1);
+      const targets=this.enemies.filter(e=>distance(e,this.orb)<ENEMIES[e.type].radius+range);
+      if(targets.length){
+        this.orbReady=this.clock+350/(1+(orbLevel-1)*.08);
+        for(const e of [...targets])this.hit(e,this.damage(14*(1+(orbLevel-1)*.26)));
+      }
+    }
+    const volleyLevel=this.buffs['six-seven'];
+    if(volleyLevel>0 && this.clock>=this.volleyReady){
+      this.volleyReady=this.clock+6500/(1+(volleyLevel-1)*.16);
+      const count=5+volleyLevel*2;
+      for(let i=0;i<count;i++){
+        const angle=i*Math.PI*2/count;
+        this.shoot(this.pos,{x:this.pos.x+Math.cos(angle),y:this.pos.y+Math.sin(angle)},
+          this.damage(11+(volleyLevel-1)*4),false,400);
+      }
+    }
+    const rizzLevel=this.buffs['rizz-blast'];
+    const radius=110+(rizzLevel-1)*19;
+    if(rizzLevel>0 && this.clock>=this.rizzBlastReady &&
+      this.enemies.some(e=>distance(e,this.pos)<=radius)){
+      this.rizzBlastReady=this.clock+4800/(1+(rizzLevel-1)*.13);
+      this.rizzBlastUntil=this.clock+260;
+      this.rizzBlastRadius=radius;
+      for(const e of [...this.enemies])if(distance(e,this.pos)<=radius){
+        e.rizzSlowUntil=this.clock+(e.type==='boss'?400:1050);
+        this.hit(e,this.damage(13+(rizzLevel-1)*7));
       }
     }
   }
@@ -384,8 +426,14 @@ export class Arena {
   }
 
   private offerUpgrade(): void {
-    const options = availableBuffs(this.buffs);
+    const options=legalUpgrades(this.buffs,availableBuffs(this.buffs));
     if (!options.length || this.pendingUpgrades <= 0) {
+      // Exhausted loadouts turn surplus XP into a small, deterministic resource
+      // benefit instead of trapping the player on an empty choice screen.
+      if(this.pendingUpgrades>0 && !options.length){
+        this.hp=Math.min(this.stats.maxHp,this.hp+8*this.pendingUpgrades);
+        if(!this.flexActive)this.aura.change(6*this.pendingUpgrades,this.clock);
+      }
       this.pendingUpgrades = 0; this.choices = []; this.mode = 'playing'; return;
     }
     // Fisher–Yates: unique choices with no random-sort comparator bias.
@@ -396,8 +444,8 @@ export class Arena {
     // Prefer matching essence builds, but preserve cross-affinity choices.
     const current=this.flexVariant;
     const tags:Record<string,Affinity>={alpha:'alpha',drip:'alpha','thick-skin':'alpha','mewing-jaw':'alpha',
-      sigma:'sigma',mewing:'sigma','locked-in':'sigma','skibidi-bounce':'sigma','six-seven':'sigma',
-      'rizz-aura':'rizz','touch-grass':'rizz',delulu:'rizz',speed:'rizz'};
+      sigma:'sigma',mewing:'sigma','locked-in':'sigma','skibidi-bounce':'sigma','six-seven':'sigma','aura-shot':'sigma',
+      'rizz-aura':'rizz','rizz-blast':'rizz','touch-grass':'rizz',delulu:'rizz',speed:'rizz'};
     const collected=this.affinities[current];
     const aligned=collected?options.filter(o=>tags[o.id]===current):[];
     const neutral=options.filter(o=>!aligned.includes(o));
