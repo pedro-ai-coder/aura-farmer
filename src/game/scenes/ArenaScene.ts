@@ -6,6 +6,7 @@ import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
+import { isGateA, drawGateAHudChrome, drawGateAHudMeter } from '../render/gateAArena';
 import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
 
@@ -131,7 +132,8 @@ export class ArenaScene extends Phaser.Scene {
   private draw(): void {
     const a = this.arena, g = this.g, stats = a.stats;
     g.clear();
-    drawHudChrome(g);
+    if(isGateA()) drawGateAHudChrome(g);
+    else drawHudChrome(g);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
@@ -165,10 +167,11 @@ export class ArenaScene extends Phaser.Scene {
     this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
-    drawHudMeter(g,66,139,a.hp / stats.maxHp,0xff5b65);
-    drawHudMeter(g,274,241,a.aura.value / 100,burst ? 0xffc84d : 0xb948ff);
-    drawHudMeter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x7cff6b);
-    drawHudMeter(g,780,153,1 - a.waveClock / GAME.waveDurationMs,0x4fd9ff);
+    const meter=isGateA() ? drawGateAHudMeter : drawHudMeter;
+    meter(g,66,139,a.hp / stats.maxHp,0xff697a);
+    meter(g,274,241,a.aura.value / 100,burst ? 0xf9c954 : 0xb35be4);
+    meter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x36cd94);
+    meter(g,780,153,1 - a.waveClock / GAME.waveDurationMs,0x57c7ee);
     const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
     const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
     this.status.setColor('#fff8e7').setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);

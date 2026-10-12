@@ -1,3 +1,4 @@
+import { isGateA, gateAHeroUrl } from '../game/render/gateAArena';
 import type Phaser from 'phaser';
 import type { ArenaScene } from '../game/scenes/ArenaScene';
 import { CHARACTERS, getCharacter, type CharacterId } from '../game/data/characters';
@@ -100,7 +101,7 @@ export class GameShell {
       sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
     };
     return `<span class="meta-avatar-fallback" aria-hidden="true">${fallback[id]}</span>
-      <img src="/assets/pixel/${this.portraitName(id)}.png"
+      <img src="${isGateA() && id==='sigma' ? gateAHeroUrl() : '/assets/pixel/'+this.portraitName(id)+'.png'}"
         data-character-portrait="${id}" ${strip ? 'data-portrait-strip="6"' : ''}
         alt="" loading="lazy" decoding="async">`;
   }
@@ -121,11 +122,11 @@ export class GameShell {
     switch(this.screen) {
       case 'home': {
         const c=getCharacter(this.profile.selectedCharacterId);
-        return this.header('FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
+        return this.header(isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
             <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
             <h1>GROW YOUR LEGEND</h1>
-            <p class="meta-sub">Grow your Aura. Defend the fields. Become the legend.</p>
+            <p class="meta-sub">${isGateA() ? 'Beat the rivals. Stack your Aura. Own the arena.' : 'Grow your Aura. Defend the fields. Become the legend.'}</p>
             <div class="meta-cta">${this.button('play','✦ PLAY CLASSIC','primary')}
             ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
             <nav class="meta-menu" aria-label="Main menu">
@@ -137,14 +138,14 @@ export class GameShell {
             <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
           </div>
           <div class="af-home-art" aria-hidden="true">
-            <span class="af-sun-glow"></span><img class="af-hero-art" src="/assets/identity/hero.svg" alt="">
-            <span class="af-sprout-icon">✿</span><span class="af-art-caption">GROW YOUR LEGEND</span>
+            <span class="af-sun-glow"></span><img class="af-hero-art" src="${isGateA() ? gateAHeroUrl() : '/assets/identity/hero.svg'}" alt="">
+            <span class="af-sprout-icon">${isGateA() ? '◆' : '✿'}</span><span class="af-art-caption">${isGateA() ? 'STYLE IS POWER' : 'GROW YOUR LEGEND'}</span>
           </div>
           <aside class="af-home-event" aria-label="World event">
-            <span class="af-event-tag">✦ WORLD EVENT</span>
-            <strong>WITHERROOT<br>INVASION</strong>
-            <small>The corrupted fields are stirring. Face the threat in Classic mode.</small>
-            <span class="af-event-footer">✦ THE FARM NEEDS YOU</span>
+            <span class="af-event-tag">${isGateA() ? '◆ VISUAL TEST BUILD' : '✦ WORLD EVENT'}</span>
+            <strong>${isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
+            <small>${isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
+            <span class="af-event-footer">${isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
           </aside>
         </div>`;
       }
@@ -158,7 +159,7 @@ export class GameShell {
             <small>${c.role} · ${c.difficulty}</small>
             <span class="meta-character-description">${unlocked?c.passive:'🔒 '+c.unlockedBy}</span></button>`;
         }).join('');
-        return this.header('CHOOSE YOUR FARMER')+`<div class="meta-grid characters">${cards}</div>
+        return this.header(isGateA() ? 'CHOOSE YOUR FIGHTER' : 'CHOOSE YOUR FARMER')+`<div class="meta-grid characters">${cards}</div>
           <p class="meta-sub">${getCharacter(selected).description} · ${getCharacter(selected).weapon}</p>
           <div class="meta-actions meta-character-actions">${this.button('home','BACK')}
           ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}

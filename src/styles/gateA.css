@@ -1,0 +1,66 @@
+/* Gate A is a feature-flagged art direction test: ?gateA=1 only. */
+.gate-a-mode body{background:radial-gradient(ellipse at 50% 0%,#304c68 0%,#141e30 48%,#0b1322 100%);color:#fff2d7}
+.gate-a-mode .masthead strong{font-weight:1000;letter-spacing:-.045em;text-shadow:0 3px 0 #071224}
+.gate-a-mode .masthead strong em{color:#f9c954}
+.gate-a-mode .tag{background:#172e49;border:1px solid #567791;color:#d8edfc}
+.gate-a-mode .play-layout.is-front-menu{
+  background-color:#101d31;
+  background-image:linear-gradient(150deg,#081525d9,#0d1e35e8),repeating-linear-gradient(135deg,transparent 0 80px,#3c526b26 81px 84px);
+}
+.gate-a-mode .play-layout.is-front-menu:before{
+  background:repeating-linear-gradient(135deg,transparent 0 94px,#c7d6e810 95px 98px),linear-gradient(90deg,#081323c2,#101e3794);
+}
+.gate-a-mode .meta-panel{border-color:#587998;background:linear-gradient(142deg,#14263e,#0c192b 80%);box-shadow:0 8px 0 #081224,0 20px 42px #0007}
+.gate-a-mode .meta-header{background:#1e3855!important;border:1px solid #597e9a;border-bottom:3px solid #66bbdf!important;border-radius:6px!important}
+.gate-a-mode .af-wordmark i{color:#57c7ee}
+.gate-a-mode .af-home-nav h1{color:#fff2d7;max-width:17ch;text-shadow:0 3px #101826}
+.gate-a-mode .af-eyebrow{color:#57c7ee}
+.gate-a-mode .af-home-art{background:radial-gradient(ellipse at 50% 62%,#41658a5e,transparent 68%);
+  border:1px solid #58758b60;border-radius:14px}
+.gate-a-mode .af-home-art:before{background:radial-gradient(ellipse,#57c7ee63,transparent 68%);filter:none}
+.gate-a-mode .af-home-art .af-hero-art{width:min(90%,335px);height:100%;max-height:340px;object-fit:contain;
+  image-rendering:pixelated;filter:drop-shadow(8px 14px 0 #091428);animation:none}
+.gate-a-mode .af-sprout-icon{display:none}
+.gate-a-mode .af-art-caption{font-family:system-ui,sans-serif;font-size:14px;letter-spacing:.11em;color:#f9c954;transform:none;text-shadow:0 2px #101426}
+.gate-a-mode .af-home-event{border-color:#587e9e;border-left:4px solid #57c7ee;background:#172d47;box-shadow:none}
+.gate-a-mode .af-home-event strong{color:#fff2d7;text-shadow:none}
+.gate-a-mode .af-event-tag,.gate-a-mode .af-event-footer{color:#74d4f3}
+.gate-a-mode .meta-button,.gate-a-mode .meta-character,.gate-a-mode .upgrade-choice{
+  border-color:#6788a4;background:linear-gradient(180deg,#2a4562,#172940);box-shadow:0 3px 0 #071625;
+  color:#f7f1e6;border-radius:7px}
+.gate-a-mode .meta-button.primary{border-color:#fce5a5;background:linear-gradient(180deg,#ffe18a,#e5b744);color:#25283c;box-shadow:0 4px 0 #85652d}
+.gate-a-mode .meta-feature,.gate-a-mode .meta-stat-grid div{border-color:#577c9a;background:#183049}
+.gate-a-mode .meta-avatar{border-color:#59b8da;background:#273f58}
+.gate-a-mode .meta-avatar img[data-character-portrait="sigma"]{image-rendering:pixelated;object-fit:contain}
+.gate-a-mode .meta-character.selected{background:#294661;border-color:#f9c954}
+.gate-a-mode .af-spotlight,.gate-a-mode .upgrade-dialog,.gate-a-mode .wave-dialog{
+  border-color:#6287a4!important;background:linear-gradient(140deg,#152a44,#0c182e)!important;
+  box-shadow:0 5px 0 #0a1525,0 15px 35px #030917af!important}
+.gate-a-mode .upgrade-dialog:before,.gate-a-mode .upgrade-dialog:after,
+.gate-a-mode .wave-dialog:before,.gate-a-mode .wave-dialog:after,
+.gate-a-mode .meta-shell[data-screen="pause"] .meta-panel:before,
+.gate-a-mode .meta-shell[data-screen="settings"] .meta-panel:before,
+.gate-a-mode .meta-shell[data-screen="results"] .meta-panel:before{display:none}
+.gate-a-mode .upgrade-header,.gate-a-mode .wave-sign,.gate-a-mode .meta-shell[data-screen="pause"] .meta-header,
+.gate-a-mode .meta-shell[data-screen="settings"] .meta-header,
+.gate-a-mode .meta-shell[data-screen="results"] .meta-header{
+  border-color:#587d98;background:linear-gradient(180deg,#2b4561,#122940 55%,#101e32)}
+.gate-a-mode .upgrade-choice:before{display:none}
+.gate-a-mode .upgrade-number{background:#284564;border-color:#6c9fba}
+.gate-a-mode .upgrade-bottom{background:#1b3450;border:1px solid #6a8ba4}
+.gate-a-mode .wave-kicker{color:#57c7ee}
+.gate-a-mode .wave-sign h2{color:#f9c954;text-shadow:1px 2px #0a1425}
+.gate-a-mode .menu-open{background-image:none;color:#f7f1e6;font:900 14px system-ui,sans-serif;
+  border:2px solid #7695ab;border-radius:7px;background-color:#142d49;box-shadow:0 3px 0 #0a1322;
+  text-shadow:none}
+.gate-a-mode .menu-open:after{content:"≡ MENU"}
+.gate-a-mode .play-layout.is-immersive .menu-open,.gate-a-mode .play-layout:fullscreen .menu-open{font:900 14px system-ui,sans-serif;border:2px solid #7695ab}
+.gate-a-mode .af-loading{background:repeating-linear-gradient(135deg,#101f37 0 80px,#172b45 81px 86px)}
+.gate-a-mode .af-loading-inner{border-color:#5bb9d7;background:#0f2138}
+.gate-a-mode .wave-crest{border-color:#70bcd9;background:#192f4a}
+.gate-a-mode .wave-crest svg{display:none}
+.gate-a-mode .wave-crest:after{content:"◆";color:#f9c954;font-size:38px}
+.gate-a-mode .wave-crest span{display:none}
+.gate-a-mode .meta-shell[data-screen="pause"] .meta-panel,.gate-a-mode .meta-shell[data-screen="settings"] .meta-panel,
+.gate-a-mode .meta-shell[data-screen="results"] .meta-panel{border-color:#6588a2}
+@media(prefers-reduced-motion:reduce){.gate-a-mode .af-home-art .af-hero-art{animation:none}}
