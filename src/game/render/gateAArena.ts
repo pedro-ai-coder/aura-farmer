@@ -1,3 +1,4 @@
+import { isFinalArt } from './finalArt';
 import Phaser from "phaser";
 
 /**
@@ -239,7 +240,7 @@ function arenaFloor(c:Ctx):void{
 }
 
 export function createGateA(scene:Phaser.Scene):void{
-  if(!isGateA())return;
+  if(!isGateA() && !isFinalArt())return;
   Object.entries(GA_SIGMA).forEach(([pose,tag])=>{
     for(let i=0;i<tag.count;i++)
       add(scene,"ga-sigma-"+pose+"-"+i,48,48,c=>sigma(c,pose as GateASigmaPose,i));

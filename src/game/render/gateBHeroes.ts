@@ -1,3 +1,4 @@
+import { isFinalArt } from './finalArt';
 import Phaser from 'phaser';
 
 /** Gate B / Hero Identity Slice
@@ -162,7 +163,7 @@ function drawRizzler(c:Paint,pose:GateBHeroPose,f:number,y:number,stride:number,
   if(pose==='flex_success') {b(c,6,17+y,3,5,K.pinkHi);b(c,40,12+y,3,5,K.pinkHi);}
 }
 export function createGateBHeroes(scene:Phaser.Scene):void{
- if(!isGateB())return;
+ if(!isGateB() && !isFinalArt())return;
  for(const id of ['alpha','rizzler'] as GateBHero[]){
   for(const [pose,tag] of Object.entries(TAGS)){
    if(id==='alpha'&&pose==='cast'||id==='rizzler'&&pose==='punch')continue;
