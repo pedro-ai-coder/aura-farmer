@@ -65,7 +65,7 @@ export class Arena {
   private fireReady = 0;
   private jawReady = 0;
   private orbReady = 0;
-  private volleyReady=0;
+  private volleyReady=4800; // Keep the signature 67th-kill burst independent of timed volleys.
   private rizzBlastReady=0;
   private nextId = 0;
 
