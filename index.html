@@ -25,6 +25,16 @@
           <div class="flex-ultimate-track"><span id="flex-ultimate-fill"></span></div>
           <span id="flex-ultimate-count">0/100 AURA</span>
         </div>
+        <aside id="loadout-hud" class="loadout-hud" aria-label="Current build" hidden>
+          <div class="equipment-panel weapons-panel">
+            <div class="equipment-heading"><span>⚔ WEAPONS</span><b data-loadout-count="weapons">1/3</b></div>
+            <div class="equipment-slots" data-loadout="weapons"></div>
+          </div>
+          <div class="equipment-panel passives-panel">
+            <div class="equipment-heading"><span>✦ PASSIVES</span><b data-loadout-count="passives">0/3</b></div>
+            <div class="equipment-slots" data-loadout="passives"></div>
+          </div>
+        </aside>
         <div id="af-spotlight" class="af-spotlight" role="status" aria-live="polite" hidden>
           <span id="af-spotlight-kicker"></span><strong id="af-spotlight-title"></strong><small id="af-spotlight-subtitle"></small>
         </div>
@@ -48,10 +58,10 @@
         <section id="upgrade-overlay" class="upgrade-overlay" aria-labelledby="upgrade-title" hidden>
           <div class="upgrade-dialog" role="group" aria-describedby="upgrade-subtitle">
             <header class="upgrade-header">
-              <div><span class="upgrade-kicker">LEVEL UP</span><h2 id="upgrade-title">CHOOSE YOUR BUFF</h2></div>
+              <div><span class="upgrade-kicker">LEVEL UP</span><h2 id="upgrade-title">UPGRADE YOUR BUILD</h2></div>
               <span class="upgrade-paused">GAME PAUSED</span>
             </header>
-            <p id="upgrade-subtitle" class="upgrade-subtitle">Choose one upgrade to continue.</p>
+            <p id="upgrade-subtitle" class="upgrade-subtitle">Choose a weapon or passive. Maximum 3 of each.</p>
             <div id="touch-upgrade-actions" class="touch-upgrades" aria-label="Choose your upgrade">
               <button type="button" class="upgrade-choice" data-game-action="choice0" aria-label="Choose first upgrade">1</button>
               <button type="button" class="upgrade-choice" data-game-action="choice1" aria-label="Choose second upgrade">2</button>

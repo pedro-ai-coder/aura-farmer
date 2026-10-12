@@ -1,4 +1,5 @@
-import type { BuffDefinition } from '../data/buffs';
+import {BUFFS,type BuffDefinition,type BuffLevels} from '../data/buffs';
+import {equipment,isWeapon,MAX_PASSIVE_SLOTS,MAX_WEAPON_SLOTS} from '../core/equipment';
 import type { Controls, Mode } from '../core/arena';
 import type { FlexState,FlexVariant } from '../core/flex';
 
@@ -32,6 +33,8 @@ export class TouchControls {
   private flexCount=document.querySelector<HTMLElement>('#flex-ultimate-count')!;
   private flexButton=document.querySelector<HTMLButtonElement>('[data-game-action="flex"]')!;
   private lastFlexState='';
+  private loadoutRoot=document.querySelector<HTMLElement>('#loadout-hud')!;
+  private loadoutLast='';
 
   get visible(): boolean {
     return window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
@@ -121,6 +124,55 @@ export class TouchControls {
       this.flexButton.setAttribute('aria-label',state==='ready'?'Activate '+name:'FLEX charging');
     }
   }
+  setLoadoutHUD(mode:Mode,levels:Readonly<BuffLevels>):void{
+    this.loadoutRoot.hidden=mode!=='playing';
+    if(mode!=='playing'){this.loadoutLast='';return;}
+    const loadout=equipment(levels);
+    const signature=[...loadout.weapons,...loadout.passives]
+      .map(id=>id+':'+levels[id]).join('|');
+    if(signature===this.loadoutLast)return;
+    this.loadoutLast=signature;
+    for(const [category,ids,max] of [
+      ['weapons',loadout.weapons,MAX_WEAPON_SLOTS],
+      ['passives',loadout.passives,MAX_PASSIVE_SLOTS]
+    ] as const){
+      const slotRoot=this.loadoutRoot.querySelector<HTMLElement>('[data-loadout="'+category+'"]')!;
+      const count=this.loadoutRoot.querySelector<HTMLElement>('[data-loadout-count="'+category+'"]')!;
+      count.textContent=ids.length+'/'+max;
+      slotRoot.replaceChildren();
+      for(let i=0;i<max;i++){
+        const id=ids[i];
+        const item=document.createElement('div');
+        item.className='equipment-slot'+(id?' filled':' empty');
+        if(id){
+          const buff=BUFFS.find(b=>b.id===id)!;
+          item.dataset.equipment=id;
+          item.title=buff.name+' LV '+levels[id]+'/'+buff.maxStacks+' · '+buff.description;
+          item.setAttribute('aria-label',item.title);
+          const art=document.createElement('span');
+          art.className='equipment-icon';
+          art.textContent={
+            'aura-shot':'✦','mewing-jaw':'✊','ohio-orbiter':'◉','six-seven':'67',
+            'rizz-blast':'◈',drip:'⬡','thick-skin':'♥',speed:'»',mewing:'✧',
+            alpha:'◆',sigma:'✦','locked-in':'↗','touch-grass':'✚',
+            'rizz-aura':'◈',delulu:'◇','crash-out':'⚡',mogged:'★',
+            'skibidi-bounce':'↝'
+          }[id]??'✦';
+          const title=document.createElement('span');
+          title.className='equipment-name';
+          title.textContent=buff.name;
+          const lvl=document.createElement('span');
+          lvl.className='equipment-level';
+          lvl.textContent='LV '+levels[id]+'/'+buff.maxStacks;
+          item.append(art,title,lvl);
+        }else{
+          item.setAttribute('aria-label','Empty '+(category==='weapons'?'weapon':'passive')+' slot');
+          item.textContent='+';
+        }
+        slotRoot.append(item);
+      }
+    }
+  }
   setMode(mode: Mode, choices: BuffDefinition[], stacks: Readonly<Partial<Record<BuffDefinition['id'],number>>> = {}, pendingUpgrades = 1): void {
     const key = `${mode}:${mode === 'upgrades'
       ? choices.map(c => `${c.id}:${stacks[c.id] ?? 0}`).join(',') + ':' + pendingUpgrades : ''}`;
@@ -153,10 +205,10 @@ export class TouchControls {
       heading.textContent=buff.name;
       const rarity = document.createElement('span');
       rarity.className='upgrade-rarity';
-      rarity.textContent=buff.rarity;
+      rarity.textContent=(isWeapon(buff.id)?'WEAPON':'PASSIVE')+' · '+buff.rarity;
       const level = document.createElement('span');
       level.className='upgrade-stack';
-      level.textContent=`${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)}/${buff.maxStacks}`;
+      level.textContent=`LV ${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)}/${buff.maxStacks}`;
       const description = document.createElement('span');
       description.className='upgrade-description';
       description.textContent=buff.description;
@@ -171,7 +223,8 @@ export class TouchControls {
         drip:'shield','thick-skin':'heart',delulu:'spirit',alpha:'blade',sigma:'orb',
         speed:'speed','touch-grass':'leaf','mewing':'star','locked-in':'bolt',
         'six-seven':'crown','mewing-jaw':'blade','ohio-orbiter':'orb',
-        'crash-out':'bolt','skibidi-bounce':'orb',mogged:'star','rizz-aura':'spirit'
+        'crash-out':'bolt','skibidi-bounce':'orb',mogged:'star','rizz-aura':'spirit',
+        'aura-shot':'orb','rizz-blast':'spirit'
       };
       const glyph=glyphs[buff.id] ?? 'star';
       const art=document.createElement('span');
@@ -180,7 +233,7 @@ export class TouchControls {
       art.innerHTML=`<svg viewBox="0 0 24 24"><use href="/assets/identity/ui-icons.svg#${glyph}"></use></svg>`;
       button.replaceChildren(top,art,bottom,description);
       button.dataset.rarity=buff.rarity.toLowerCase();
-      button.setAttribute('aria-label',`Choose ${buff.name}, ${buff.rarity}, ${buff.description}`);
+      button.setAttribute('aria-label',`Choose ${isWeapon(buff.id)?'weapon':'passive'} ${buff.name}, level ${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)} of ${buff.maxStacks}, ${buff.description}`);
     });
   }
 }
