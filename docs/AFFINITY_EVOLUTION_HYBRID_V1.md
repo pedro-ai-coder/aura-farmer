@@ -32,7 +32,7 @@ The **three affinities** are Alpha, Sigma and Rizz. Each has one clear gameplay 
 
 **Resources remain unambiguous**:
 - **XP** (normal green diamond): run levels + ordinary 3-option level-up.
-- **Aura** (yellow bolt meter): combat momentum, FLEX and Aura Burst; unchanged and never converted into essence.
+- **Aura** (yellow bolt meter): combat momentum charging the future **manual FLEX Ultimate**. The legacy automatic Aura Burst will be removed in the redesign; Aura is never converted to Essence.
 - **HP** (red heart): healing/survival.
 - **Essences** (three themed icons): *non-spendable run-only affinity progress*. They do **not** occupy any of the 3+3 build slots, do not function as a fourth shop currency and reset at end of run.
 - **Miniboss Aura Core**: a *guaranteed rare reward event* after each wave miniboss, not an essence-meter fill and not automatically an extra weapon slot.
@@ -136,3 +136,7 @@ The user's **hybrid direction is decided**. These specifics remain **recommendat
 - Competitive ranking normalization, XP economics and live-service features.
 
 **No source code, tests, assets, unlock tables, gameplay behavior, backend or monetization are changed by this specification.**
+
+## 11. Approved FLEX Ultimate compatibility
+
+[One Aura-charged FLEX Ultimate](FLEX_ULTIMATE_V1.md) replaces standalone Focus. Alpha/Sigma/Rizz Essence collected during each run influences WHICH FLEX power the build gains; Essence is not spent to activate it. Cool Kid + Alpha gains a roughly five-second invulnerable, player-steered Giga Chad Rampage; Nerd + Sigma gains precision Overclock; Veterans retain hero identities and get class-specific variations of three main affinity families. FLEX can charge before a form evolution; when a miniboss Core later evolves the character, the same single FLEX gains visual/mechanical identity rather than an extra ability. The six-slot limit, five-wave timing and miniboss guaranteed rewards remain unchanged. This is documented only, not implemented.
