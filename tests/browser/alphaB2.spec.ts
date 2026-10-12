@@ -8,7 +8,7 @@ test('Alpha Chad B2: full native atlas, portrait and strike/death animation',asy
     await route.fulfill({response,body:(await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(')});
   });
   await page.setViewportSize({width:844,height:390});
-  await page.goto('/');
+  await page.goto('/?visual=legacy');
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
   const assets=await page.evaluate(async()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;
