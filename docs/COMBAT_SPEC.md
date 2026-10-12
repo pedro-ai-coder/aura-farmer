@@ -1,3 +1,5 @@
+> **Current legacy implementation baseline, not the next-release specification.** For agreed future gameplay direction (3 weapons + 3 passives, ~5-minute run with five minibosses, evolution, healing, Character Mastery and larger obstacles/camera), see [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md). Do not change combat code merely by editing this document.
+
 # Combat specification — Aura Farmer v0.1
 
 Arena 960x600, top HUD 82px, 5 waves of 50 seconds. 90 enemy cap.

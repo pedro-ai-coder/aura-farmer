@@ -13,3 +13,18 @@
 
 ## Open playtest questions
 Is FLEX +25 balanced? Are upgrades too frequent? Is the boss feasible? Do animations remain readable with many enemies?
+
+## D-011–D-020 — Game Design v1.0 (2026-10-12, locked for next gameplay release)
+
+- D-011: Exactly 6 loadout slots: 3 weapons (including starting weapon) + 3 passives. No seventh equipped item.
+- D-012: 5 combat waves; normal completed run targets approximately 5 minutes total, not a hard defeat timer.
+- D-013: Weapon levels 1–4, passive levels 1–3. Synergistic evolutions replace their weapon slot and require max level + passive + miniboss Core.
+- D-014: Exactly one miniboss per wave; each grants one guaranteed legal ability/evolution reward. Wave 5 also has BIG HATER final boss after the miniboss.
+- D-015: Dedicated heal pickups and bounded HP recovery; Aura and XP remain separate resources.
+- D-016: Six existing heroes occupy complementary Tank / Ranged DPS / Melee DPS / Control / Bruiser / Ranged AoE roles, with class skills plus universal FLEX.
+- D-017: Per-character persistent Mastery from every run, unlocking challenges/maps/options and **small capped permanent attribute increases**.
+- D-018: Larger scrollable world with follow camera, solid obstacles, collision-safe spawns and enemy navigation.
+- D-019: Current game/production continues unchanged until a separately authorized implementation phase; documentation changes do not imply code completion.
+- D-020: Gameplay and player review precede backend, public leaderboard verification and monetization. Existing achievements/local profile must survive migration.
+
+**Canonical future rules:** [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md). The older D-009 (five 50s waves) and `COMBAT_SPEC.md` describe the **currently implemented** older build; v1.0 fixes only the five-wave/~five-minute target and leaves individual timings to balance QA.

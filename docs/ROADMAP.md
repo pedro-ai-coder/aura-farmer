@@ -1,5 +1,24 @@
 # Roadmap — Aura Farmer
 
+**Current design direction:** [Game Design v1.0 — LOCKED, documentation only](GAME_DESIGN_V1_LOCKED.md). This is the plan for the **next gameplay overhaul**, not functionality already deployed. The old sprint history remains below.
+
+## Next priority — v1.0 gameplay design implementation (NOT STARTED)
+
+- [x] Phase 0 — Freeze decisions: 3 weapons + 3 passives, five ~5-minute waves, character Mastery with small attribute boosts, bigger obstacle map with follow camera.
+- [ ] Phase 1 — Build inventory: 3+3 hard cap; weapons 4 levels, passives 3, compatible recipes, evolution via miniboss Core; migrate current 16 buffs.
+- [ ] Phase 2 — Classes: six existing heroes; unique starting weapon, intrinsic class passive, special active; FLEX remains universal.
+- [ ] Phase 3 — Encounters: miniboss every wave and guaranteed Core; separate final BIG HATER; healing pickups and recovery pacing.
+- [ ] Phase 4 — World: camera following on ~1600×1000 stage, 6–10 obstacles, collision/pathfinding and projectile line-of-sight.
+- [ ] Phase 5 — Per-character offline Mastery: per-run XP, Lv1–20 proposal, capped small permanent attributes, map/difficulty unlocks, safe profile migration.
+- [ ] Phase 6 — Balance and QA: 5-minute pacing, synergy reliability, boss/obstacle pathfinding, responsive fullscreen, real-device FPS and gameplay review.
+- [ ] **Rules and gameplay acceptance before backend / monetization** — blocked until previous phases reviewed.
+
+**Frozen constraints** are in section 1 of the design; individual timings, percentages, recipes, Mastery thresholds, exact dimensions and map placements are **proposals awaiting playtest**. No implementation or deployment is part of the design-lock commit.
+
+---
+
+# Roadmap — Aura Farmer
+
 ## Sprint 0 (AF-000 first)
 - [x] AF-000 Verify install, typecheck, tests, build, browser smoke test; update validation
 - [x] AF-001 Basic Phaser/Vite/TypeScript scaffold

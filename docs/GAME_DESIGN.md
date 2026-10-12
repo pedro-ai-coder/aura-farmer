@@ -1,3 +1,5 @@
+> **Historical gameplay document (early MVP)**. The approved **future gameplay rules** are in [Game Design v1.0 (locked)](GAME_DESIGN_V1_LOCKED.md). This older document describes the original five 50s wave prototype, not the planned six-slot / miniboss / Mastery / scrolling-world release.
+
 # Aura Farmer — Cartoon 2D Game Design
 
 Fast top-down solo roguelite combining auto-combat and deliberate risk-taking. Strategic builds with humorous brainrot flavor, originally inspired by Brotato and Swarm.
