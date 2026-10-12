@@ -62,7 +62,7 @@ describe('strict 3 weapon + 3 passive equipment',()=>{
  });
  it('Rizz Pulse creates a short-radius damaging and slowing weapon attack',()=>{
    const a=new Arena(()=>.5,'rizzler');a.start();
-   const e={id:101,x:530,y:330,type:'beta' as const,hp:500,nextHit:Infinity,nextShot:Infinity};
+   const e={id:101,x:530,y:330,type:'beta' as const,hp:500,nextHit:Infinity,nextShot:Infinity,rizzSlowUntil:0};
    a.enemies.push(e);a.update(1);
    expect(a.rizzBlastUntil).toBeGreaterThan(a.clock);
    expect(e.hp).toBeLessThan(500);

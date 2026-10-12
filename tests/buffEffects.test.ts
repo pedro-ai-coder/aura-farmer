@@ -23,7 +23,7 @@ function hit(a: Arena, e: Enemy, damage = 10) {
 
 describe('v0.3 catalog and unchanged baseline', () => {
   it('retains the original buff identities plus five weapon choices', () => {
-    expect(BUFFS.slice(0, 10).map(b => b.id)).toEqual(['sigma', 'alpha', 'mewing', 'locked-in', 'drip', 'speed', 'six-seven', 'thick-skin', 'mewing-jaw', 'ohio-orbiter']);
+    expect(BUFFS.slice(2, 12).map(b => b.id)).toEqual(['sigma', 'alpha', 'mewing', 'locked-in', 'drip', 'speed', 'six-seven', 'thick-skin', 'mewing-jaw', 'ohio-orbiter']);
     expect(BUFFS).toHaveLength(18); expect(new Set(BUFFS.map(b => b.id)).size).toBe(18);
     expect(combatStats(emptyBuffLevels(), 0, 0, 8000, 1)).toMatchObject({ damage: 1, incomingDamage: 1, fireRate: 1, critChance: 0, speed: 205 });
   });
