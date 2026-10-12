@@ -1,8 +1,8 @@
 # FLEX ULTIMATE — Aura-charged, build-dependent special
 
-**Design direction approved 2026-10-12. DOCUMENTATION ONLY, NOT IMPLEMENTED.**
+**Design approved 2026-10-12; the FLEX Ultimate and Essence systems have a first playable implementation.** Additional phases are tracked in [FLEX_IMPLEMENTATION_SLICE.md](FLEX_IMPLEMENTATION_SLICE.md).
 **Extends:** Game Design v1.0, Hybrid Affinities Option C.
-**Supersedes planned future mechanics:** independent Focus/SPACE skill, stationary audience-based FLEX, automatic Aura Burst at 100. The live game still runs those older rules until a future code implementation is requested.
+**Supersedes planned future mechanics:** independent Focus/SPACE skill, stationary audience-based FLEX, automatic Aura Burst at 100. Those old special abilities were replaced by the first FLEX Ultimate gameplay slice.
 
 ## 1. The one-action rule
 
@@ -78,4 +78,4 @@ ALL heroes can still build any of the three affinities. Unlisted combinations us
 
 **Locked conceptual choice:** one prominent Aura-charged manually activated FLEX replacing Focus; affinity/build-specific buffs; a ~5s invulnerable trample for Cool Kid/Alpha. **Not locked yet:** 100-point threshold, precise Aura yields, FLEX uses/run, other FLEX durations, 20–25% boss cap, rank retention, cooldown details, stats and VFX intensity.
 
-**No gameplay code, art, build, database, backend, monetization or deployment changes are included here.**
+**Implementation status is tracked separately in [FLEX_IMPLEMENTATION_SLICE.md](FLEX_IMPLEMENTATION_SLICE.md).** This specification also contains balance directions not yet implemented.

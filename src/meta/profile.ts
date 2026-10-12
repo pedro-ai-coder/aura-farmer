@@ -1,3 +1,4 @@
+// RunResult.auraBursts retains its v1 save key but now counts FLEX Ultimate activations.
 import type { Arena } from '../game/core/arena';
 import type { CharacterId } from '../game/data/characters';
 import { isCharacterId } from '../game/data/characters';
@@ -20,7 +21,7 @@ export const ACHIEVEMENTS: ReadonlyArray<{ id: AchievementId; name: string; desc
   { id:'flex3', name:'FLEX Master', description:'Land 3 successful FLEX moves in a single run.' },
   { id:'kill67', name:'SIX SEVEN', description:'Defeat 67 enemies in a single run.' },
   { id:'loot500', name:'Loot Goblin', description:'Collect 500 XP across runs. Unlock Fanum Lord.' },
-  { id:'god-aura', name:'God Aura', description:'Trigger 10 Aura Bursts across runs.' },
+  { id:'god-aura', name:'God Aura', description:'Activate FLEX Ultimate 10 times across runs.' },
   { id:'character-arc', name:'Character Arc', description:'Win with 3 different characters.' },
   { id:'clean-wave', name:'Touch Grass', description:'Clear a wave without damage.' },
   { id:'ultimate-67', name:'Ultimate 67', description:'Trigger Six Seven with Skibidi Bounce.' },
