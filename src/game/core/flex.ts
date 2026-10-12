@@ -1,3 +1,4 @@
+import type {FlexStyle} from './balance';
 export type FlexVariant='alpha'|'sigma'|'rizz';
 export type FlexState='farming'|'ready'|'active';
 /** Ability availability comes from the Aura gauge; no audience/cast interruption. */
@@ -6,6 +7,7 @@ export class FlexSystem {
   startedAt=0;
   activeUntil=0;
   variant:FlexVariant='sigma';
+  style:FlexStyle='sigma-overclock';
   durationMs=5000;
   isReady():boolean {return this.state==='ready';}
   isActive(now:number):boolean {return this.state==='active'&&now<this.activeUntil;}
@@ -13,10 +15,12 @@ export class FlexSystem {
     if(this.state==='active'&&now>=this.activeUntil)this.state='farming';
     if(this.state!=='active')this.state=charge>=100?'ready':'farming';
   }
-  activate(now:number,charge:number,variant:FlexVariant):boolean {
+  activate(now:number,charge:number,variant:FlexVariant,style?:FlexStyle):boolean {
     this.sync(now,charge);
     if(this.state!=='ready'||charge<100)return false;
-    this.variant=variant;this.startedAt=now;this.durationMs=5000;
+    this.variant=variant;this.style=style??(variant==='alpha'?'alpha-charge':
+      variant==='sigma'?'sigma-overclock':'rizz-takeover');
+    this.startedAt=now;this.durationMs=5000;
     this.activeUntil=now+this.durationMs;this.state='active';
     return true;
   }
