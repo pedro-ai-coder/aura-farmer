@@ -8,6 +8,7 @@ import { ALPHA_B2, alphaB2Frame, type AlphaPose } from './alphaB2';
 import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
 import { createGateA, isGateA, gateASigmaKey, gateAEnemyKey, type GateASigmaPose } from './gateAArena';
 import { isGateB, createGateBHeroes, gateBHeroKey, type GateBHero, type GateBHeroPose } from './gateBHeroes';
+import { isGateB2, createGateB2Heroes, b2Key, type B2Id, type B2Pose } from './gateB2Heroes';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -203,6 +204,10 @@ export function createPixelTextures(scene: Phaser.Scene): void {
 export class PixelWorld {
   private readonly gateA = isGateA();
   private readonly gateB = isGateB();
+  private readonly gateB2 = isGateB2();
+  private lastB2Xp = 0;
+  private lastB2VolleyBand = 0;
+  private b2SpecialStartedAt = -1;
   private impactSprites: Phaser.GameObjects.Image[] = [];
   private player: Phaser.GameObjects.Image;
   private enemies = new Map<number, Phaser.GameObjects.Image>();
@@ -227,6 +232,7 @@ export class PixelWorld {
     createPixelTextures(scene);
     createGateA(scene);
     createGateBHeroes(scene);
+    createGateB2Heroes(scene);
     scene.add.image(480,300,this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
@@ -252,6 +258,7 @@ export class PixelWorld {
     if (!this.scene.sys.isActive()) return;
     createGateA(this.scene); // regenerate any missing dynamically painted textures
     if (this.gateB) createGateBHeroes(this.scene);
+    if (this.gateB2) createGateB2Heroes(this.scene);
     const textures = this.scene.textures;
     for (const key of textures.getTextureKeys()) {
       if (!key.startsWith('ga-') && !key.startsWith('gb-')) continue;
@@ -267,6 +274,7 @@ export class PixelWorld {
       this.scene.textures.exists(k) && this.scene.textures.get(k).has(String(f ?? '__BASE'));
     if (!valid(key, frame) && this.gateA) createGateA(this.scene);
     if (!valid(key, frame) && this.gateB) createGateBHeroes(this.scene);
+    if (!valid(key, frame) && this.gateB2) createGateB2Heroes(this.scene);
     if (valid(key,frame)) img.setTexture(key,frame);
     else if (valid(fallback)) img.setTexture(fallback);
     else img.setVisible(false);
@@ -292,11 +300,16 @@ export class PixelWorld {
       this.deathStartedAt = -1;
       this.flexSuccessStartedAt = -1;
       this.lastFlexSuccesses = a.flexSuccesses;
+      this.lastB2Xp = a.xpCollected;
+      this.lastB2VolleyBand = Math.floor(a.kills/67);
+      this.b2SpecialStartedAt = -1;
     }
     this.lastClock = a.clock;
     const gaSigma = this.gateA && a.characterId === 'sigma' && this.scene.textures.exists('ga-sigma-idle-0');
     const gbHero=this.gateB && (a.characterId==='alpha'||a.characterId==='rizzler')
       && this.scene.textures.exists('gb-'+a.characterId+'-idle-0');
+    const gb2Hero=this.gateB2 && (a.characterId==='ohio'||a.characterId==='fanum'||a.characterId==='six-seven')
+      && this.scene.textures.exists('gb2-'+a.characterId+'-idle-0');
     if (gaSigma) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -376,6 +389,44 @@ export class PixelWorld {
       }
       const key=gateBHeroKey(a.characterId as GateBHero,pose,elapsed);
       this.safeTexture(this.player,key,'px-player-idle');
+    } else if (gb2Hero) {
+      // The optional B2 hero art only observes existing game events.
+      if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt=a.clock;
+      this.lastFlexSuccesses=a.flexSuccesses;
+      if (a.mode !== 'dead') this.deathStartedAt=-1;
+      if (a.characterId==='fanum' && a.xpCollected>this.lastB2Xp) this.b2SpecialStartedAt=a.clock;
+      if (a.characterId==='six-seven') {
+        const band=Math.floor(a.kills/67);
+        if (a.sixSevenTriggered && band>this.lastB2VolleyBand) this.b2SpecialStartedAt=a.clock;
+        this.lastB2VolleyBand=band;
+      }
+      this.lastB2Xp=a.xpCollected;
+      let pose:B2Pose='idle';
+      let elapsed=a.clock;
+      if (a.mode==='dead') {
+        if (this.deathStartedAt<0) this.deathStartedAt=this.scene.time.now;
+        pose='death'; elapsed=this.scene.time.now-this.deathStartedAt;
+      } else if (a.mode==='win') {
+        pose='flex_success';
+      } else if (a.mode==='playing' && a.lastDamageAt>0 && a.clock-a.lastDamageAt<180) {
+        pose='hurt';elapsed=a.clock-a.lastDamageAt;
+      } else if (a.mode==='playing' && a.flex.state==='charging') {
+        pose='flex_charge';
+      } else if (a.mode==='playing' && this.flexSuccessStartedAt>=0
+        && a.clock-this.flexSuccessStartedAt<350) {
+        pose='flex_success';elapsed=a.clock-this.flexSuccessStartedAt;
+      } else if (a.mode==='playing' && a.characterId==='fanum'
+        && this.b2SpecialStartedAt>=0 && a.clock-this.b2SpecialStartedAt<290) {
+        pose='tax';elapsed=a.clock-this.b2SpecialStartedAt;
+      } else if (a.mode==='playing' && a.characterId==='six-seven'
+        && this.b2SpecialStartedAt>=0 && a.clock-this.b2SpecialStartedAt<360) {
+        pose='volley';elapsed=a.clock-this.b2SpecialStartedAt;
+      } else if (a.mode==='playing' && a.characterId==='ohio' && playerMoving) {
+        pose='dash';elapsed=a.clock;
+      } else if (a.mode==='playing' && playerMoving) {
+        pose='move';
+      }
+      this.safeTexture(this.player,b2Key(a.characterId as B2Id,pose,elapsed),'px-player-idle');
     } else if (alphaB2) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -443,7 +494,7 @@ export class PixelWorld {
       this.safeTexture(this.player,hasCharacterSheet ? characterSprite : 'spr-sigma','px-player-idle',actorFrame);
     } else this.safeTexture(this.player,'px-player-' + (a.mode === 'playing' ? pose : 'idle'),'px-player-idle');
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(gaSigma || gbHero || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(gaSigma || gbHero || gb2Hero || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();

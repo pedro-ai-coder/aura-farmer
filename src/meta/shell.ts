@@ -1,3 +1,4 @@
+import { isGateB2, gateB2Portrait } from '../game/render/gateB2Heroes';
 import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
 import { isGateA, gateAHeroUrl } from '../game/render/gateAArena';
 import type Phaser from 'phaser';
@@ -43,13 +44,17 @@ export class GameShell {
     this.render();
   }
 
-  private get unlocked(): Set<CharacterId> { return new Set(this.profile.unlockedCharacters); }
+  private get unlocked(): Set<CharacterId> {
+    // Gate B2 is a temporary visual QA build. Do not alter permanent unlocks.
+    return isGateB2() ? new Set(CHARACTERS.map(c=>c.id)) : new Set(this.profile.unlockedCharacters);
+  }
   private finish(result: RunResult): void {
     if (this.lastResult?.id === result.id) return;
     const recorded = recordRun(this.profile,result);
     this.profile = recorded.profile; this.awarded=recorded.gained;
     this.newCharacters=recorded.unlocked; this.lastResult=result;
-    this.statusMessage=writeProfile(this.profile)?'':'Saving unavailable; progress is temporary.';
+    this.statusMessage=isGateB2() ? 'Visual preview · run not saved.' :
+      writeProfile(this.profile)?'':'Saving unavailable; progress is temporary.';
     this.screen='results'; this.render();
   }
   private save(): void {
@@ -70,7 +75,9 @@ export class GameShell {
     if (action==='choose' && character) {
       const c=CHARACTERS.find(x=>x.id===character);
       if (!c || !this.unlocked.has(c.id)) return;
-      this.profile.selectedCharacterId=c.id; this.save(); this.render();return;
+      this.profile.selectedCharacterId=c.id;
+      if(!isGateB2()) this.save();
+      this.render();return;
     }
     if (action==='play') {this.screen='characters';this.render();return;}
     if (action==='start'||action==='retry') {this.start();return;}
@@ -97,12 +104,13 @@ export class GameShell {
    * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
    */
   private previewPortrait(id: CharacterId): string {
+    if (isGateB2() && (id==='ohio'||id==='fanum'||id==='six-seven')) return gateB2Portrait(id);
     if (isGateB() && (id==='alpha'||id==='rizzler')) return gateBPortraitUrl(id);
     if (isGateA() && id==='sigma') return gateAHeroUrl();
     return '/assets/pixel/'+this.portraitName(id)+'.png';
   }
   private portrait(id: CharacterId): string {
-    const strip = id === 'ohio' || id === 'fanum' || id === 'six-seven';
+    const strip = !isGateB2() && (id === 'ohio' || id === 'fanum' || id === 'six-seven');
     const fallback: Record<CharacterId,string> = {
       sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
     };
@@ -131,8 +139,8 @@ export class GameShell {
         // Featured portrait follows the selected hero. Gate B gives Alpha/Rizzler
         // their own artwork, while all other characters retain a valid fallback.
         const heroSrc = isGateA() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
-        const heroStrip = isGateA() && ['ohio','fanum','six-seven'].includes(c.id);
-        return this.header(isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
+        const heroStrip = isGateA() && !isGateB2() && ['ohio','fanum','six-seven'].includes(c.id);
+        return this.header(isGateB2() ? 'GATE B2 · FULL HERO ROSTER' : isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
             <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
             <h1>GROW YOUR LEGEND</h1>
@@ -145,7 +153,7 @@ export class GameShell {
             </nav>
             <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}">${this.portrait(c.id)}</span>
               <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
-            <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
+            <p class="meta-foot">${isGateB2() ? 'VISUAL TEST · RUNS NOT SAVED · NO LOGIN' : 'GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED'}</p>
           </div>
           <div class="af-home-art" aria-hidden="true">
             <span class="af-sun-glow"></span><img class="af-hero-art" src="${heroSrc}" ${heroStrip ? 'data-preview-strip="6"' : ''} alt="">
@@ -153,8 +161,8 @@ export class GameShell {
           </div>
           <aside class="af-home-event" aria-label="World event">
             <span class="af-event-tag">${isGateA() ? '◆ VISUAL TEST BUILD' : '✦ WORLD EVENT'}</span>
-            <strong>${isGateB() ? 'HERO IDENTITY<br>GATE B' : isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
-            <small>${isGateB() ? 'Alpha Chad and Rizzler: new original poses, portraits, melee/cast. Preview only.' : isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
+            <strong>${isGateB2() ? 'ALL SIX HEROES<br>GATE B2' : isGateB() ? 'HERO IDENTITY<br>GATE B' : isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
+            <small>${isGateB2() ? 'Ohio speed, Fanum XP collect and Six Seven volley. Compare all six heroes.' : isGateB() ? 'Alpha Chad and Rizzler: new original poses, portraits, melee/cast. Preview only.' : isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
             <span class="af-event-footer">${isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
           </aside>
         </div>`;
