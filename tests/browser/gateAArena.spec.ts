@@ -128,3 +128,14 @@ test("Gate A portrait home retains reachable PLAY and event without overlapping 
   await page.locator('[data-menu="play"]').click();
   await expect(page.locator("#meta-shell")).toContainText("CHOOSE YOUR FIGHTER");
 });
+
+
+test("Gate A hero illustration matches the selected character rather than always showing Sigma",async({page})=>{
+  await prepare(page,"/?gateA=1");
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-character="rizzler"]').click();
+  await page.locator('[data-menu="home"]').click();
+  const hero=page.locator(".af-home-art .af-hero-art");
+  await expect(hero).toHaveAttribute("src",/rizzler-portrait\.png/);
+  await expect(page.locator(".meta-feature")).toContainText("The Rizzler");
+});

@@ -317,3 +317,14 @@
 @media (max-height:480px) and (orientation:portrait){
  .gate-a-mode .meta-shell[data-screen="home"] .af-home-art{display:none}
 }
+
+/* Legacy Ohio, Fanum and Six-Seven assets are six-frame horizontal strips.
+   Crop frame zero for the large featured image as well as the avatar. */
+.gate-a-mode .af-home-art .af-hero-art[data-preview-strip="6"]{
+  width:min(72%,385px);
+  height:min(72%,385px);
+  max-width:88%;
+  max-height:calc(100% - 68px);
+  object-fit:cover;
+  object-position:left center;
+}

@@ -122,6 +122,12 @@ export class GameShell {
     switch(this.screen) {
       case 'home': {
         const c=getCharacter(this.profile.selectedCharacterId);
+        // Match the featured hero to the currently selected fighter. Only Sigma
+        // has Gate A runtime art; the other fighters retain their real portraits.
+        const heroSrc = isGateA()
+          ? c.id === 'sigma' ? gateAHeroUrl() : '/assets/pixel/' + this.portraitName(c.id) + '.png'
+          : '/assets/identity/hero.svg';
+        const heroStrip = isGateA() && ['ohio','fanum','six-seven'].includes(c.id);
         return this.header(isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
             <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
@@ -138,7 +144,7 @@ export class GameShell {
             <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
           </div>
           <div class="af-home-art" aria-hidden="true">
-            <span class="af-sun-glow"></span><img class="af-hero-art" src="${isGateA() ? gateAHeroUrl() : '/assets/identity/hero.svg'}" alt="">
+            <span class="af-sun-glow"></span><img class="af-hero-art" src="${heroSrc}" ${heroStrip ? 'data-preview-strip="6"' : ''} alt="">
             <span class="af-sprout-icon">${isGateA() ? '◆' : '✿'}</span><span class="af-art-caption">${isGateA() ? 'STYLE IS POWER' : 'GROW YOUR LEGEND'}</span>
           </div>
           <aside class="af-home-event" aria-label="World event">
