@@ -12,7 +12,8 @@
 - [ ] Phase 3 — Encounters: miniboss every wave and guaranteed Core; separate final BIG HATER; healing pickups and recovery pacing.
 - [ ] Phase 4 — World: camera following on ~1600×1000 stage, 6–10 obstacles, collision/pathfinding and projectile line-of-sight.
 - [ ] Phase 5 — Per-character offline Mastery: per-run XP, Lv1–20 proposal, capped small permanent attributes, map/difficulty unlocks, safe profile migration.
-- [ ] Phase 6 — Balance and QA: 5-minute pacing, synergy reliability, boss/obstacle pathfinding, responsive fullscreen, real-device FPS and gameplay review.
+- [x] Phase 6a — **First combat rebalance slice:** reduce multiplicative equipment snowball, add per-wave enemy threat, reduce free healing, and distinguish Cool Kid invulnerable Rampage from Alpha Chad defensive shockwave FLEX. Initial tuning only: [v0.8 balance details](COMBAT_BALANCE_V08.md).
+- [ ] Phase 6b — Full balance and QA: run win rates, FLEX impact, 5-minute pacing, synergy reliability, boss/obstacle pathfinding, responsive fullscreen, real-device FPS and player acceptance.
 - [ ] **Rules and gameplay acceptance before backend / monetization** — blocked until previous phases reviewed.
 
 **Approved design extension:** [Single Aura-charged FLEX Ultimate](FLEX_ULTIMATE_V1.md) supersedes Focus, automatic Aura Burst and the old audience FLEX for the NEXT gameplay version. Details such as charge threshold, duration balance and boss damage caps remain tuning proposals.
