@@ -5,6 +5,7 @@ import './styles/identity.css';
 import './styles/identity-v2.css';
 import './styles/gateA.css';
 import './styles/finalVisual.css';
+import './styles/flexUltimate.css';
 import { isFinalArt } from './game/render/finalArt';
 import { isGateA } from './game/render/gateAArena';
 import { isGateB } from './game/render/gateBHeroes';

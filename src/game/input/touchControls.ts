@@ -1,7 +1,8 @@
 import type { BuffDefinition } from '../data/buffs';
 import type { Controls, Mode } from '../core/arena';
+import type { FlexState,FlexVariant } from '../core/flex';
 
-type TouchAction = 'flex' | 'focus' | 'confirm' | 'choice0' | 'choice1' | 'choice2';
+type TouchAction = 'flex' | 'confirm' | 'choice0' | 'choice1' | 'choice2';
 
 /**
  * HTML touch overlay. Inputs are buffered between render frames so a quick tap
@@ -25,6 +26,12 @@ export class TouchControls {
   private y = 0;
   private pressed = new Set<TouchAction>();
   private displayState = '';
+  private flexRoot=document.querySelector<HTMLElement>('#flex-ultimate-hud')!;
+  private flexBar=document.querySelector<HTMLElement>('#flex-ultimate-fill')!;
+  private flexNameElement=document.querySelector<HTMLElement>('#flex-ultimate-name')!;
+  private flexCount=document.querySelector<HTMLElement>('#flex-ultimate-count')!;
+  private flexButton=document.querySelector<HTMLButtonElement>('[data-game-action="flex"]')!;
+  private lastFlexState='';
 
   get visible(): boolean {
     return window.matchMedia('(pointer: coarse), (max-width: 900px)').matches;
@@ -92,9 +99,28 @@ export class TouchControls {
     const actions = this.pressed;
     this.pressed = new Set<TouchAction>();
     const choice = actions.has('choice0') ? 0 : actions.has('choice1') ? 1 : actions.has('choice2') ? 2 : undefined;
-    return { x: this.x, y: this.y, flex: actions.has('flex'), focus: actions.has('focus'), confirm: actions.has('confirm'), choice };
+    return { x: this.x, y: this.y, flex: actions.has('flex'), confirm: actions.has('confirm'), choice };
   }
 
+  setFlexHUD(mode:Mode,charge:number,state:FlexState,name:string,remaining:number,affinity:FlexVariant):void{
+    const visible=mode==='playing';
+    this.flexRoot.hidden=!visible;
+    if(!visible){this.lastFlexState='';return;}
+    const progress=state==='active'?remaining/5000:charge/100;
+    this.flexBar.style.width=Math.max(0,Math.min(100,progress*100)).toFixed(1)+'%';
+    this.flexRoot.dataset.state=state;this.flexRoot.dataset.affinity=affinity;
+    this.flexNameElement.textContent=name;
+    this.flexCount.textContent=state==='active'?(remaining/1000).toFixed(1)+'s':
+      state==='ready'?'FLEX READY':charge+'/100 AURA';
+    const key=state+':'+name+':'+affinity;
+    if(key!==this.lastFlexState){
+      this.lastFlexState=key;
+      this.flexButton.disabled=state!=='ready';
+      this.flexButton.dataset.state=state;
+      this.flexButton.textContent=state==='ready'?'FLEX!':state==='active'?'ACTIVE':'FLEX';
+      this.flexButton.setAttribute('aria-label',state==='ready'?'Activate '+name:'FLEX charging');
+    }
+  }
   setMode(mode: Mode, choices: BuffDefinition[], stacks: Readonly<Partial<Record<BuffDefinition['id'],number>>> = {}, pendingUpgrades = 1): void {
     const key = `${mode}:${mode === 'upgrades'
       ? choices.map(c => `${c.id}:${stacks[c.id] ?? 0}`).join(',') + ':' + pendingUpgrades : ''}`;

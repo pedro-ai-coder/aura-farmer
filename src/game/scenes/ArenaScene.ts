@@ -72,7 +72,7 @@ export class ArenaScene extends Phaser.Scene {
     this.debug = this.label(940, 111, 12).setOrigin(1, 0).setDepth(3);
     for (const t of [...this.hud, this.status, this.feedback, this.debug]) t.setColor('#fff8e7');
     this.overlay.setDepth(5).setColor('#fff8e7');
-    this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.keyboard = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E,ONE,TWO,THREE,ENTER,F3') as Record<string, Phaser.Input.Keyboard.Key>;
     for (const [name, key] of Object.entries(this.keyboard)) {
       key.on('down', () => this.pendingKeys.add(name));
     }
@@ -106,7 +106,6 @@ export class ArenaScene extends Phaser.Scene {
       x: Phaser.Math.Clamp(Number(this.keyboard.D.isDown || this.keyboard.RIGHT.isDown) - Number(this.keyboard.A.isDown || this.keyboard.LEFT.isDown) + (touch.x ?? 0), -1, 1),
       y: Phaser.Math.Clamp(Number(this.keyboard.S.isDown || this.keyboard.DOWN.isDown) - Number(this.keyboard.W.isDown || this.keyboard.UP.isDown) + (touch.y ?? 0), -1, 1),
       flex: just('E') || touch.flex,
-      focus: just('SPACE') || touch.focus,
       confirm: just('ENTER') || touch.confirm,
       choice: one ? 0 : two ? 1 : three ? 2 : touch.choice,
     });
@@ -116,10 +115,9 @@ export class ArenaScene extends Phaser.Scene {
       this.notifiedWave=this.arena.wave;
       window.dispatchEvent(new CustomEvent('aura:wave',{detail:this.arena.wave}));
     }
-    if(this.arena.mode==='playing' && this.arena.aura.burstUntil>this.arena.clock &&
-       this.arena.aura.burstUntil>this.notifiedBurstEnd){
-      this.notifiedBurstEnd=this.arena.aura.burstUntil;
-      window.dispatchEvent(new CustomEvent('aura:burst'));
+    if(this.arena.mode==='playing' && this.arena.auraBursts>this.notifiedBurstEnd){
+      this.notifiedBurstEnd=this.arena.auraBursts;
+      window.dispatchEvent(new CustomEvent('aura:burst',{detail:this.arena.flexName}));
     }
     if (this.notifiedMode !== this.arena.mode) {
       this.notifiedMode = this.arena.mode;
@@ -145,17 +143,20 @@ export class ArenaScene extends Phaser.Scene {
     else drawHudChrome(g);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
-    const charging = a.flex.state === 'charging', burst = a.clock < a.aura.burstUntil;
+    const charging = a.flexActive, burst = a.flexActive;
     if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
     if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
-    if (a.clock < a.focusUntil) {
-      g.lineStyle(3, 0x9bdfff, .5).strokeCircle(a.pos.x, a.pos.y, 90);
-      g.lineStyle(2, 0x9bdfff, .2).strokeCircle(a.pos.x, a.pos.y, 105);
+    if(burst&&a.flex.variant==='alpha'){
+      g.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
+      g.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
     }
-    if (charging) {
-      g.fillStyle(0xffd574, .08).fillCircle(a.pos.x, a.pos.y, GAME.flexRadius);
-      g.lineStyle(2, 0xffd574, .7).strokeCircle(a.pos.x, a.pos.y, GAME.flexRadius);
-      g.lineStyle(5, 0xffe69f).beginPath().arc(a.pos.x, a.pos.y, 28, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * a.flex.progress(a.clock)).strokePath();
+    if(burst&&a.flex.variant==='sigma'){
+      g.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
+      g.lineStyle(2,0xc3ffff,.7).strokeCircle(a.pos.x,a.pos.y,62);
+    }
+    if(burst&&a.flex.variant==='rizz')g.lineStyle(3,0xeb9afa,.7).strokeCircle(a.pos.x,a.pos.y,220);
+    if(charging){
+      g.lineStyle(4,0xffd574,.85).strokeCircle(a.pos.x,a.pos.y,35);
     }
     if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y, 95);
     if (a.buffs['ohio-orbiter']) g.lineStyle(1, 0x8b5bd8, .45).strokeCircle(a.pos.x, a.pos.y, 76);
@@ -163,9 +164,9 @@ export class ArenaScene extends Phaser.Scene {
       g.lineStyle(5, ART.aura, .84).strokeCircle(a.pos.x, a.pos.y, 37 + 5 * Math.sin(a.clock / 145));
       g.lineStyle(2, 0xfff8e7, .72).strokeCircle(a.pos.x, a.pos.y, 45);
     }
-    // A small golden risk burst while holding FLEX; game logic is unchanged.
+    // Readable orbiting sparks identify the five-second FLEX window.
     if (charging) {
-      const p = a.flex.progress(a.clock);
+      const p = 1-a.flex.progress(a.clock);
       for (let i=0;i<4;i++) {
         const angle = i * Math.PI/2 + a.clock/500;
         g.fillStyle(ART.aura, .6+p*.4).fillRect(a.pos.x+Math.cos(angle)*31-3,a.pos.y+Math.sin(angle)*31-3,6,6);
@@ -173,23 +174,26 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     this.hud[0].setText(`HP ${Math.ceil(a.hp)}/${stats.maxHp}`);
-    this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.aura.rank}`);
+    this.hud[1].setText(`AURA ${a.aura.value}/100 · ${a.flex.state==='ready'?'FLEX READY':a.flexActive?'FLEX ACTIVE':a.aura.rank}`);
     this.hud[2].setText(`LVL ${a.xp.level}`);
     this.hud[3].setText(`WAVE ${a.wave}/5 · ${Math.max(0, Math.ceil((GAME.waveDurationMs - a.waveClock) / 1000))}s`);
     const meter=isGateA() || isFinalArt() ? drawGateAHudMeter : drawHudMeter;
     meter(g,66,139,a.hp / stats.maxHp,0xff697a);
-    meter(g,274,241,a.aura.value / 100,burst ? 0xf9c954 : 0xb35be4);
+    meter(g,274,241,a.aura.value / 100,a.flex.state==='ready'?0xffd15d:0xc48bfa);
     meter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x36cd94);
     meter(g,780,153,1 - a.waveClock / GAME.waveDurationMs,0x57c7ee);
-    const flex = charging ? `CHARGING · ${a.nearby}/3` : a.flex.isReady(a.clock) ? `READY · ${a.nearby}/3 nearby` : `${a.flex.secondsUntilReady(a.clock)}s`;
-    const focus = a.clock < a.focusUntil ? 'ACTIVE' : a.clock >= a.focusReady ? 'READY' : `${Math.ceil((a.focusReady - a.clock) / 1000)}s`;
-    this.status.setColor('#fff8e7').setText(`E FLEX: ${flex}       SPACE FOCUS: ${focus}       ${burst ? `BURST ${Math.ceil((a.aura.burstUntil - a.clock) / 1000)}s · +20% damage` : `${a.kills} kills · collect green XP crystals`}`);
+    const flex=charging?`${a.flexName} · ${(a.flex.remaining(a.clock)/1000).toFixed(1)}s`:
+      a.flex.isReady()?`FLEX READY · PRESS E · ${a.flexName}`:
+      `FARM AURA ${a.aura.value}/100 · ${a.flexName}`;
+    this.status.setColor(a.flex.isReady()?'#ffdb6d':'#fff8e7')
+      .setText(`${flex}   ·   ${a.kills} KILLS   ·   ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz}`);
+    touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,a.flex.remaining(a.clock),a.flexVariant);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
     let message = '';
     if (a.mode === 'intro') message = touchControls.visible
-      ? 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nDrag the joystick to move · auto-attack\nTap FLEX near 3 enemies · FOCUS slows enemies\nCollect XP, upgrade, and defeat the BIG HATER.\n\nTap PLAY below to start'
-      : 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrow keys to move · auto-attack\nE: FLEX with 3 nearby enemies · SPACE: slow enemies\nCollect XP, choose upgrades, and defeat the BIG HATER.\n\nPress ENTER to start';
+      ? 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nDrag joystick · auto-attack\nFarm Aura, then tap FLEX READY for your ultimate.\nCollect XP, evolve builds, defeat BIG HATER.\n\nTap PLAY below to start'
+      : 'AURA FARMER\nNO AURA? SKILL ISSUE.\n\nWASD / arrows to move · auto-attack\nFarm Aura to 100 · E activates your FLEX Ultimate\nCollect XP, evolve builds, defeat BIG HATER.\n\nPress ENTER to start';
     // Level Up is presented entirely by the HTML dialog, never a second Phaser modal.
     // Between-wave celebration belongs to the single responsive HTML layer.
     if (a.mode === 'dead') message = `YOU ARE COOKED\n\nWave ${a.wave}/5 · ${a.kills} kills\n\nPress ENTER to try again`;
