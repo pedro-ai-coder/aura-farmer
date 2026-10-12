@@ -71,3 +71,16 @@ test('mobile single FLEX button is disabled while farming and enabled when ready
  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.state)).toBe('active');
  await expect(flex).toBeDisabled();
 });
+
+test('Alpha Chad FLEX has a different visual description from Cool Kid',async({page})=>{
+ await boot(page);
+ await page.locator('[data-menu="play"]').click();
+ await page.locator('[data-character="alpha"]').click();
+ await page.locator('[data-menu="start"]').click();
+ await expect(page.locator('#flex-ultimate-hud')).toContainText('UNSTOPPABLE CHAD');
+ await expect(page.locator('#flex-ultimate-effect')).toContainText('damage reduction');
+ await page.evaluate(()=>{const a=(window.__game.scene.scenes[0] as ArenaScene).arena;a.aura.change(100,a.clock);});
+ await page.keyboard.press('e');
+ await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.style)).toBe('alpha-bulwark');
+ await expect(page.locator('#flex-ultimate-effect')).toContainText('shockwave');
+});
