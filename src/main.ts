@@ -12,10 +12,6 @@ import { setupGameShell } from './meta/shell';
 setupMobileFullscreen();
 if(isGateA()){
   document.documentElement.classList.add('gate-a-mode');
-  // Existing button already has an accessible label; let the arena skin render
-  // its single visible label instead of duplicating old text with ::after.
-  const menu=document.querySelector<HTMLElement>('#menu-open');
-  if(menu)menu.textContent='';
   const label=document.querySelector<HTMLElement>('.masthead .tag:last-child');
   if(label) label.textContent='GATE A · PLAYABLE PREVIEW';
   const loadingStage=document.querySelector<HTMLElement>('#af-loading-stage');

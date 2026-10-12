@@ -72,3 +72,59 @@ test("Gate A keeps touch/menu layout at mobile landscape size",async({page})=>{
   await page.locator('[data-menu="resume"]').click();
   await expect(page.locator("#meta-shell")).toBeHidden();
 });
+
+
+test("Gate A desktop home keeps event, hero and caption inside one unscrolled panel",async({page})=>{
+  await page.setViewportSize({width:1100,height:820});
+  await prepare(page,"/?gateA=1");
+  const panel=page.locator('.meta-shell[data-screen="home"] .meta-panel');
+  const event=page.locator('.af-home-event');
+  const hero=page.locator('.af-home-art .af-hero-art');
+  const caption=page.locator('.af-art-caption');
+  await expect(panel).toBeVisible();
+  await expect(event).toBeVisible();
+  await expect(hero).toBeVisible();
+  await expect(caption).toBeVisible();
+  const p=await panel.boundingBox(), e=await event.boundingBox(),h=await hero.boundingBox(),c=await caption.boundingBox();
+  expect(p&&e&&h&&c).toBeTruthy();
+  expect(e!.y+e!.height).toBeLessThanOrEqual(p!.y+p!.height-2);
+  expect(c!.y+c!.height).toBeLessThanOrEqual(p!.y+p!.height-2);
+  expect(h!.y+h!.height).toBeLessThanOrEqual(c!.y+12);
+  const overflow=await panel.evaluate(el=>({
+    delta:el.scrollHeight-el.clientHeight,
+    overflow:getComputedStyle(el).overflowY,
+  }));
+  expect(overflow.overflow).toBe("hidden");
+  expect(overflow.delta).toBeLessThanOrEqual(3);
+});
+
+test("Gate A MENU label is singular and remains clickable at desktop and landscape sizes",async({page})=>{
+  await page.setViewportSize({width:1100,height:820});
+  await prepare(page,"/?gateA=1");
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
+  const btn=page.locator("#menu-open");
+  await expect(btn).toBeVisible();
+  await expect(btn).toHaveText("☰ MENU");
+  const after=await btn.evaluate(el=>getComputedStyle(el,"::after").content);
+  expect(["none","normal"].includes(after)).toBe(true);
+  let bounds=await btn.boundingBox(),stage=await page.locator(".play-layout").boundingBox();
+  expect(bounds&&stage).toBeTruthy();
+  expect(bounds!.x+bounds!.width).toBeLessThan(stage!.x+stage!.width-7);
+  expect(bounds!.y).toBeGreaterThan(stage!.y+7);
+  await btn.click();
+  await expect(page.locator("#meta-shell")).toContainText("PAUSED");
+});
+
+test("Gate A portrait home retains reachable PLAY and event without overlapping art",async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await prepare(page,"/?gateA=1");
+  await expect(page.locator('[data-menu="play"]')).toBeVisible();
+  await expect(page.locator(".af-home-event")).toBeVisible();
+  const art=await page.locator(".af-home-art").boundingBox();
+  const event=await page.locator(".af-home-event").boundingBox();
+  expect(art&&event).toBeTruthy();
+  expect(art!.y+art!.height).toBeLessThanOrEqual(event!.y+3);
+  await page.locator('[data-menu="play"]').click();
+  await expect(page.locator("#meta-shell")).toContainText("CHOOSE YOUR FIGHTER");
+});

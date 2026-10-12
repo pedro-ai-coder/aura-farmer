@@ -194,7 +194,7 @@ export class ArenaScene extends Phaser.Scene {
     for (const [i,buff] of BUFFS.filter(b => a.buffs[b.id] > 0).slice(0,this.buffIcons.length).entries()) {
       const image = this.buffIcons[i];
       image.setTexture('spr-icons', BUFFS.findIndex(b => b.id === buff.id));
-      image.setPosition(30 + 29*i, 108).setVisible(true);
+      image.setPosition(isGateA() ? 33 + 28*i : 30 + 29*i, isGateA() ? 120 : 108).setVisible(true);
     }
     this.modalBg.clear();
     if (message) {
