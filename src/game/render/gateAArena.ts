@@ -7,7 +7,7 @@ import Phaser from "phaser";
  */
 export const isGateA = (): boolean =>
   new URLSearchParams(window.location.search).get("gateA") === "1" ||
-  new URLSearchParams(window.location.search).get("gateB") === "1";
+  ['1','2'].includes(new URLSearchParams(window.location.search).get("gateB")??'');
 
 const C = {
   ink: "#192236", shade: "#101b2d", ivory: "#fff0d0",

@@ -44,13 +44,17 @@ export class GameShell {
     this.render();
   }
 
-  private get unlocked(): Set<CharacterId> { return new Set(this.profile.unlockedCharacters); }
+  private get unlocked(): Set<CharacterId> {
+    // Gate B2 is a temporary visual QA build. Do not alter permanent unlocks.
+    return isGateB2() ? new Set(CHARACTERS.map(c=>c.id)) : new Set(this.profile.unlockedCharacters);
+  }
   private finish(result: RunResult): void {
     if (this.lastResult?.id === result.id) return;
     const recorded = recordRun(this.profile,result);
     this.profile = recorded.profile; this.awarded=recorded.gained;
     this.newCharacters=recorded.unlocked; this.lastResult=result;
-    this.statusMessage=writeProfile(this.profile)?'':'Saving unavailable; progress is temporary.';
+    this.statusMessage=isGateB2() ? 'Visual preview · run not saved.' :
+      writeProfile(this.profile)?'':'Saving unavailable; progress is temporary.';
     this.screen='results'; this.render();
   }
   private save(): void {
@@ -71,7 +75,9 @@ export class GameShell {
     if (action==='choose' && character) {
       const c=CHARACTERS.find(x=>x.id===character);
       if (!c || !this.unlocked.has(c.id)) return;
-      this.profile.selectedCharacterId=c.id; this.save(); this.render();return;
+      this.profile.selectedCharacterId=c.id;
+      if(!isGateB2()) this.save();
+      this.render();return;
     }
     if (action==='play') {this.screen='characters';this.render();return;}
     if (action==='start'||action==='retry') {this.start();return;}
@@ -147,7 +153,7 @@ export class GameShell {
             </nav>
             <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}">${this.portrait(c.id)}</span>
               <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
-            <p class="meta-foot">GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED</p>
+            <p class="meta-foot">${isGateB2() ? 'VISUAL TEST · RUNS NOT SAVED · NO LOGIN' : 'GUEST PROFILE · SAVES LOCALLY · NO LOGIN REQUIRED'}</p>
           </div>
           <div class="af-home-art" aria-hidden="true">
             <span class="af-sun-glow"></span><img class="af-hero-art" src="${heroSrc}" ${heroStrip ? 'data-preview-strip="6"' : ''} alt="">
