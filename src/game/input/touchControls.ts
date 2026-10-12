@@ -31,6 +31,7 @@ export class TouchControls {
   private flexBar=document.querySelector<HTMLElement>('#flex-ultimate-fill')!;
   private flexNameElement=document.querySelector<HTMLElement>('#flex-ultimate-name')!;
   private flexCount=document.querySelector<HTMLElement>('#flex-ultimate-count')!;
+  private flexEffect=document.querySelector<HTMLElement>('#flex-ultimate-effect')!;
   private flexButton=document.querySelector<HTMLButtonElement>('[data-game-action="flex"]')!;
   private lastFlexState='';
   private loadoutRoot=document.querySelector<HTMLElement>('#loadout-hud')!;
@@ -105,7 +106,8 @@ export class TouchControls {
     return { x: this.x, y: this.y, flex: actions.has('flex'), confirm: actions.has('confirm'), choice };
   }
 
-  setFlexHUD(mode:Mode,charge:number,state:FlexState,name:string,remaining:number,affinity:FlexVariant):void{
+  setFlexHUD(mode:Mode,charge:number,state:FlexState,name:string,
+    remaining:number,affinity:FlexVariant,effect:string):void{
     const visible=mode==='playing';
     this.flexRoot.hidden=!visible;
     if(!visible){this.lastFlexState='';return;}
@@ -113,15 +115,18 @@ export class TouchControls {
     this.flexBar.style.width=Math.max(0,Math.min(100,progress*100)).toFixed(1)+'%';
     this.flexRoot.dataset.state=state;this.flexRoot.dataset.affinity=affinity;
     this.flexNameElement.textContent=name;
+    this.flexEffect.textContent=effect;
+    this.flexRoot.title=name+' — '+effect;
     this.flexCount.textContent=state==='active'?(remaining/1000).toFixed(1)+'s':
       state==='ready'?'FLEX READY':charge+'/100 AURA';
-    const key=state+':'+name+':'+affinity;
+    const key=state+':'+name+':'+affinity+':'+effect;
     if(key!==this.lastFlexState){
       this.lastFlexState=key;
       this.flexButton.disabled=state!=='ready';
       this.flexButton.dataset.state=state;
       this.flexButton.textContent=state==='ready'?'FLEX!':state==='active'?'ACTIVE':'FLEX';
-      this.flexButton.setAttribute('aria-label',state==='ready'?'Activate '+name:'FLEX charging');
+      this.flexButton.setAttribute('aria-label',state==='ready'?'Activate '+name+': '+effect:
+        state==='active'?name+' active':'FLEX charging');
     }
   }
   setLoadoutHUD(mode:Mode,levels:Readonly<BuffLevels>):void{

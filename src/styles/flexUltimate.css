@@ -31,3 +31,10 @@
 @media(max-width:580px){.flex-ultimate-hud{left:50%;bottom:170px;width:156px;padding:4px 6px}
  .flex-ultimate-kicker{display:none}.flex-ultimate-hud #flex-ultimate-count{font-size:10px}}
 @media(prefers-reduced-motion:reduce){#flex-ultimate-fill{transition:none!important}}
+
+/* Variant clarity: show the concrete behavior, not only its name. */
+.flex-ultimate-effect{font:800 9px/1.15 system-ui,sans-serif;color:#cfeef5;
+ text-align:center;letter-spacing:.01em;max-width:100%;white-space:normal}
+.flex-ultimate-hud[data-affinity="alpha"][data-state="ready"]{border-color:#ffc265}
+.flex-ultimate-hud[data-state="active"][data-affinity="alpha"] .flex-ultimate-effect{color:#ffe9a4}
+@media(max-width:580px){.flex-ultimate-effect{font-size:8px;line-height:1.1}}

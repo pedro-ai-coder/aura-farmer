@@ -153,9 +153,17 @@ export class ArenaScene extends Phaser.Scene {
     const charging = a.flexActive, burst = a.flexActive;
     if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
     if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
-    if(burst&&a.flex.variant==='alpha'){
-      g.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
+    if(burst&&a.flex.style==='alpha-rampage'){
+      g.lineStyle(5,0xffca54,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
       g.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
+    }
+    if(burst&&a.flex.style==='alpha-bulwark'){
+      g.fillStyle(0x5fc2ec,.13).fillCircle(a.pos.x,a.pos.y,47);
+      g.lineStyle(6,0x7ceaff,.85).strokeCircle(a.pos.x,a.pos.y,45);
+      g.lineStyle(2,0xe1ffff,.95).strokeCircle(a.pos.x,a.pos.y,55);
+    }
+    if(a.clock<a.bulwarkPulseUntil){
+      g.lineStyle(5,0xa4f4ff,.8).strokeCircle(a.pos.x,a.pos.y,140);
     }
     if(burst&&a.flex.variant==='sigma'){
       g.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
@@ -200,7 +208,8 @@ export class ArenaScene extends Phaser.Scene {
       `FARM AURA ${a.aura.value}/100 · ${a.flexName}`;
     this.status.setColor(a.flex.isReady()?'#ffdb6d':'#fff8e7')
       .setText(`${a.kills} KILLS · ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz} · ${flex}`);
-    touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,a.flex.remaining(a.clock),a.flexVariant);
+    touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,
+      a.flex.remaining(a.clock),a.flexVariant,a.flexDescription);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
     let message = '';
