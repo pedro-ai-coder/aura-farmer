@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 test('six-frame legacy strips show only the first square character portrait',async({page})=>{
-  await page.goto('/');
+  await page.goto('/?visual=legacy');
   await page.locator('[data-menu="play"]').click();
   for(const id of ['ohio','fanum','six-seven']){
     const img=page.locator(`.meta-character[data-character="${id}"] img[data-character-portrait]`);
@@ -28,7 +28,7 @@ test('six-frame legacy strips show only the first square character portrait',asy
 });
 
 test('portrait loading failure reveals clean initials rather than a broken image',async({page})=>{
-  await page.goto('/');
+  await page.goto('/?visual=legacy');
   await page.locator('[data-menu="play"]').click();
   const card=page.locator('.meta-character[data-character="ohio"]');
   await expect(card.locator('img')).toBeVisible();

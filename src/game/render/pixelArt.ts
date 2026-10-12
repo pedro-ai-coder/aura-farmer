@@ -9,6 +9,7 @@ import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
 import { createGateA, isGateA, gateASigmaKey, gateAEnemyKey, type GateASigmaPose } from './gateAArena';
 import { isGateB, createGateBHeroes, gateBHeroKey, type GateBHero, type GateBHeroPose } from './gateBHeroes';
 import { isGateB2, createGateB2Heroes, b2Key, type B2Id, type B2Pose } from './gateB2Heroes';
+import { isFinalArt, loadFinalArt, finalEnemyKey, finalFxKey, type EnemyPose } from './finalArt';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -202,9 +203,18 @@ export function createPixelTextures(scene: Phaser.Scene): void {
 
 /** Reusable display objects; simulation/hitboxes stay in the Arena core. */
 export class PixelWorld {
-  private readonly gateA = isGateA();
-  private readonly gateB = isGateB();
-  private readonly gateB2 = isGateB2();
+  private readonly finalArt = isFinalArt();
+  private readonly gateA = isGateA() || this.finalArt;
+  private readonly gateB = isGateB() || this.finalArt;
+  private readonly gateB2 = isGateB2() || this.finalArt;
+  private previousHP=-1;
+  private previousAuraBursts=0;
+  private auraFxAt=-1;
+  private healFxAt=-1;
+  private bossFxAt=-1;
+  private wasBoss=false;
+  private largeFx: Phaser.GameObjects.Image[] = [];
+  private hitFx: Array<{x:number;y:number;since:number}> = [];
   private lastB2Xp = 0;
   private lastB2VolleyBand = 0;
   private b2SpecialStartedAt = -1;
@@ -233,7 +243,9 @@ export class PixelWorld {
     createGateA(scene);
     createGateBHeroes(scene);
     createGateB2Heroes(scene);
-    scene.add.image(480,300,this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
+    loadFinalArt(scene);
+    scene.add.image(480,300,this.finalArt ? 'af-arena' :
+      this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
     this.player = scene.add.image(480,330,scene.textures.exists(SIGMA_B1.texture) ? SIGMA_B1.texture :
@@ -259,9 +271,10 @@ export class PixelWorld {
     createGateA(this.scene); // regenerate any missing dynamically painted textures
     if (this.gateB) createGateBHeroes(this.scene);
     if (this.gateB2) createGateB2Heroes(this.scene);
+    if (this.finalArt) loadFinalArt(this.scene);
     const textures = this.scene.textures;
     for (const key of textures.getTextureKeys()) {
-      if (!key.startsWith('ga-') && !key.startsWith('gb-')) continue;
+      if (!key.startsWith('ga-') && !key.startsWith('gb-') && !key.startsWith('af-')) continue;
       const texture = textures.get(key);
       if (texture instanceof Phaser.Textures.CanvasTexture) texture.refresh();
     }
@@ -275,6 +288,7 @@ export class PixelWorld {
     if (!valid(key, frame) && this.gateA) createGateA(this.scene);
     if (!valid(key, frame) && this.gateB) createGateBHeroes(this.scene);
     if (!valid(key, frame) && this.gateB2) createGateB2Heroes(this.scene);
+    if (!valid(key, frame) && this.finalArt) loadFinalArt(this.scene);
     if (valid(key,frame)) img.setTexture(key,frame);
     else if (valid(fallback)) img.setTexture(fallback);
     else img.setVisible(false);
@@ -303,6 +317,9 @@ export class PixelWorld {
       this.lastB2Xp = a.xpCollected;
       this.lastB2VolleyBand = Math.floor(a.kills/67);
       this.b2SpecialStartedAt = -1;
+      this.previousHP=a.hp;
+      this.previousAuraBursts=a.auraBursts;
+      this.auraFxAt=-1;this.healFxAt=-1;this.bossFxAt=-1;this.wasBoss=false;this.hitFx=[];
     }
     this.lastClock = a.clock;
     const gaSigma = this.gateA && a.characterId === 'sigma' && this.scene.textures.exists('ga-sigma-idle-0');
@@ -499,6 +516,14 @@ export class PixelWorld {
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();
     this.actionLayer.clear();
+    if(this.finalArt){
+      if(this.previousHP>=0 && a.hp>this.previousHP+1)this.healFxAt=a.clock;
+      if(a.auraBursts>this.previousAuraBursts)this.auraFxAt=a.clock;
+      this.previousHP=a.hp;this.previousAuraBursts=a.auraBursts;
+      const bossNow=a.enemies.some(e=>e.type==='boss');
+      if(bossNow&&!this.wasBoss)this.bossFxAt=a.clock;
+      this.wasBoss=bossNow;
+    }
     if (a.mode === 'playing' || a.mode === 'upgrades' || a.mode === 'between') {
       this.shadowLayer.fillStyle(0x302747,.23).fillEllipse(a.pos.x,a.pos.y+17,33,9);
       this.shadowLayer.fillStyle(0xffcc51,.17).fillEllipse(a.pos.x,a.pos.y+17,19,5);
@@ -511,6 +536,7 @@ export class PixelWorld {
         const spriteKey = 'spr-' + enemy.type;
         const gateKey=(enemy.type==='npc'||enemy.type==='hater') ? 'ga-'+enemy.type+'-idle-0' : '';
         img = this.scene.add.image(enemy.x,enemy.y,
+          this.finalArt ? 'af-enemy-'+enemy.type+'-idle-0' :
           this.gateA && gateKey && this.scene.textures.exists(gateKey) ? gateKey :
           this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
         this.enemies.set(enemy.id,img);
@@ -519,10 +545,19 @@ export class PixelWorld {
       const spriteKey = 'spr-' + enemy.type;
       const previous = this.previousEnemies.get(enemy.id);
       const hitNow=!!previous && enemy.hp < previous.hp;
-      if (hitNow) this.hitFlashes.set(enemy.id,a.clock+105);
+      if(hitNow){
+        this.hitFlashes.set(enemy.id,a.clock+105);
+        if(this.finalArt&&this.hitFx.length<24)this.hitFx.push({x:enemy.x,y:enemy.y,since:a.clock});
+      }
       const gateEnemy=this.gateA && (enemy.type==='npc'||enemy.type==='hater')
         && this.scene.textures.exists('ga-'+enemy.type+'-move-0');
-      if (gateEnemy) {
+      if(this.finalArt){
+        const moving=!!previous && Math.hypot(enemy.x-previous.x,enemy.y-previous.y)>.07;
+        const attacking=enemy.type==='hater' && enemy.nextShot>a.clock && enemy.nextShot-a.clock<400;
+        const pose:EnemyPose=hitNow?'hit':attacking?'attack':moving?'move':'idle';
+        const elapsed=attacking?400-(enemy.nextShot-a.clock):a.clock;
+        this.safeTexture(img,finalEnemyKey(enemy.type,pose,elapsed,enemy.id),'px-'+enemy.type+'-0');
+      } else if (gateEnemy) {
         const type=enemy.type as 'npc'|'hater';
         this.safeTexture(img,hitNow ? 'ga-'+type+'-hit-0' : gateAEnemyKey(type,a.clock,enemy.id),'px-'+type+'-0');
       } else if (this.scene.textures.exists(spriteKey))
@@ -554,7 +589,22 @@ export class PixelWorld {
       img.destroy(); this.enemies.delete(id); this.previousEnemies.delete(id); this.hitFlashes.delete(id);
     }
     this.impacts=this.impacts.filter(fx=>fx.until>a.clock);
-    if (this.gateA) {
+    if(this.finalArt){
+      this.hitFx=this.hitFx.filter(hit=>a.clock-hit.since<190);
+      const count=Math.min(24,this.hitFx.length+this.impacts.length);
+      while(this.impactSprites.length<count)
+        this.impactSprites.push(this.scene.add.image(0,0,'af-fx-hit-0').setDepth(1.7));
+      this.impactSprites.forEach((img,i)=>{
+        const hit=this.hitFx[i];
+        const death=hit?undefined:this.impacts[i-this.hitFx.length];
+        img.setVisible(!!(hit||death));
+        if(hit||death){
+          this.safeTexture(img,finalFxKey(hit?'hit':'death',
+            hit?a.clock-hit.since:310-(death!.until-a.clock),hit?190:310),'px-shot');
+          img.setPosition((hit||death)!.x,(hit||death)!.y);
+        }
+      });
+    } else if (this.gateA) {
       while(this.impactSprites.length<this.impacts.length && this.impactSprites.length<24)
         this.impactSprites.push(this.scene.add.image(0,0,'ga-hit-0').setDepth(1.7));
       this.impactSprites.forEach((img,i)=>{
@@ -576,23 +626,42 @@ export class PixelWorld {
           .fillRect(fx.x+Math.cos(angle)*radius-2,fx.y+Math.sin(angle)*radius-2,4,4);
       }
     }
+    if(this.finalArt){
+      while(this.largeFx.length<3)this.largeFx.push(this.scene.add.image(0,0,'af-fx-burst-0').setDepth(1.74));
+      const boss=a.enemies.find(e=>e.type==='boss');
+      const details=[
+        {at:this.auraFxAt,kind:'burst' as const,ttl:560,x:a.pos.x,y:a.pos.y},
+        {at:this.healFxAt,kind:'heal' as const,ttl:440,x:a.pos.x,y:a.pos.y-7},
+        {at:this.bossFxAt,kind:'boss_warn' as const,ttl:580,x:boss?.x??480,y:boss?.y??330}
+      ];
+      this.largeFx.forEach((img,i)=>{
+        const d=details[i],time=a.clock-d.at;
+        img.setVisible(d.at>=0&&time>=0&&time<d.ttl);
+        if(img.visible){
+          this.safeTexture(img,finalFxKey(d.kind,time,d.ttl),'px-shot');
+          img.setPosition(d.x,d.y);
+        }
+      });
+    }
     const atlas = this.scene.textures.exists('spr-items');
     while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,
-      this.gateA ? 'ga-shot-friendly' : atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
+      this.finalArt ? 'af-shot' : this.gateA ? 'ga-shot-friendly' : atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
     this.shots.forEach((img,i)=>{
       const shot=a.shots[i]; img.setVisible(!!shot);
       if(shot) {
-        if (this.gateA) this.safeTexture(img,shot.hostile?'ga-shot-hostile':'ga-shot-friendly',shot.hostile?'px-hostile':'px-shot');
+        if(this.finalArt) this.safeTexture(img,shot.hostile?'af-hostile':'af-shot',shot.hostile?'px-hostile':'px-shot');
+        else if (this.gateA) this.safeTexture(img,shot.hostile?'ga-shot-hostile':'ga-shot-friendly',shot.hostile?'px-hostile':'px-shot');
         else if(atlas) this.safeTexture(img,'spr-items',shot.hostile?'px-hostile':'px-shot',shot.hostile?1:0);
         else this.safeTexture(img,shot.hostile?'px-hostile':'px-shot','px-shot');
         img.setPosition(shot.x,shot.y);
       }
     });
-    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,this.gateA ? 'ga-xp' : atlas ? 'spr-items' : 'px-xp').setDepth(.8));
+    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,this.finalArt ? 'af-xp' : this.gateA ? 'ga-xp' : atlas ? 'spr-items' : 'px-xp').setDepth(.8));
     this.drops.forEach((img,i)=>{
       const drop=a.drops[i]; img.setVisible(!!drop);
       if(drop) {
-        if(this.gateA)this.safeTexture(img,'ga-xp','px-xp');
+        if(this.finalArt)this.safeTexture(img,'af-xp','px-xp');
+        else if(this.gateA)this.safeTexture(img,'ga-xp','px-xp');
         else if(atlas)this.safeTexture(img,'spr-items','px-xp',2);
         img.setPosition(drop.x,drop.y-2-Math.sin(a.clock/230+i)*2);
         img.setRotation(Math.sin(a.clock/460+i)*.10);
@@ -609,7 +678,8 @@ export class PixelWorld {
       }
     }
     if (a.buffs['ohio-orbiter']) {
-      if (this.gateA) this.safeTexture(this.orbiter,'ga-shot-friendly','px-orbiter');
+      if(this.finalArt) this.safeTexture(this.orbiter,'af-shot','px-orbiter');
+      else if (this.gateA) this.safeTexture(this.orbiter,'ga-shot-friendly','px-orbiter');
       else if (this.scene.textures.exists('spr-items'))
         this.safeTexture(this.orbiter,'spr-items','px-orbiter',3);
       else this.safeTexture(this.orbiter,'px-orbiter','px-shot');

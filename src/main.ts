@@ -4,6 +4,8 @@ import './styles/main.css';
 import './styles/identity.css';
 import './styles/identity-v2.css';
 import './styles/gateA.css';
+import './styles/finalVisual.css';
+import { isFinalArt } from './game/render/finalArt';
 import { isGateA } from './game/render/gateAArena';
 import { isGateB } from './game/render/gateBHeroes';
 import { isGateB2 } from './game/render/gateB2Heroes';
@@ -12,12 +14,13 @@ import { setupMobileFullscreen } from './game/input/mobileFullscreen';
 import { setupGameShell } from './meta/shell';
 
 setupMobileFullscreen();
-if(isGateA()){
+if(isGateA() || isFinalArt()){
   document.documentElement.classList.add('gate-a-mode');
+  if(isFinalArt())document.documentElement.classList.add('aura-final');
   const label=document.querySelector<HTMLElement>('.masthead .tag:last-child');
-  if(label) label.textContent=isGateB2() ? 'GATE B2 · SIX HEROES' : isGateB() ? 'GATE B · HERO ART PREVIEW' : 'GATE A · PLAYABLE PREVIEW';
+  if(label) label.textContent=isFinalArt() ? 'FIVE WAVES · ONE LEGEND' : isGateB2() ? 'GATE B2 · SIX HEROES' : isGateB() ? 'GATE B · HERO ART PREVIEW' : 'GATE A · PLAYABLE PREVIEW';
   const loadingStage=document.querySelector<HTMLElement>('#af-loading-stage');
-  if(loadingStage)loadingStage.textContent=isGateB2() ? 'Loading the complete hero lineup…' : isGateB() ? 'Loading hero identity studies…' : 'Preparing the Aura Arena…';
+  if(loadingStage)loadingStage.textContent=isFinalArt() ? 'Getting the arena ready…' : isGateB2() ? 'Loading the complete hero lineup…' : isGateB() ? 'Loading hero identity studies…' : 'Preparing the Aura Arena…';
   const tip=document.querySelector<HTMLElement>('.af-loading-inner small');
   if(tip)tip.textContent='TIP ◆ FLEX at the right moment to gain Aura.';
   const title=document.querySelector<HTMLElement>('#af-loading .af-loading-inner strong');
@@ -25,7 +28,7 @@ if(isGateA()){
 }
 // Two branded art treatments for genuine startup asset loading, not a timed fake loader.
 const bootLoading=document.querySelector<HTMLElement>('#af-loading');
-if(bootLoading && !isGateA() && Math.random()>.5){
+if(bootLoading && !isGateA() && !isFinalArt() && Math.random()>.5){
   bootLoading.dataset.variant='witherroot';
   const stage=document.querySelector<HTMLElement>('#af-loading-stage');
   if(stage) stage.textContent='Holding back the Witherroot…';

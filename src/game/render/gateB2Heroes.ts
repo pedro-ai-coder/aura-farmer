@@ -1,3 +1,4 @@
+import { isFinalArt } from './finalArt';
 import Phaser from 'phaser';
 
 /** Gate B2 — three character silhouette/animation studies.
@@ -160,7 +161,7 @@ function source(id:B2Id,pose:B2Pose,f:number):HTMLCanvasElement{
  return canvas(c=>draw(c,id,pose,f));
 }
 export function createGateB2Heroes(scene:Phaser.Scene):void{
- if(!isGateB2())return;
+ if(!isGateB2() && !isFinalArt())return;
  for(const id of ['ohio','fanum','six-seven'] as B2Id[]){
   for(const pose of ['idle','move','hurt','flex_charge','flex_success','death',
      id==='ohio'?'dash':id==='fanum'?'tax':'volley'] as B2Pose[]){

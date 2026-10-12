@@ -13,7 +13,7 @@ async function prepare(page:Page,path:string):Promise<void>{
 }
 
 test("Gate A preview is opt-in and regular game remains unchanged",async({page})=>{
-  await prepare(page,"/");
+  await prepare(page,"/?visual=legacy");
   await expect(page.locator("html")).not.toHaveClass(/gate-a-mode/);
   const keys=await page.evaluate(()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;

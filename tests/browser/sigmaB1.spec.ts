@@ -7,7 +7,7 @@ test('Sigma B1 loads 25 native 48px frames, menu portrait and in-game sprite',as
     const response=await route.fetch();
     await route.fulfill({response,body:(await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(')});
   });
-  await page.goto('/');
+  await page.goto('/?visual=legacy');
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
   const source=await page.evaluate(async()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;

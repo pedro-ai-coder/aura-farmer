@@ -1,3 +1,4 @@
+import { isFinalArt } from '../game/render/finalArt';
 import { isGateB2, gateB2Portrait } from '../game/render/gateB2Heroes';
 import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
 import { isGateA, gateAHeroUrl } from '../game/render/gateAArena';
@@ -104,13 +105,16 @@ export class GameShell {
    * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
    */
   private previewPortrait(id: CharacterId): string {
+    if(isFinalArt() && (id==='ohio'||id==='fanum'||id==='six-seven'))return gateB2Portrait(id);
+    if(isFinalArt() && (id==='alpha'||id==='rizzler'))return gateBPortraitUrl(id);
+    if(isFinalArt() && id==='sigma')return gateAHeroUrl();
     if (isGateB2() && (id==='ohio'||id==='fanum'||id==='six-seven')) return gateB2Portrait(id);
     if (isGateB() && (id==='alpha'||id==='rizzler')) return gateBPortraitUrl(id);
     if (isGateA() && id==='sigma') return gateAHeroUrl();
     return '/assets/pixel/'+this.portraitName(id)+'.png';
   }
   private portrait(id: CharacterId): string {
-    const strip = !isGateB2() && (id === 'ohio' || id === 'fanum' || id === 'six-seven');
+    const strip = !isFinalArt() && !isGateB2() && (id === 'ohio' || id === 'fanum' || id === 'six-seven');
     const fallback: Record<CharacterId,string> = {
       sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
     };
@@ -138,13 +142,13 @@ export class GameShell {
         const c=getCharacter(this.profile.selectedCharacterId);
         // Featured portrait follows the selected hero. Gate B gives Alpha/Rizzler
         // their own artwork, while all other characters retain a valid fallback.
-        const heroSrc = isGateA() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
-        const heroStrip = isGateA() && !isGateB2() && ['ohio','fanum','six-seven'].includes(c.id);
-        return this.header(isGateB2() ? 'GATE B2 · FULL HERO ROSTER' : isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
+        const heroSrc = isGateA() || isFinalArt() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
+        const heroStrip = isGateA() && !isFinalArt() && !isGateB2() && ['ohio','fanum','six-seven'].includes(c.id);
+        return this.header(isFinalArt() ? 'AURA ARENA · CLASSIC SURVIVAL' : isGateB2() ? 'GATE B2 · FULL HERO ROSTER' : isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
             <span class="af-eyebrow">✦ MAIN CHARACTER ENERGY · ARCADE SURVIVAL</span>
             <h1>GROW YOUR LEGEND</h1>
-            <p class="meta-sub">${isGateA() ? 'Beat the rivals. Stack your Aura. Own the arena.' : 'Grow your Aura. Defend the fields. Become the legend.'}</p>
+            <p class="meta-sub">${isGateA() || isFinalArt() ? 'Beat the rivals. Stack your Aura. Own the arena.' : 'Grow your Aura. Defend the fields. Become the legend.'}</p>
             <div class="meta-cta">${this.button('play','✦ PLAY CLASSIC','primary')}
             ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
             <nav class="meta-menu" aria-label="Main menu">
@@ -157,13 +161,13 @@ export class GameShell {
           </div>
           <div class="af-home-art" aria-hidden="true">
             <span class="af-sun-glow"></span><img class="af-hero-art" src="${heroSrc}" ${heroStrip ? 'data-preview-strip="6"' : ''} alt="">
-            <span class="af-sprout-icon">${isGateA() ? '◆' : '✿'}</span><span class="af-art-caption">${isGateA() ? 'STYLE IS POWER' : 'GROW YOUR LEGEND'}</span>
+            <span class="af-sprout-icon">${isGateA() || isFinalArt() ? '◆' : '✿'}</span><span class="af-art-caption">${isGateA() || isFinalArt() ? 'STYLE IS POWER' : 'GROW YOUR LEGEND'}</span>
           </div>
           <aside class="af-home-event" aria-label="World event">
-            <span class="af-event-tag">${isGateA() ? '◆ VISUAL TEST BUILD' : '✦ WORLD EVENT'}</span>
-            <strong>${isGateB2() ? 'ALL SIX HEROES<br>GATE B2' : isGateB() ? 'HERO IDENTITY<br>GATE B' : isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
-            <small>${isGateB2() ? 'Ohio speed, Fanum XP collect and Six Seven volley. Compare all six heroes.' : isGateB() ? 'Alpha Chad and Rizzler: new original poses, portraits, melee/cast. Preview only.' : isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
-            <span class="af-event-footer">${isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
+            <span class="af-event-tag">${isFinalArt() ? '◆ CLASSIC SURVIVAL' : isGateA() ? '◆ VISUAL TEST BUILD' : '✦ WORLD EVENT'}</span>
+            <strong>${isFinalArt() ? 'FIVE WAVES<br>ONE LEGEND' : isGateB2() ? 'ALL SIX HEROES<br>GATE B2' : isGateB() ? 'HERO IDENTITY<br>GATE B' : isGateA() ? 'AURA ARENA<br>GATE A' : 'WITHERROOT<br>INVASION'}</strong>
+            <small>${isFinalArt() ? 'Build your Aura, survive the rivals and defeat the BIG HATER in the final wave.' : isGateB2() ? 'Ohio speed, Fanum XP collect and Six Seven volley. Compare all six heroes.' : isGateB() ? 'Alpha Chad and Rizzler: new original poses, portraits, melee/cast. Preview only.' : isGateA() ? 'New Sigma, NPC, Hater, arena and impact art. Preview only · no gameplay changes.' : 'The corrupted fields are stirring. Face the threat in Classic mode.'}</small>
+            <span class="af-event-footer">${isFinalArt() ? '◆ STYLE IS POWER' : isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
           </aside>
         </div>`;
       }
@@ -177,7 +181,7 @@ export class GameShell {
             <small>${c.role} · ${c.difficulty}</small>
             <span class="meta-character-description">${unlocked?c.passive:'🔒 '+c.unlockedBy}</span></button>`;
         }).join('');
-        return this.header(isGateA() ? 'CHOOSE YOUR FIGHTER' : 'CHOOSE YOUR FARMER')+`<div class="meta-grid characters">${cards}</div>
+        return this.header(isGateA() || isFinalArt() ? 'CHOOSE YOUR FIGHTER' : 'CHOOSE YOUR FARMER')+`<div class="meta-grid characters">${cards}</div>
           <p class="meta-sub">${getCharacter(selected).description} · ${getCharacter(selected).weapon}</p>
           <div class="meta-actions meta-character-actions">${this.button('home','BACK')}
           ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}

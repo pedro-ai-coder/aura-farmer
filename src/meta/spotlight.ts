@@ -1,3 +1,4 @@
+import { isFinalArt } from '../game/render/finalArt';
 import { isGateA } from '../game/render/gateAArena';
 type SpotlightVariant = 'wave'|'boss'|'aura';
 export function setupSpotlights(): void {
@@ -17,8 +18,8 @@ export function setupSpotlights(): void {
   };
   window.addEventListener('aura:wave',(event:Event)=>{
     const wave=(event as CustomEvent<number>).detail;
-    if(wave===1) show('wave','THE ADVENTURE BEGINS','WAVE 1',isGateA() ? 'Own the arena!' : 'Defend your fields!');
-    else if(wave===5) show('boss','DANGER · FINAL WAVE','THE BIG HATER','Prepare for the ultimate harvest!');
+    if(wave===1) show('wave','THE ADVENTURE BEGINS','WAVE 1',isGateA() || isFinalArt() ? 'Own the arena!' : 'Defend your fields!');
+    else if(wave===5) show('boss','DANGER · FINAL WAVE','THE BIG HATER','Show the BIG HATER who owns this arena!');
     else show('wave','THE HORDE IS GROWING',`WAVE ${wave}`,'Keep your Aura alive!');
   });
   window.addEventListener('aura:burst',()=>show('aura','POWER UNLEASHED','AURA BURST!','Damage increased · +20%'));

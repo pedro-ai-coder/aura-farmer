@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
     const response = await route.fetch();
     await route.fulfill({ response, body: (await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(') });
   });
-  await page.goto('/');
+  await page.goto('/?visual=legacy');
   await expect(page.locator('canvas')).toBeAttached(); // front menus intentionally hide the combat stage
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('.controls')).toContainText('choose upgrade');
