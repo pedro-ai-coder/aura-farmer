@@ -4,6 +4,11 @@ import { CHARACTERS } from '../src/game/data/characters';
 import { ACHIEVEMENTS, newProfile, recordRun, runResult, personalBest, type RunResult } from '../src/meta/profile';
 
 describe('character roster and game progression', () => {
+  it('new starter IDs preserve old local profile unlocks when reading existing saves',()=>{
+    const p=newProfile();
+    expect(p.unlockedCharacters).toEqual(expect.arrayContaining(['sigma','alpha','cool-kid','nerd']));
+  });
+
   it('preserves six Veterans and introduces two evolvable starter archetypes', () => {
     expect(CHARACTERS).toHaveLength(8);
     expect(new Set(CHARACTERS.map(c=>c.id)).size).toBe(8);

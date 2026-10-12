@@ -63,8 +63,11 @@ describe('FLEX Ultimate gameplay',()=>{
     expect(a.hp).toBe(120);expect(a.pos.x).toBeGreaterThan(480);
     expect(a.enemies).not.toContain(e);
     const boss=enemy(a,a.pos.x+10,a.pos.y,'boss');boss.nextHit=0;
-    for(let i=0;i<50;i++)a.update(100);
+    for(let i=0;i<48;i++)a.update(100);
+    // Boss damage from the 5s trample itself is capped at 25%;
+    // normal weapons are permitted to resume firing AFTER the window ends.
     expect(boss.hp).toBeGreaterThanOrEqual(ENEMIES.boss.hp*.75);
+    a.update(200);
     expect(a.flex.state).toBe('farming');
   });
   it('sigma rapid fire and rizz slow reflect default hero affinity',()=>{
