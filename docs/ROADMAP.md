@@ -5,13 +5,15 @@
 ## Next priority — v1.0 gameplay design implementation (NOT STARTED)
 
 - [x] Phase 0 — Freeze decisions: 3 weapons + 3 passives, five ~5-minute waves, character Mastery with small attribute boosts, bigger obstacle map with follow camera.
-- [ ] Phase 1 — Build inventory: 3+3 hard cap; weapons 4 levels, passives 3, compatible recipes, evolution via miniboss Core; migrate current 16 buffs.
-- [ ] Phase 2 — Classes: six existing heroes; unique starting weapon, intrinsic class passive, special active; FLEX remains universal.
+- [ ] Phase 1 — Affinity drops + build inventory: Alpha/Sigma/Rizz essence pickups and legal affinity-weighted item offers; 3+3 hard cap; weapons 4 levels, passives 3, recipes/evolutions via miniboss Core; map current 16 buffs.
+- [ ] Phase 2 — Hybrid roster/classes: **retain six Veteran heroes** and add Cool Kid + Nerd with proposed Alpha→Giga Chad and Sigma→Sigma Kid transformations; unique starting weapons and specials; FLEX remains universal. One primary form change per run.
 - [ ] Phase 3 — Encounters: miniboss every wave and guaranteed Core; separate final BIG HATER; healing pickups and recovery pacing.
 - [ ] Phase 4 — World: camera following on ~1600×1000 stage, 6–10 obstacles, collision/pathfinding and projectile line-of-sight.
 - [ ] Phase 5 — Per-character offline Mastery: per-run XP, Lv1–20 proposal, capped small permanent attributes, map/difficulty unlocks, safe profile migration.
 - [ ] Phase 6 — Balance and QA: 5-minute pacing, synergy reliability, boss/obstacle pathfinding, responsive fullscreen, real-device FPS and gameplay review.
 - [ ] **Rules and gameplay acceptance before backend / monetization** — blocked until previous phases reviewed.
+
+**Approved design extension:** [Hybrid Affinities & Evolutions — Option C](AFFINITY_EVOLUTION_HYBRID_V1.md). Three run-only essence types Alpha/Sigma/Rizz inform upgrade drops, while XP/Aura/HP and Core remain distinct; existing heroes and profiles are preserved. Exact drop rates, transformation levels and recipes are balancing proposals.
 
 **Frozen constraints** are in section 1 of the design; individual timings, percentages, recipes, Mastery thresholds, exact dimensions and map placements are **proposals awaiting playtest**. No implementation or deployment is part of the design-lock commit.
 
