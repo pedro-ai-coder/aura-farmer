@@ -230,7 +230,7 @@ export class PixelWorld {
     this.player = scene.add.image(480,330,scene.textures.exists(SIGMA_B1.texture) ? SIGMA_B1.texture :
       scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
     // Never pass frame 3 to the single-frame fallback texture.
-    const itemTexture = scene.textures.exists('spr-items') && scene.textures.get('spr-items').has(3);
+    const itemTexture = scene.textures.exists('spr-items') && scene.textures.get('spr-items').has('3');
     this.orbiter = scene.add.image(480,330,itemTexture ? 'spr-items' : 'px-orbiter',itemTexture ? 3 : '__BASE')
       .setDepth(1.1).setVisible(false);
     // Native canvas textures may need a GPU refresh when a browser goes
@@ -260,7 +260,7 @@ export class PixelWorld {
    * become a black/green placeholder in the playable arena. */
   private safeTexture(img: Phaser.GameObjects.Image, key: string, fallback: string, frame?: string | number): void {
     const valid = (k: string, f?: string | number): boolean =>
-      this.scene.textures.exists(k) && this.scene.textures.get(k).has(f ?? '__BASE');
+      this.scene.textures.exists(k) && this.scene.textures.get(k).has(String(f ?? '__BASE'));
     if (!valid(key, frame) && this.gateA) createGateA(this.scene);
     if (valid(key,frame)) img.setTexture(key,frame);
     else if (valid(fallback)) img.setTexture(fallback);

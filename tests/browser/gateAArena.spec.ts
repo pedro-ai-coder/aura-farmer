@@ -178,8 +178,8 @@ test("visible Gate A images never show Phaser missing-texture square around full
     // Exercising every category without bypassing the actual renderer.
     a.enemies=[{id:819,type:'npc',x:400,y:310,hp:30,nextHit:999999,nextShot:999999},
       {id:820,type:'hater',x:660,y:320,hp:50,nextHit:999999,nextShot:999999}];
-    a.shots=[{x:510,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:false,bounces:0},
-      {x:620,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:true,bounces:0}];
+    a.shots=[{x:510,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:false,bounced:false},
+      {x:620,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:true,bounced:false}];
     a.drops=[{x:550,y:460,xp:3}];
     a.buffs['ohio-orbiter']=1;
     scene.setPaused(false);
