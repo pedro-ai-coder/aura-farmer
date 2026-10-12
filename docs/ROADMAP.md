@@ -5,7 +5,8 @@
 ## Next priority — v1.0 gameplay design implementation (NOT STARTED)
 
 - [x] Phase 0 — Freeze decisions: 3 weapons + 3 passives, five ~5-minute waves, character Mastery with small attribute boosts, bigger obstacle map with follow camera.
-- [ ] Phase 1 — Affinity drops + build inventory: Alpha/Sigma/Rizz essence pickups and legal affinity-weighted item offers; 3+3 hard cap; weapons 4 levels, passives 3, recipes/evolutions via miniboss Core; map current 16 buffs.
+- [x] Phase 1a — Three affinity drops + true weapon/passive inventory: 3+3 strict cap, real 4-level attacking weapons, existing passives with original maximum up to 3, legal reward selection and in-game loadout UI. See [Equipment slice](EQUIPMENT_WEAPONS_SLICE.md).
+- [ ] Phase 1b — Core-gated weapon evolution recipes, transformations and full buff remapping, pending miniboss and progression phases.
 - [x] Phase 2a — FLEX playable slice: one chargeable, manually activated Aura FLEX, Alpha/Sigma/Rizz effects, highlighted PC/mobile HUD, Cool Kid/Nerd starter studies. Separate Focus and automatic Burst removed.
 - [ ] Phase 2b — Full Giga Chad/Sigma Kid form evolutions via Aura Cores, 3+3 build synergies, all-class balancing. One primary form transformation per run.
 - [ ] Phase 3 — Encounters: miniboss every wave and guaranteed Core; separate final BIG HATER; healing pickups and recovery pacing.
