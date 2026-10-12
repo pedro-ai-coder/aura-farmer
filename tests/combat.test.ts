@@ -7,19 +7,19 @@ describe('upgrade damage and timing', () => {
   it('applies Sigma only with 50 Aura and caps Alpha at ten nearby enemies', () => {
     const b = emptyBuffLevels(); b.sigma = 2; b.alpha = 2;
     expect(combatStats(b, 49, 0, 0).damage).toBe(1);
-    expect(combatStats(b, 50, 100, 0).damage).toBeCloseTo(1.3 * 1.3);
-    expect(combatStats(b, 50, 3, 0).damage).toBeCloseTo(1.3 * 1.09);
+    expect(combatStats(b, 50, 100, 0).damage).toBeCloseTo(1.16 * 1.144);
+    expect(combatStats(b, 50, 3, 0).damage).toBeCloseTo(1.16 * 1.072);
   });
   it('activates Mewing and Locked In after 8 clean seconds, resetting after damage', () => {
     const b = emptyBuffLevels(); b.mewing = 2; b['locked-in'] = 2;
     expect(combatStats(b, 0, 0, 7999)).toMatchObject({ critChance: 0, fireRate: 1 });
-    expect(combatStats(b, 0, 0, 8000)).toMatchObject({ critChance: .2, fireRate: 1.5 });
+    expect(combatStats(b, 0, 0, 8000)).toMatchObject({ critChance: .12, fireRate: 1.24 });
     expect(combatStats(b, 0, 0, 0)).toMatchObject({ critChance: 0, fireRate: 1 });
   });
   it('stacks speed, health and armor', () => {
     const b = emptyBuffLevels(); b.speed = 3; b['thick-skin'] = 3; b.drip = 3;
     expect(combatStats(b, 0, 0, 0)).toMatchObject({ maxHp: 160, armor: 3 });
-    expect(combatStats(b, 0, 0, 0).speed).toBeCloseTo(278.8);
+    expect(combatStats(b, 0, 0, 0).speed).toBeCloseTo(254.2);
   });
   it('requires a manual Aura spend and preserves earned rank bonuses',()=>{
     const a=new AuraSystem();
