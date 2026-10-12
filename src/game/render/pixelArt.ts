@@ -6,6 +6,7 @@ import { ENEMIES } from '../data/enemies';
 import { SIGMA_B1, sigmaB1Frame, type SigmaPose } from './sigmaB1';
 import { ALPHA_B2, alphaB2Frame, type AlphaPose } from './alphaB2';
 import { RIZZLER_B3, rizzlerB3Frame, type RizzlerPose } from './rizzlerB3';
+import { createGateA, isGateA, gateASigmaKey, gateAEnemyKey, type GateASigmaPose } from './gateAArena';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -199,6 +200,8 @@ export function createPixelTextures(scene: Phaser.Scene): void {
 
 /** Reusable display objects; simulation/hitboxes stay in the Arena core. */
 export class PixelWorld {
+  private readonly gateA = isGateA();
+  private impactSprites: Phaser.GameObjects.Image[] = [];
   private player: Phaser.GameObjects.Image;
   private enemies = new Map<number, Phaser.GameObjects.Image>();
   private drops: Phaser.GameObjects.Image[] = [];
@@ -220,13 +223,50 @@ export class PixelWorld {
 
   constructor(private scene: Phaser.Scene) {
     createPixelTextures(scene);
-    scene.add.image(480,300,'px-floor').setDepth(-10);
+    createGateA(scene);
+    scene.add.image(480,300,this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
     this.player = scene.add.image(480,330,scene.textures.exists(SIGMA_B1.texture) ? SIGMA_B1.texture :
       scene.textures.exists('spr-sigma') ? 'spr-sigma' : 'px-player-idle').setDepth(1.2);
-    this.orbiter = scene.add.image(480,330,scene.textures.exists('spr-items') ? 'spr-items' : 'px-orbiter',3).setDepth(1.1).setVisible(false);
+    // Never pass frame 3 to the single-frame fallback texture.
+    const itemTexture = scene.textures.exists('spr-items') && scene.textures.get('spr-items').has('3');
+    this.orbiter = scene.add.image(480,330,itemTexture ? 'spr-items' : 'px-orbiter',itemTexture ? 3 : '__BASE')
+      .setDepth(1.1).setVisible(false);
+    // Native canvas textures may need a GPU refresh when a browser goes
+    // in/out of fullscreen or the WebGL context is restored.
+    if (this.gateA) {
+      document.addEventListener('fullscreenchange', this.restoreGateATextures);
+      this.scene.game.canvas.addEventListener('webglcontextrestored', this.restoreGateATextures);
+      this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        document.removeEventListener('fullscreenchange', this.restoreGateATextures);
+        this.scene.game.canvas.removeEventListener('webglcontextrestored', this.restoreGateATextures);
+      });
+    }
   }
+
+  private readonly restoreGateATextures = (): void => {
+    if (!this.scene.sys.isActive()) return;
+    createGateA(this.scene); // regenerate any missing dynamically painted textures
+    const textures = this.scene.textures;
+    for (const key of textures.getTextureKeys()) {
+      if (!key.startsWith('ga-')) continue;
+      const texture = textures.get(key);
+      if (texture instanceof Phaser.Textures.CanvasTexture) texture.refresh();
+    }
+  };
+
+  /** Validate both key and sheet frame; a missing Phaser texture must never
+   * become a black/green placeholder in the playable arena. */
+  private safeTexture(img: Phaser.GameObjects.Image, key: string, fallback: string, frame?: string | number): void {
+    const valid = (k: string, f?: string | number): boolean =>
+      this.scene.textures.exists(k) && this.scene.textures.get(k).has(String(f ?? '__BASE'));
+    if (!valid(key, frame) && this.gateA) createGateA(this.scene);
+    if (valid(key,frame)) img.setTexture(key,frame);
+    else if (valid(fallback)) img.setTexture(fallback);
+    else img.setVisible(false);
+  }
+
   sync(a: Arena): void {
     const frame = Math.floor(a.clock / 180) % 2;
     const pose = a.flex.state === 'charging' ? 'flex'
@@ -249,7 +289,31 @@ export class PixelWorld {
       this.lastFlexSuccesses = a.flexSuccesses;
     }
     this.lastClock = a.clock;
-    if (sigmaB1) {
+    const gaSigma = this.gateA && a.characterId === 'sigma' && this.scene.textures.exists('ga-sigma-idle-0');
+    if (gaSigma) {
+      if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
+      this.lastFlexSuccesses = a.flexSuccesses;
+      if (a.mode !== 'dead') this.deathStartedAt = -1;
+      let animation: GateASigmaPose = 'idle';
+      let elapsed = a.clock;
+      if (a.mode === 'dead') {
+        if (this.deathStartedAt < 0) this.deathStartedAt = this.scene.time.now;
+        animation = 'death';
+        elapsed = this.scene.time.now - this.deathStartedAt;
+      } else if (a.mode === 'win') {
+        animation = 'flex_success';
+      } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
+        animation = 'hurt'; elapsed = a.clock - a.lastDamageAt;
+      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+        animation = 'flex_charge';
+      } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
+                 a.clock - this.flexSuccessStartedAt < 345) {
+        animation = 'flex_success'; elapsed = a.clock - this.flexSuccessStartedAt;
+      } else if (a.mode === 'playing' && playerMoving) {
+        animation = 'move';
+      }
+      this.safeTexture(this.player,gateASigmaKey(animation,elapsed),'px-player-idle');
+    } else if (sigmaB1) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
       if (a.mode !== 'dead') this.deathStartedAt = -1;
@@ -275,7 +339,7 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && playerMoving) {
         animation = 'move';
       }
-      this.player.setTexture(SIGMA_B1.texture, sigmaB1Frame(animation,elapsed));
+      this.safeTexture(this.player,SIGMA_B1.texture,'px-player-idle',sigmaB1Frame(animation,elapsed));
     } else if (alphaB2) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -306,7 +370,7 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && playerMoving) {
         animation = 'move';
       }
-      this.player.setTexture(ALPHA_B2.texture, alphaB2Frame(animation, elapsed));
+      this.safeTexture(this.player,ALPHA_B2.texture,'px-player-idle',alphaB2Frame(animation,elapsed));
     } else if (rizzlerB3) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
@@ -335,15 +399,15 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && playerMoving) {
         animation = 'move';
       }
-      this.player.setTexture(RIZZLER_B3.texture, rizzlerB3Frame(animation, elapsed));
+      this.safeTexture(this.player,RIZZLER_B3.texture,'px-player-idle',rizzlerB3Frame(animation,elapsed));
     } else if (hasCharacterSheet || hasDefaultSheet) {
       // Legacy atlas stays in place as a safe fallback and for other characters.
       const actorFrame = a.mode !== 'playing' ? frame :
         pose === 'flex' ? 4 : pose === 'hurt' ? 5 : playerMoving ? 2 + frame : frame;
-      this.player.setTexture(hasCharacterSheet ? characterSprite : 'spr-sigma',actorFrame);
-    } else this.player.setTexture('px-player-' + (a.mode === 'playing' ? pose : 'idle'));
+      this.safeTexture(this.player,hasCharacterSheet ? characterSprite : 'spr-sigma','px-player-idle',actorFrame);
+    } else this.safeTexture(this.player,'px-player-' + (a.mode === 'playing' ? pose : 'idle'),'px-player-idle');
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(gaSigma || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();
@@ -358,15 +422,25 @@ export class PixelWorld {
       let img = this.enemies.get(enemy.id);
       if (!img) {
         const spriteKey = 'spr-' + enemy.type;
-        img = this.scene.add.image(enemy.x,enemy.y,this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
+        const gateKey=(enemy.type==='npc'||enemy.type==='hater') ? 'ga-'+enemy.type+'-idle-0' : '';
+        img = this.scene.add.image(enemy.x,enemy.y,
+          this.gateA && gateKey && this.scene.textures.exists(gateKey) ? gateKey :
+          this.scene.textures.exists(spriteKey) ? spriteKey : 'px-'+enemy.type+'-0').setDepth(1);
         this.enemies.set(enemy.id,img);
       }
       const bob = Math.floor((a.clock + enemy.id*77) / 260) % 2;
       const spriteKey = 'spr-' + enemy.type;
-      if (this.scene.textures.exists(spriteKey)) img.setTexture(spriteKey, bob + 2);
-      else img.setTexture('px-'+enemy.type+'-'+bob);
       const previous = this.previousEnemies.get(enemy.id);
-      if (previous && enemy.hp < previous.hp) this.hitFlashes.set(enemy.id,a.clock+105);
+      const hitNow=!!previous && enemy.hp < previous.hp;
+      if (hitNow) this.hitFlashes.set(enemy.id,a.clock+105);
+      const gateEnemy=this.gateA && (enemy.type==='npc'||enemy.type==='hater')
+        && this.scene.textures.exists('ga-'+enemy.type+'-move-0');
+      if (gateEnemy) {
+        const type=enemy.type as 'npc'|'hater';
+        this.safeTexture(img,hitNow ? 'ga-'+type+'-hit-0' : gateAEnemyKey(type,a.clock,enemy.id),'px-'+type+'-0');
+      } else if (this.scene.textures.exists(spriteKey))
+        this.safeTexture(img,spriteKey,'px-'+enemy.type+'-0',bob+2);
+      else this.safeTexture(img,'px-'+enemy.type+'-'+bob,'px-'+enemy.type+'-0');
       if (previous && Math.abs(enemy.x-previous.x)>0.15) img.setFlipX(enemy.x>previous.x);
       img.setPosition(enemy.x,enemy.y);
       if ((this.hitFlashes.get(enemy.id)??0)>a.clock) img.setTintFill(0xfff2e7);
@@ -393,7 +467,19 @@ export class PixelWorld {
       img.destroy(); this.enemies.delete(id); this.previousEnemies.delete(id); this.hitFlashes.delete(id);
     }
     this.impacts=this.impacts.filter(fx=>fx.until>a.clock);
-    for(const fx of this.impacts) {
+    if (this.gateA) {
+      while(this.impactSprites.length<this.impacts.length && this.impactSprites.length<24)
+        this.impactSprites.push(this.scene.add.image(0,0,'ga-hit-0').setDepth(1.7));
+      this.impactSprites.forEach((img,i)=>{
+        const fx=this.impacts[i];
+        img.setVisible(!!fx);
+        if(fx){
+          const index=Math.min(3,Math.floor((1-(fx.until-a.clock)/310)*4));
+          this.safeTexture(img,'ga-hit-'+index,'px-shot');
+          img.setPosition(fx.x,fx.y);
+        }
+      });
+    } else for(const fx of this.impacts) {
       const p=1-(fx.until-a.clock)/310, radius=7+17*p;
       const color=fx.type==='npc'?0x89839e:fx.type==='beta'?0x69bfa8:0xea568a;
       this.actionLayer.lineStyle(p<.5?3:2,color,(1-p)*.65).strokeCircle(fx.x,fx.y,radius);
@@ -404,20 +490,23 @@ export class PixelWorld {
       }
     }
     const atlas = this.scene.textures.exists('spr-items');
-    while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
+    while(this.shots.length<a.shots.length) this.shots.push(this.scene.add.image(0,0,
+      this.gateA ? 'ga-shot-friendly' : atlas ? 'spr-items' : 'px-shot').setDepth(1.4));
     this.shots.forEach((img,i)=>{
       const shot=a.shots[i]; img.setVisible(!!shot);
       if(shot) {
-        if(atlas) img.setTexture('spr-items',shot.hostile?1:0);
-        else img.setTexture(shot.hostile?'px-hostile':'px-shot');
+        if (this.gateA) this.safeTexture(img,shot.hostile?'ga-shot-hostile':'ga-shot-friendly',shot.hostile?'px-hostile':'px-shot');
+        else if(atlas) this.safeTexture(img,'spr-items',shot.hostile?'px-hostile':'px-shot',shot.hostile?1:0);
+        else this.safeTexture(img,shot.hostile?'px-hostile':'px-shot','px-shot');
         img.setPosition(shot.x,shot.y);
       }
     });
-    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,atlas ? 'spr-items' : 'px-xp').setDepth(.8));
+    while(this.drops.length<a.drops.length) this.drops.push(this.scene.add.image(0,0,this.gateA ? 'ga-xp' : atlas ? 'spr-items' : 'px-xp').setDepth(.8));
     this.drops.forEach((img,i)=>{
       const drop=a.drops[i]; img.setVisible(!!drop);
       if(drop) {
-        if(atlas)img.setTexture('spr-items',2);
+        if(this.gateA)this.safeTexture(img,'ga-xp','px-xp');
+        else if(atlas)this.safeTexture(img,'spr-items','px-xp',2);
         img.setPosition(drop.x,drop.y-2-Math.sin(a.clock/230+i)*2);
         img.setRotation(Math.sin(a.clock/460+i)*.10);
       }
@@ -432,8 +521,13 @@ export class PixelWorld {
           .fillRect(shot.x-Math.cos(angle)*5-1,shot.y-Math.sin(angle)*5-1,3,3);
       }
     }
-    if (this.scene.textures.exists('spr-items')) this.orbiter.setTexture('spr-items',3);
-    this.orbiter.setVisible(a.buffs['ohio-orbiter']>0);
+    if (a.buffs['ohio-orbiter']) {
+      if (this.gateA) this.safeTexture(this.orbiter,'ga-shot-friendly','px-orbiter');
+      else if (this.scene.textures.exists('spr-items'))
+        this.safeTexture(this.orbiter,'spr-items','px-orbiter',3);
+      else this.safeTexture(this.orbiter,'px-orbiter','px-shot');
+    }
+    this.orbiter.setVisible(a.buffs['ohio-orbiter']>0 && this.orbiter.texture.key!=='__MISSING');
     if(a.buffs['ohio-orbiter'])this.orbiter.setPosition(a.orb.x,a.orb.y);
   }
 }
