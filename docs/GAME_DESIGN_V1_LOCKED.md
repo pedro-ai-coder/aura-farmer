@@ -12,10 +12,12 @@
 4. **Larger scrolling map**: gameplay world is larger than the rendered viewport. The camera follows the player. Solid obstacles create meaningful navigation and projectile interaction.
 5. **One miniboss in every wave**, including wave five, with **one guaranteed ability/evolution reward** on defeat. Wave five ALSO contains a separate final boss, BIG HATER.
 6. **Build evolution and synergy**: weapons have four upgrade levels before one transformed/evolved state; passives have three levels. Evolution requires a max-level weapon and a compatible passive, plus a miniboss Aura Core (or equivalent guaranteed upgrade reward). Evolutions replace, never add, a slot.
-7. **HP and Aura remain distinct**: healing pickups and build-based healing are part of gameplay. Aura continues to be combat momentum and FLEX/Burst fuel, not the HP meter or premium currency.
+7. **HP and Aura remain distinct**: healing pickups and build-based healing are part of gameplay. Aura Farming charges a manually activated FLEX Ultimate (rather than an automatic Burst). It is not HP, essence or premium currency.
 8. **Distinct playable combat classes**, preserving all six existing Aura Farmer hero IDs and unlocks, alongside the planned **hybrid pilot**: new Cool Kid and Nerd starter archetypes evolving into Giga Chad and Sigma Kid under Alpha/Sigma affinity builds.
 9. **No backend/monetization implementation** until this gameplay overhaul has been built, tested, and gameplay rules reviewed.
 10. **Hybrid affinity/evolution direction**: start with three themed run-only essence types (Alpha, Sigma, Rizz) and combine matching pickups, max-level signature weapon, compatible passive and a miniboss Core for one main form transformation per run. **Option C is approved**; specific thresholds, drop rates and recipes are tuning proposals. See [Hybrid Affinities & Evolutions](AFFINITY_EVOLUTION_HYBRID_V1.md).
+
+11. **Single FLEX Ultimate instead of FLEX + Focus**: the player farms enough Aura to make FLEX READY and chooses when to activate it. Its effect follows character, primary Alpha/Sigma/Rizz affinity, build and active form. Cool Kid + Alpha is a steerable, approximately five-second invulnerable trample, with boss safety limits. See [FLEX Ultimate design](FLEX_ULTIMATE_V1.md).
 
 ## 2. Combat loop and timings
 
@@ -39,7 +41,7 @@
 
 - Three **weapons** maximum. Starting weapon occupies one slot; two more weapon slots remain available.
 - Three **passives** maximum. Each passive at most **level 3**, each weapon at most **level 4**, followed by **one evolution**; max-level equipment remains effective.
-- FLEX and each hero's signature active `SPACE` skill are **character controls**, not weapon/passive slots.
+- **FLEX is the only active power** (PC `E`, one mobile button), independent of all six equipment slots; the future rules remove independent `SPACE` class specials and Focus. SPACE may optionally be a binding for the SAME FLEX, not a second action.
 - Class passives are intrinsic traits and do not use a passive loadout slot.
 - Choose one of three valid options at XP milestones; stop simulation during decisions. Once six slots fill, offer only owned upgrades/evolutions or defined fallback rewards. Rerolls and category weights are balancing variables, not finalized rules.
 - One Core can either improve the build or trigger an evolution. Evolution requires `weapon Lv4 + compatible passive + Core`, consumes that Core, and **replaces** the existing weapon at the same slot.
@@ -62,12 +64,12 @@
 
 ## 4. Playable classes — starting kits and player agency
 
-Each of the six existing Veteran heroes owns a distinctive **starting weapon (1 slot)**, an **intrinsic passive** and a **class-special ability (`SPACE`, outside slots)**. Universal `E` = FLEX; movement and auto-attacks remain simple. Unique actives have visible cooldown/readability and cannot replace the player's choice to reposition.
+Each of the six existing Veteran heroes owns a distinctive **starting weapon (1 slot)**, an **intrinsic passive** and an **affinity/build-dependent FLEX variant**. All heroes use one manually triggered FLEX (`E` / mobile FLEX), which charges through Aura Farming. The previous separate SPACE special/Focus and stationary audience FLEX belong only to the historical v0.6 implementation. Movement and auto-attacks remain simple.
 
 | Existing hero | Combat identity | Strategic advantage | Weakness / counterbalance |
 |---|---|---|---|
 | **Alpha Chad** | **Tank / melee** | High HP, armor, short-range slam, shield special | Slow and vulnerable to kiting |
-| **The Sigma** | **Ranged DPS / balanced** | Reliable aimed Aura Shot and burst Focus | Less sustain than tanks |
+| **The Sigma** | **Ranged DPS / balanced** | Reliable Aura Shot and Sigma precision FLEX | Less sustain than tanks |
 | **Ohio Kid** | **Mobile melee DPS** | Dash, close-range bursts, dodge mobility | Fragile in crowds |
 | **The Rizzler** | **Control / support** | Area slow and zone damage | Lower direct single-target DPS |
 | **Fanum Lord** | **Bruiser / sustain** | Close-range attacks, self-heal, XP magnet | Needs engagement; cannot heal passively to full |
@@ -128,7 +130,7 @@ Candidate maps: Aura Arena Central (first), Ohio Underground (tier 2), Rizz Dist
 
 **Phase 1 — Affinity, builds/data migration:** introduce three essence pickups (Alpha/Sigma/Rizz), affinity-weighted legal item offers, weapon/passive registry, hard 3+3 slots, level 1–4 weapons, level 1–3 passives, legal-choices generator, existing buff mapping, upgrade and evolution UX. Unit tests: no seventh item, no dead choices, evolution slot preservation, consistency with seeded RNG.
 
-**Phase 2 — Character identity + hybrid pilot:** retain the six existing Veterans, add Cool Kid and Nerd starter archetypes, build Giga Chad and Sigma Kid visual/form transformations (one per run) alongside six role-balanced Veteran starting weapons, built-in passives, `SPACE` actives, effects/sprites and class-specific UI. Keep FLEX universally accessible. Test combat, cooldown, auto-attacks, class win viability.
+**Phase 2 — FLEX Ultimate, character identity and hybrid pilot:** retain six Veterans, add Cool Kid/Nerd + Giga Chad/Sigma Kid transformations, introduce one Aura-charged manually activated affinity/build-dependent FLEX, eliminate separate Focus and automatic Aura Burst, and update HUD, mobile controls, FX and tests for five-second Alpha invulnerability, boss damage limits and class viability.
 
 **Phase 3 — Wave encounters, minibosses and HP:** five guaranteed minibosses with unique telegraphed attacks, reachable Core choices, heal pickups, boss phase after wave-five miniboss and inter-wave heals. Test forced drop, no reward duplication, time overtime, boss unlock and pickups under full/zero HP.
 
@@ -158,3 +160,7 @@ These require automated balance simulations + hands-on review *after gameplay im
 **Canonical detailed extension:** [AFFINITY_EVOLUTION_HYBRID_V1.md](AFFINITY_EVOLUTION_HYBRID_V1.md) — includes pickups, weighted skill offers, sample recipes, two roster tabs, Mastery identity, five-wave pacing, failure safeguards and phased implementation. This section **extends** rather than overrides the previously locked five waves / ~5 minutes, 3 weapons + 3 passives, miniboss per wave, heals, Mastery and larger follow-camera world.
 
 **Approval boundary:** the choice of Option C and general essence/build/form concept is approved. Names, specific roster count in a first prototype, drop percentages, evolve thresholds, cross-affinity procs and transform balance remain proposals for later testing. **Documentation only; no gameplay implementation is authorized in this change.**
+
+## 11. FLEX Ultimate — latest gameplay direction
+
+Approved on 2026-10-12: only one highlighted special ability, FLEX. Farm Aura to READY, press manually, activate a build-specific effect. Cool Kid + dominant Alpha affinity gains Giga Chad Rampage, with approximately five seconds of damage immunity and player-steered enemy trampling. The separate Focus ability, automatic Aura Burst and stationary audience-based FLEX are removed in the **future version**, not in the current deployed game. FLEX is outside the three weapon and three passive slots; essences remain distinct from Aura charge. Form evolution via miniboss Core is also distinct from FLEX activation. Exact charge threshold, secondary affinity modifiers, boss damage caps and legacy Aura rank behavior are for balance testing. See [FLEX_ULTIMATE_V1.md](FLEX_ULTIMATE_V1.md).

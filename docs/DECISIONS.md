@@ -38,3 +38,13 @@ Is FLEX +25 balanced? Are upgrades too frequent? Is the boss feasible? Do animat
 - **D-025 [NOT YET LOCKED]** Specific drop percentages, affinity threshold, secondary-affinity bonuses, archetype HP/attack stats, number of further evolved branches, unlock schedule and VFX implementation remain tuning proposals. No gameplay implementation or backend/monetization begins in this documentation change.
 
 See [Hybrid Affinity & Evolution extension](AFFINITY_EVOLUTION_HYBRID_V1.md) and [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md).
+
+## D-026–D-030 — Single FLEX Ultimate direction (2026-10-12)
+
+- **D-026 [APPROVED]** One prominent, manually activated FLEX power charged by Aura Farming replaces standalone Focus in the NEXT gameplay version. Existing deployed v0.6 mechanics are historical and unchanged for now.
+- **D-027 [APPROVED]** FLEX effect follows primary Alpha/Sigma/Rizz affinity, selected character, equipped build and current evolved form. FLEX remains outside 3 weapons + 3 passives. Essence does not pay Aura charge.
+- **D-028 [APPROVED CONCEPT]** Cool Kid + Alpha uses Giga Chad Rampage: approximately five seconds of damage immunity and steerable enemy-trampling collision damage. No instant-kill bosses or wall-clip immunity.
+- **D-029 [RECOMMENDATION]** Ready FLEX never auto-casts; replace old automatic 100-Aura Burst and stationary 3-nearby-enemy check. Do not allow active FLEX kills to recharge the same FLEX. Prominent mobile/keyboard ready and active HUD, accessible reduced motion.
+- **D-030 [BALANCE OPEN]** Suggested threshold 100, first charge wave 1–2, 2–4 uses/run, boss collision damage ~20–25% max boss HP per cast, Aura rank bonus continuity and variant durations require playtests.
+
+Detailed specification: [FLEX_ULTIMATE_V1.md](FLEX_ULTIMATE_V1.md). D-003 and earlier FLEX+Focus proposals are historical for the current build, superseded for the future design.

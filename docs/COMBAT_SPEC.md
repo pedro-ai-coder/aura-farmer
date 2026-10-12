@@ -1,3 +1,5 @@
+> **Historical runtime behavior:** the independent SPACE Focus, stationary audience FLEX and automatic Aura Burst described below remain how the CURRENT game works. The intended next design is one [Aura-charged, build-dependent FLEX Ultimate](FLEX_ULTIMATE_V1.md), with no separate Focus. This documentation addendum does not change running gameplay.
+
 > **Current legacy implementation baseline, not the next-release specification.** For agreed future gameplay direction (3 weapons + 3 passives, ~5-minute run with five minibosses, evolution, healing, Character Mastery and larger obstacles/camera), see [Game Design v1.0](GAME_DESIGN_V1_LOCKED.md). Do not change combat code merely by editing this document.
 
 # Combat specification — Aura Farmer v0.1
