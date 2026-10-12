@@ -16,7 +16,8 @@ function enemy(a: Arena, id: number, x = 600, y = 330, type: EnemyType = 'npc'):
 }
 function shot(e: Enemy, damage = 10): Shot { return { x: e.x, y: e.y, vx: 0, vy: 0, damage, ttl: 1000, hostile: false }; }
 function hit(a: Arena, e: Enemy, damage = 10) {
-  // Existing projectiles resolve independently of auto-targeting.
+  // A controlled projectile hit: prevent unrelated auto-shots from firing.
+  (a as unknown as {fireReady:number}).fireReady=Infinity;
   a.shots.push(shot(e, damage)); a.update(1);
 }
 

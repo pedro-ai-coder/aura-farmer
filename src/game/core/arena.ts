@@ -200,7 +200,9 @@ export class Arena {
         this.hit(e,Math.min(e.type==='boss'?11:22,this.damage(18)),'flex');
       }
     }
-    this.attack();
+    // Alpha RAMPAGE replaces ordinary auto-fire; prevents five seconds of
+    // invulnerable boss DPS stacking outside the per-activation stomp cap.
+    if(!(active&&variant==='alpha'))this.attack();
     for (const shot of [...this.shots]) {
       shot.x += shot.vx * dt / 1000; shot.y += shot.vy * dt / 1000; shot.ttl -= dt;
       if (shot.ttl <= 0) { this.removeShot(shot); continue; }
