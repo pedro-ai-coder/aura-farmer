@@ -154,8 +154,15 @@ export class ArenaScene extends Phaser.Scene {
     if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
     if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
     if(burst&&a.flex.variant==='alpha'){
-      g.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
-      g.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
+      if(a.characterId==='alpha'){
+        // Tank Fortress: calm shield layers, not Cool Kid's moving golden trail.
+        g.fillStyle(0x87caff,.11).fillCircle(a.pos.x,a.pos.y,65);
+        g.lineStyle(5,0x82d3fa,.9).strokeCircle(a.pos.x,a.pos.y,57);
+        g.lineStyle(2,0xffffff,.75).strokeCircle(a.pos.x,a.pos.y,68);
+      }else{
+        g.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
+        g.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
+      }
     }
     if(burst&&a.flex.variant==='sigma'){
       g.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
