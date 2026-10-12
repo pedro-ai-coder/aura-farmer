@@ -139,3 +139,62 @@ test("Gate A hero illustration matches the selected character rather than always
   await expect(hero).toHaveAttribute("src",/rizzler-portrait\.png/);
   await expect(page.locator(".meta-feature")).toContainText("The Rizzler");
 });
+
+
+test("Gate A fullscreen repairs a missing dynamically painted impact texture",async({page})=>{
+  await page.setViewportSize({width:1200,height:800});
+  await prepare(page,"/?gateA=1");
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
+  await expect(page.locator("#menu-open")).toBeVisible();
+  await page.evaluate(()=>{
+    const scene=window.__game.scene.scenes[0] as ArenaScene;
+    scene.setPaused(true); // inspect a known stable scene while the browser resizes
+    scene.textures.remove("ga-hit-0");
+  });
+  await page.evaluate(async()=>{
+    const layout=document.querySelector<HTMLElement>(".play-layout")!;
+    await layout.requestFullscreen();
+  });
+  await expect.poll(()=>page.evaluate(()=>{
+    const scene=window.__game.scene.scenes[0] as ArenaScene;
+    return document.fullscreenElement!==null && scene.textures.exists("ga-hit-0");
+  })).toBe(true);
+  await page.evaluate(async()=>{await document.exitFullscreen();});
+  await expect.poll(()=>page.evaluate(()=>{
+    const scene=window.__game.scene.scenes[0] as ArenaScene;
+    return document.fullscreenElement===null && scene.textures.exists("ga-hit-0");
+  })).toBe(true);
+});
+
+test("visible Gate A images never show Phaser missing-texture square around fullscreen",async({page})=>{
+  await page.setViewportSize({width:1200,height:800});
+  await prepare(page,"/?gateA=1");
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
+  await page.evaluate(()=>{
+    const scene=window.__game.scene.scenes[0] as ArenaScene;
+    const a=scene.arena;
+    // Exercising every category without bypassing the actual renderer.
+    a.enemies=[{id:819,type:'npc',x:400,y:310,hp:30,nextHit:999999,nextShot:999999},
+      {id:820,type:'hater',x:660,y:320,hp:50,nextHit:999999,nextShot:999999}];
+    a.shots=[{x:510,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:false,bounces:0},
+      {x:620,y:390,vx:0,vy:0,ttl:100000,damage:1,hostile:true,bounces:0}];
+    a.drops=[{x:550,y:460,xp:3}];
+    a.buffs['ohio-orbiter']=1;
+    scene.setPaused(false);
+  });
+  const inspect=()=>page.evaluate(()=>{
+    const scene=window.__game.scene.scenes[0] as ArenaScene;
+    return scene.children.list.filter(o=>o.type==='Image')
+      .map(o=>o as Phaser.GameObjects.Image)
+      .filter(img=>img.visible && (img.texture.key==='__MISSING' ||
+        !scene.textures.exists(img.texture.key) || !img.texture.has(img.frame.name)))
+      .map(img=>({key:img.texture.key,frame:img.frame.name,x:img.x,y:img.y}));
+  });
+  await expect.poll(inspect).toEqual([]);
+  await page.evaluate(async()=>{await document.querySelector<HTMLElement>('.play-layout')!.requestFullscreen();});
+  await expect.poll(inspect).toEqual([]);
+  await page.evaluate(async()=>{await document.exitFullscreen();});
+  await expect.poll(inspect).toEqual([]);
+});

@@ -21,3 +21,8 @@ This is a Gate A playable **pixel-art study authored in code**. It is NOT an Ase
 - Recognizable silhouettes, no nonfunctional farming motifs. The Hater bullet should stand apart from the XP pickup in color and shape.
 - Five-wave run, pause/resume, upgrade and keyboard/mobile actions remain unchanged.
 - 90 enemy render performance and browser CI. Avoid accidental changes to main.
+
+### Fullscreen texture restoration (iteration 3)
+- Refresh native CanvasTexture assets on fullscreenchange/WebGL context restoration.
+- Verify texture keys **and individual sprite-sheet frames** for player, enemy, pickup, projectile, hit and Ohio Orbiter images; restore a known fallback instead of Phaser's black/green missing-texture square.
+- Test invalidated Gate A frames, fullscreen/exit transitions and 2-dimensional rendering with live enemy death hit effect.
