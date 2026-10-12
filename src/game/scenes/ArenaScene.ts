@@ -165,7 +165,12 @@ export class ArenaScene extends Phaser.Scene {
     if(charging){
       g.lineStyle(4,0xffd574,.85).strokeCircle(a.pos.x,a.pos.y,35);
     }
-    if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y, 95);
+    if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y,
+      90+Math.max(0,a.buffs['mewing-jaw']-1)*10);
+    if(a.clock<a.rizzBlastUntil){
+      g.fillStyle(0xb760e5,.10).fillCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
+      g.lineStyle(5,0xe6a8fa,.85).strokeCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
+    }
     if (a.buffs['ohio-orbiter']) g.lineStyle(1, 0x8b5bd8, .45).strokeCircle(a.pos.x, a.pos.y, 76);
     if (burst) {
       g.lineStyle(5, ART.aura, .84).strokeCircle(a.pos.x, a.pos.y, 37 + 5 * Math.sin(a.clock / 145));
@@ -189,11 +194,12 @@ export class ArenaScene extends Phaser.Scene {
     meter(g,274,241,a.aura.value / 100,a.flex.state==='ready'?0xffd15d:0xc48bfa);
     meter(g,591,111,a.xp.xp / xpToNextLevel(a.xp.level),0x36cd94);
     meter(g,780,153,1 - a.waveClock / GAME.waveDurationMs,0x57c7ee);
+    touchControls.setLoadoutHUD(a.mode,a.buffs);
     const flex=charging?`${a.flexName} · ${(a.flex.remaining(a.clock)/1000).toFixed(1)}s`:
       a.flex.isReady()?`FLEX READY · PRESS E · ${a.flexName}`:
       `FARM AURA ${a.aura.value}/100 · ${a.flexName}`;
     this.status.setColor(a.flex.isReady()?'#ffdb6d':'#fff8e7')
-      .setText(`${flex}   ·   ${a.kills} KILLS   ·   ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz}`);
+      .setText(`${a.kills} KILLS · ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz} · ${flex}`);
     touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,a.flex.remaining(a.clock),a.flexVariant);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
