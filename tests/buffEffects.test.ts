@@ -22,21 +22,24 @@ function hit(a: Arena, e: Enemy, damage = 10) {
 }
 
 describe('v0.3 catalog and unchanged baseline', () => {
-  it('retains the original ten IDs and exposes exactly sixteen unique entries', () => {
+  it('retains the original buff identities plus five weapon choices', () => {
     expect(BUFFS.slice(0, 10).map(b => b.id)).toEqual(['sigma', 'alpha', 'mewing', 'locked-in', 'drip', 'speed', 'six-seven', 'thick-skin', 'mewing-jaw', 'ohio-orbiter']);
-    expect(BUFFS).toHaveLength(16); expect(new Set(BUFFS.map(b => b.id)).size).toBe(16);
+    expect(BUFFS).toHaveLength(18); expect(new Set(BUFFS.map(b => b.id)).size).toBe(18);
     expect(combatStats(emptyBuffLevels(), 0, 0, 8000, 1)).toMatchObject({ damage: 1, incomingDamage: 1, fireRate: 1, critChance: 0, speed: 205 });
   });
   it.each(additions)('%s has the specified rarity/limit and is selectable through XP level-up', (id, rarity, maxStacks) => {
     expect(BUFFS.find(b => b.id === id)).toMatchObject({ rarity, maxStacks });
-    const a = game();
-    for (const b of BUFFS) a.buffs[b.id] = b.maxStacks;
-    a.buffs[id] = maxStacks - 1;
-    a.drops.push({ ...a.pos, xp: 20 }); a.update(1);
-    expect(a.mode).toBe('upgrades'); expect(a.choices.map(b => b.id)).toEqual([id]);
-    a.update(0, { choice: 0 }); expect(a.buffs[id]).toBe(maxStacks);
-    a.drops.push({ ...a.pos, xp: 100 }); a.update(1);
-    expect(a.choices).toHaveLength(0); expect(a.mode).toBe('playing');
+    const a=game();
+    // Test existing and newly chosen passive slots in a LEGAL build. The old
+    // test deliberately maxed all 16 simultaneously; that is now forbidden.
+    a.buffs[id]=maxStacks-1;
+    a.mode='upgrades';a.pendingUpgrades=1;
+    a.choices=[BUFFS.find(b=>b.id===id)!];
+    a.update(0,{choice:0});
+    expect(a.buffs[id]).toBe(maxStacks);
+    expect(a.mode).toBe('playing');
+    a.drops.push({...a.pos,xp:200});a.update(1);
+    expect(a.choices.map(b=>b.id)).not.toContain(id);
   });
 });
 

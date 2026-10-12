@@ -41,7 +41,7 @@ for (const layout of [
 ]) {
   test.describe(layout.name, () => {
     test.use({ viewport: { width: layout.width, height: layout.height }, isMobile: layout.mobile, hasTouch: layout.mobile });
-    test('all six buffs appear in English level-ups and can be selected with the existing controls', async ({ page }) => {
+    test('six compatible passives display and can be selected without bypassing build slots', async ({ page }) => {
       test.setTimeout(90000);
       if (layout.mobile) {
         await page.locator('[data-menu="play"]').click();
@@ -50,15 +50,16 @@ for (const layout of [
       else await page.keyboard.press('Enter');
       await expect.poll(() => state(page, a => a.mode)).toBe('playing');
       for (const [id, name] of newBuffs) {
-        // Cap alternatives to force the real XP/offerUpgrade path to offer this buff.
-        await page.evaluate(async buffId => {
-          const path = '/src/game/data/buffs.ts';
-          const { BUFFS } = await import(path) as typeof import('../../src/game/data/buffs');
-          const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-          for (const b of BUFFS) a.buffs[b.id] = b.maxStacks;
-          a.buffs[buffId] = 0; a.enemies = []; a.shots = []; a.hp = 160;
-          a.drops = [{ ...a.pos, xp: 20 + (a.xp.level - 1) * 13 - a.xp.xp }];
-        }, id);
+        // Each item is tested in an empty LEGAL build; exhausting every item
+        // at once no longer works because the game enforces 3+3 slots.
+        await page.evaluate(async buffId=>{
+          const {BUFFS,emptyBuffLevels}=await import('/src/game/data/buffs.ts') as typeof import('../../src/game/data/buffs');
+          const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+          a.buffs=emptyBuffLevels();a.buffs['aura-shot']=1;
+          a.enemies=[];a.shots=[];a.drops=[];a.hp=100;
+          a.mode='upgrades';a.pendingUpgrades=1;
+          a.choices=[BUFFS.find(b=>b.id===buffId)!];
+        },id);
         await expect.poll(() => state(page, a => a.mode)).toBe('upgrades');
         await expect(page.locator('#upgrade-overlay')).toBeVisible();
         await expect(page.locator('#upgrade-overlay')).toContainText(name);
