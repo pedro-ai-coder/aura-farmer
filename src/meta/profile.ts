@@ -38,7 +38,7 @@ export type ProfileV1 = {
 const KEY = 'aura-farmer:profile:v1';
 export function newProfile(): ProfileV1 {
   return { schemaVersion:1, selectedCharacterId:'sigma',
-    unlockedCharacters:['sigma','alpha','rizzler','ohio'],
+    unlockedCharacters:['sigma','alpha','rizzler','ohio','cool-kid','nerd'],
     achievements:[],runHistory:[],lifetime:{runs:0,wins:0,xpCollected:0,flexSuccesses:0,auraBursts:0,winningCharacters:[]},settings:{reduceMotion:false} };
 }
 export function readProfile(): ProfileV1 {
@@ -52,7 +52,7 @@ export function readProfile(): ProfileV1 {
     const results = Array.isArray(data.runHistory) ? data.runHistory.filter(r =>
       r && typeof r.id === 'string' && isCharacterId(r.characterId) &&
       typeof r.score === 'number' && Number.isFinite(r.score)).slice(-40) : [];
-    const unlocked = new Set<CharacterId>(['sigma','alpha','rizzler','ohio']);
+    const unlocked = new Set<CharacterId>(['sigma','alpha','rizzler','ohio','cool-kid','nerd']);
     if (Array.isArray(data.unlockedCharacters)) for (const c of data.unlockedCharacters) if (isCharacterId(c)) unlocked.add(c);
     const selectedCharacterId = isCharacterId(data.selectedCharacterId) && unlocked.has(data.selectedCharacterId)
       ? data.selectedCharacterId : 'sigma';

@@ -66,7 +66,7 @@ export class Arena {
 
   constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma') {
     const selected = getCharacter(characterId);
-    if (selected.id === 'alpha') this.buffs['mewing-jaw'] = 1;
+    if (selected.id === 'alpha'||selected.id==='cool-kid') this.buffs['mewing-jaw'] = 1;
     if (selected.id === 'rizzler') this.buffs['rizz-aura'] = 1;
     if (selected.id === 'six-seven') this.buffs['six-seven'] = 1;
     this.hp = this.stats.maxHp;
@@ -86,14 +86,16 @@ export class Arena {
       armor: stats.armor + character.armor };
   }
   get flexVariant():FlexVariant {
-    const fallback:Affinity=this.characterId==='alpha'||this.characterId==='fanum'?'alpha':
+    const fallback:Affinity=this.characterId==='alpha'||this.characterId==='fanum'||this.characterId==='cool-kid'?'alpha':
       this.characterId==='rizzler'?'rizz':'sigma';
     return dominantAffinity(this.affinities,fallback);
   }
   get flexName():string {
     const family=this.flex.isActive(this.clock)?this.flex.variant:this.flexVariant;
-    if(family==='alpha')return this.characterId==='alpha'?'UNSTOPPABLE CHAD':'GIGA CHAD RAMPAGE';
-    if(family==='sigma')return this.characterId==='six-seven'?'67 OVERDRIVE':
+    if(family==='alpha')return this.characterId==='cool-kid'?'GIGA CHAD RAMPAGE':
+      this.characterId==='alpha'?'UNSTOPPABLE CHAD':'ALPHA RAMPAGE';
+    if(family==='sigma')return this.characterId==='nerd'?'SIGMA KID OVERCLOCK':
+      this.characterId==='six-seven'?'67 OVERDRIVE':
       this.characterId==='ohio'?'OHIO BLITZ':'SIGMA OVERCLOCK';
     return this.characterId==='rizzler'?'INFINITE RIZZ':'RIZZ TAKEOVER';
   }
