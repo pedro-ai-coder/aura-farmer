@@ -35,8 +35,10 @@ This is the next content priority; #7 (AF-008) can be resumed later. If both pro
 - Small-PR execution, gates A–D and responsibilities: [Art Overhaul Plan](ART_OVERHAUL_PLAN.md)
 - Source/export inventory: [Art Asset Register](ART_ASSET_REGISTER.csv)
 - [x] PR #28: crop six-frame Ohio/Fanum/Six-Seven portraits in character cards (merged)
-- [ ] Gate A: Sigma + NPC/Hater + tiles/XP/hit VFX style test, explicit approval
+- [ ] Gate A RESET: Sigma + rival NPC/Hater + geometric arena tiles/XP/hit VFX; **no farm/forest imagery**; explicit approval
 - [ ] Gate B: 6 animated playable characters, enemies and boss
 - [ ] Gate C: combat VFX, arena, props, all UI screens reviewed
 - [ ] Gate D: complete 5-wave / mobile visual + rights / performance approval
 - [ ] Backend design phase resumes only after Gate D visual signoff; PR #27 is optional **rejected-style experiment**, not final art
+
+**Direction correction (2026-10-12):** `Farmer` means *farm Aura*, not farming crops. The botanical Gate A imagery was rejected; use the non-botanical arcade arena test in [Visual Bible v2.1](VISUAL_BIBLE_V2.md). No art production/merge based on the rejected concept boards.

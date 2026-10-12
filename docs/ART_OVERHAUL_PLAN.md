@@ -1,6 +1,6 @@
 # AURA FARMER · ART OVERHAUL PLAN
-**ID:** AF-ART-OVERHAUL · **Estado:** plano de produção pronto para execução, aguardando aprovação Gate A · **Data:** 2026-10-12  
-**Requisito principal:** retirar o “AI-generated look” de **toda a arte**, sem regressões de gameplay e antes do backend.  
+**ID:** AF-ART-OVERHAUL · **Estado:** Gate A reiniciada após rejeição do desvio botânico · **Data:** 2026-10-12  
+**Requisito principal:** retirar o “AI-generated look” de **toda a arte**, sem transformar 'Farmer' em agricultura. O jogo consiste em **farmar Aura** por combate/FLEX, não cultivar hortas.  
 **Autoridade visual:** [Visual Bible v2](VISUAL_BIBLE_V2.md) · **Lista controlável:** [Art Asset Register](ART_ASSET_REGISTER.csv).
 
 ## 0. Estado real verificado no GitHub
@@ -13,6 +13,8 @@
 
 ## 1. Definição de “revisão total”
 
+**Correção de direção — vinculativa:** a primeira proposta Gate A de quinta encantada, hortas, raízes e florestas foi rejeitada pelo Game Director. A identidade passa a **Aura Arena / stylized meme-combat arcade**. Toda a arte de produção segue [Visual Bible v2.1](VISUAL_BIBLE_V2.md). Não produzir boss vegetal, tiles de terra agrícola, flores/folhagem decorativa, sinais de madeira ou casas como tema central. A antiga arte conceptual não passa automaticamente a sprites de produção.
+
 Auditar e classificar **cada superfície que o jogador vê**, mesmo as que tecnicamente já funcionam:
 
 | Área | O que se substitui/revê | Resultado do lote |
@@ -20,7 +22,7 @@ Auditar e classificar **cada superfície que o jogador vê**, mesmo as que tecni
 | 6 heróis | 6 sheets animadas + 6 retratos, armas/acessórios coerentes | cada um com silhueta única e poses consistentes |
 | 3 inimigos + boss | NPC, Hater, Beta, BIG HATER: sheets, telegraphs e boss readability | ameaça identificável e animação combinada com core |
 | Ataques/pickups/VFX | projectiles, XP, orbs, hit/crit, death, FLEX, Aura Burst, Focus, heal, wave effects | clara distinção de friendly, hostile, XP e recompensas |
-| Cenário | ground 32px modular, pedras, culturas, cerca, árvores, props, corrupção e sombreamento | farm visualmente coerente sem bloquear a ação |
+| Cenário | ground 32px modular, painéis de arena, marcas geométricas, blocos de treino, props periféricos e sombras | farm visualmente coerente sem bloquear a ação |
 | Menus e HUD | logo, backgrounds, 9-slice, botões, cards, ícones, badges, rankings, loading | a mesma linguagem e materiais em todas as telas |
 | Transições | select, wave complete, boss spawn, victory/death e level-up | entradas/saídas curtas com foco e reduzido movimento |
 
@@ -46,7 +48,7 @@ Cada linha só passa a `APPROVED` após obter source/exports, aprovação Gate A
 **Critério de fecho:** revisor concorda com estilo, paleta proposta (ou corrige), frame sizes e prova Gate A.
 
 ### AF-ART-V2-01 — Gate A: Style Test jogável (única fonte para todas as famílias)
-**Produzir só:** (1) Sigma em pose idle/move e portrait, (2) NPC + Hater, (3) tile base/alt, (4) pequeno XP crystal e `fx_hit`, (5) um screenshot do combate com HUD existente.  
+**Produzir só:** (1) Sigma em pose idle/move e retrato, (2) NPC + Hater como rivais humanos/caricaturais (não criaturas vegetais), (3) tiles geométricos de arena base/alt, (4) pequeno XP crystal e `fx_hit`, (5) captura de combate com o HUD existente.  
 **Exigir:** masters editáveis originais, folhas de silhuetas, 1× / 4×, composições com/sem efeitos; duas variantes de paleta no mesmo enquadramento.  
 **Teste obrigatório:** desktop 960×600 e 1440×900, Android landscape 844×390, portrait 390×844; comparar antes/depois no mesmo save/seed quando possível.  
 **Bloqueio:** não escalar produção se o look continuar genérico ou se a leitura do jogador piorar.
@@ -69,9 +71,9 @@ Cada linha só passa a `APPROVED` após obter source/exports, aprovação Gate A
 **Critério de fecho:** partículas limitadas, leitura em swarm, `prefers-reduced-motion`, zero alteração de danos, FX desaparecem quando suposto.
 
 ### AF-ART-V2-05 — Arena modular + props
-**Prioridade:** ground base/alt/crack/stain (32px), cerca e rocha, culturas/árvores/props e corrupção, XP sempre mais brilhante que chão.  
-**Entregar:** source tiles editáveis, atlas/padding, variações manuais, organização em camadas, preview com e sem props.  
-**Critério de fecho:** tiling invisível no centro e legível em mobile; nenhum novo collider; mínimo de 90 inimigos testado.
+**Prioridade:** tiles de arena 32px base/alt/seam/warning, linhas, blocos de treino, marcas no piso e props de perímetro (sem natureza), XP mais brilhante que o chão.  
+**Entregar:** source tiles editáveis, atlas/padding, padrões discretos, organização em camadas e preview com/sem props artificiais de arena.  
+**Critério de fecho:** chão geométrico quieto no centro e legível em mobile; nenhum novo collider; mínimo de 90 inimigos testado.
 
 ### AF-ART-V2-06 — Revisão completa de UI e telas
 **Ordem:** Character selection → HUD → Upgrade & rarity cards → Wave/boss/level-up → Pause/settings → Main menu/loading → Results/achievements/rankings.  
@@ -118,8 +120,8 @@ O elemento só sai de “em trabalho” quando **todas** as condições aplicáv
 ## 7. Ordem da próxima semana de trabalho (tarefas já accionáveis)
 
 1. Fazer um **screenshot base** no desktop + mobile landscape de Sigma, NPC, Hater, boss, cards e menu, com a mesma resolução em cada comparação.
-2. Desenhar 3 thumbnails de Sigma, NPC e Hater **em silhueta pura**; reter 1 por tipo após revisão.
-3. Produzir 1 personagem, 2 inimigos, 2 tiles e 1 FX em master editável; provar continuidade de outlines, paleta e proporção.
+2. Desenhar 3 thumbnails de Sigma, NPC e Hater **em silhueta pura**, sem folhagem/raízes; reter 1 por tipo após revisão.
+3. Produzir 1 personagem, 2 inimigos, 2 tiles de arena e 1 FX em master editável; provar continuidade de outlines, paleta e proporção.
 4. Exportar PNG + JSON, criar um toggle visual de QA sem reescrever o core; gerar imagens antes/depois.
 5. Obter aprovação Gate A. Se rejeitado, rever arte e **não** abrir fase massiva de atlases.
 
@@ -134,4 +136,4 @@ Os tempos de sprint devem ser estimados quando existirem artista, master de refe
 **Motion:** reduced-motion passa; sem flash intenso; principal telegraph visível.  
 **Aprovação:** screenshot + GIF/MP4 + inventário atualizado + PR assinada.
 
-**Estado de entrega desta documentação:** plano e regras de produção prontos para orientar a próxima PR, **não** execução nem aprovação dos assets finais.
+**Estado de entrega:** a Gate A botânica foi rejeitada e substituída por uma proposta arcade não-botânica. O plano e os gates orientam novas PRs; os assets finais **ainda não estão produzidos nem aprovados**.
