@@ -1,6 +1,6 @@
 # AURA FARMER — Pixel Cartoon Brainrot Roguelite
 
-A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. Survive five 50-second waves, collect XP, choose upgrades, and defeat the Big Hater in the final wave.
+A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. Survive five waves, collect XP and affinity essences, charge FLEX Ultimate and defeat the Big Hater.
 
 ## Play online
 
@@ -8,24 +8,24 @@ A fast-paced solo browser roguelite built with Phaser 3, TypeScript, and Vite. S
 
 The Vercel deployment tracks `main`. Visuals are now **Aura Arena by default**; `?visual=legacy` is available for old-art comparison. Changes appear once merged and the production build succeeds.
 
-## Game menu and progression (v0.4/v0.5)
+## Game menu and progression (FLEX Ultimate slice)
 
 The updated main menu offers **PLAY CLASSIC**, **CHARACTERS**, **ACHIEVEMENTS**, **LEADERBOARDS** (local/unverified results only), and **SETTINGS**.
 
-- Four starting playable characters: **The Sigma** (balanced), **Alpha Chad** (melee/tank), **The Rizzler** (crowd-control) and **Ohio Kid** (fast/crits/extra shots).
-- Two unlockable characters: **Fanum Lord** (+25% collected XP) and **Six Seven Kid** (starts with Six Seven).
+- Six starting characters: **The Sigma**, **Alpha Chad**, **The Rizzler**, **Ohio Kid**, plus new Evolvers **Cool Kid** and **Nerd** with original pixel sprite studies.
+- Two unlockable Veteran heroes: **Fanum Lord** (+25% collected XP) and **Six Seven Kid** (starts with Six Seven). Existing profile unlocks are preserved.
 - Every character has distinct starting gameplay stats and a dedicated native-pixel code-authored visual study, animation and menu portrait. These studies are not separately hand-painted layered atlas masters.
 - **12 local achievements**, unlock progress, recent run history and personal-best scores persist in browser `localStorage`. The save is per browser/device and clearing site data can erase it. Guests can always play without an account.
 - The in-game **MENU** button pauses the simulation. After victory or defeat, the results panel shows kills, XP, Aura, FLEX performance and score.
 - Online accounts, permanent cloud saves and *verified* public rankings are **not yet implemented**. A client-side submitted score cannot safely become an official online record.
 - Local score formula (subject to balancing): 100 × waves cleared + 10 × kills + 25 × successful FLEX + 5 × level + 500 if Big Hater defeated.
-- Future implementation specification: [META_GAME_V1.md](docs/META_GAME_V1.md) (currently draft in PR #16). Backend provisioning will be a separate security-reviewed step.
+- Scope of this slice: [FLEX Implementation](docs/FLEX_IMPLEMENTATION_SLICE.md). The full six-slot builds, five miniboss Cores, evolved forms, healing pickups, world and permanent Mastery remain [future game-design phases](docs/GAME_DESIGN_V1_LOCKED.md). Backend provisioning remains separate.
 
 ## Mobile controls
 
-Open the same game URL on your phone — no app installation required. Use the **virtual joystick** to move, tap **FLEX** for the risky Aura action, and **FOCUS** to slow enemies. The on-screen **PLAY / NEXT WAVE / RETRY** button replaces Enter, and upgrade buttons let you choose buffs by touch. Rotating to **landscape** gives a larger game view, but portrait controls are supported as well.
+Open the same game URL on your phone — no app installation required. Use the **virtual joystick** to move, earn Aura in combat, and activate **FLEX Ultimate** when the gauge reaches 100. Alpha, Sigma and Rizz builds have distinct FLEX powers; there is no separate Focus. The on-screen **PLAY / NEXT WAVE / RETRY** button replaces Enter, and upgrade buttons let you choose buffs by touch. Rotating to **landscape** gives a larger game view, but portrait controls are supported as well.
 
-**Immersive landscape on Android:** tap **FULL SCREEN** next to the game actions. The game requests browser fullscreen and attempts to lock landscape orientation where supported. The arena is in the center, the joystick on the left and FLEX/FOCUS/upgrade buttons on the right. Tap **EXIT** to return to the normal page. If the phone stays vertical, turn it sideways manually and ensure auto-rotate is enabled.
+**Immersive landscape on Android:** tap **FULL SCREEN** next to the game actions. The game requests browser fullscreen and attempts to lock landscape orientation where supported. The arena is in the center, the joystick on the left and the single FLEX/upgrade buttons on the right. Tap **EXIT** to return to the normal page. If the phone stays vertical, turn it sideways manually and ensure auto-rotate is enabled.
 
 **Fallback:** embedded browsers or iPhone Safari may reject native fullscreen/orientation lock. The game then fills the webpage viewport using CSS and offers a rotate-device prompt, but browser bars may remain visible. Native browser fullscreen and forced landscape cannot be guaranteed on every phone. Do not lock the game globally into landscape; portrait mode remains playable outside immersive mode.
 

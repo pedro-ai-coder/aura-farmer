@@ -45,7 +45,7 @@ test('v0.6 does not leak an E key buffered during a pause into FLEX on resume',a
     scene.setPaused(true);
     scene.setPaused(false);
   });
-  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.state)).toBe('ready');
+  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.state)).toBe('farming');
 });
 
 test('v0.6 direct browser fullscreen keeps UI synchronized, including native exit',async({page})=>{

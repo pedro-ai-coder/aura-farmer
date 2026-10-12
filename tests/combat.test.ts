@@ -21,10 +21,12 @@ describe('upgrade damage and timing', () => {
     expect(combatStats(b, 0, 0, 0)).toMatchObject({ maxHp: 160, armor: 3 });
     expect(combatStats(b, 0, 0, 0).speed).toBeCloseTo(278.8);
   });
-  it('grants a six-second Burst independently of ranks and refreshes on a new burst', () => {
-    const a = new AuraSystem(); a.change(100, 1000);
-    expect(a.value).toBe(40); expect(a.attackMultiplier(6999)).toBe(1.2); expect(a.attackMultiplier(7000)).toBe(1);
-    a.change(10, 2000); expect(a.attackMultiplier(2000)).toBeCloseTo(1.32);
-    a.change(50, 3000); expect(a.burstUntil).toBe(9000); expect(a.bursts).toBe(2);
+  it('requires a manual Aura spend and preserves earned rank bonuses',()=>{
+    const a=new AuraSystem();
+    a.change(100,1000);
+    expect(a.value).toBe(100);expect(a.attackMultiplier(6999)).toBe(1.1);
+    expect(a.burstUntil).toBe(0);expect(a.bursts).toBe(0);
+    expect(a.spend()).toBe(true);expect(a.value).toBe(0);
+    expect(a.damageMultiplier).toBe(1.1);expect(a.bursts).toBe(1);
   });
 });

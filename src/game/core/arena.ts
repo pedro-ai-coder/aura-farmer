@@ -1,5 +1,6 @@
 import { AuraSystem } from './aura';
-import { FlexSystem, type FlexResult } from './flex';
+import { FlexSystem, type FlexVariant } from './flex';
+import {dominantAffinity,collectAffinity,newAffinityCounts,type Affinity,type EssenceDrop} from './affinities';
 import { Progression } from './progression';
 import { GAME } from './constants';
 import { combatStats } from './combat';
@@ -10,9 +11,9 @@ import { ENEMIES, type EnemyType } from '../data/enemies';
 import { getCharacter, type CharacterId } from '../data/characters';
 
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
-export interface Controls { x?: number; y?: number; flex?: boolean; focus?: boolean; confirm?: boolean; choice?: number }
+export interface Controls { x?: number; y?: number; flex?: boolean; confirm?: boolean; choice?: number }
 export interface Enemy extends BuffTarget { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
-export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean }
+export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean; piercing?: boolean }
 export interface Drop extends Vec2 { xp: number }
 
 /** Phaser-free simulation. All durations use active simulation time, including cooldowns. */
@@ -28,6 +29,9 @@ export class Arena {
   enemies: Enemy[] = [];
   shots: Shot[] = [];
   drops: Drop[] = [];
+  essenceDrops: EssenceDrop[] = [];
+  affinities = newAffinityCounts();
+  lastEssence: Affinity | null = null;
   choices: BuffDefinition[] = [];
   pendingUpgrades = 0;
   clock = 0;
@@ -44,10 +48,10 @@ export class Arena {
   ultimate67Triggered = false;
   sixSevenTriggered = false;
   private tookHitThisWave = false;
-  private trackedBurstUntil = 0;
+  private flexHitAt = new Map<number,number>();
+  private flexBossDamage = new Map<number,number>();
+  private nextRizzPulse = 0;
   private movedDistance = 0;
-  focusReady = 0;
-  focusUntil = 0;
   bossSpawned = false;
   bossDefeated = false;
   lastDamageAt = 0;
@@ -62,7 +66,7 @@ export class Arena {
 
   constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma') {
     const selected = getCharacter(characterId);
-    if (selected.id === 'alpha') this.buffs['mewing-jaw'] = 1;
+    if (selected.id === 'alpha'||selected.id==='cool-kid') this.buffs['mewing-jaw'] = 1;
     if (selected.id === 'rizzler') this.buffs['rizz-aura'] = 1;
     if (selected.id === 'six-seven') this.buffs['six-seven'] = 1;
     this.hp = this.stats.maxHp;
@@ -76,11 +80,26 @@ export class Arena {
   get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
   get stats() {
     const character = getCharacter(this.characterId);
-    const stats = combatStats(this.buffs, this.aura.value, this.nearby, this.clock - this.lastDamageAt, this.hp, Math.round(100 * character.hp));
+    const stats = combatStats(this.buffs, this.aura.peak, this.nearby, this.clock - this.lastDamageAt, this.hp, Math.round(100 * character.hp));
     return { ...stats, speed: stats.speed * character.speed, damage: stats.damage * character.damage,
       fireRate: stats.fireRate * character.fireRate, critChance: Math.min(1, stats.critChance + character.crit),
       armor: stats.armor + character.armor };
   }
+  get flexVariant():FlexVariant {
+    const fallback:Affinity=this.characterId==='alpha'||this.characterId==='fanum'||this.characterId==='cool-kid'?'alpha':
+      this.characterId==='rizzler'?'rizz':'sigma';
+    return dominantAffinity(this.affinities,fallback);
+  }
+  get flexName():string {
+    const family=this.flex.isActive(this.clock)?this.flex.variant:this.flexVariant;
+    if(family==='alpha')return this.characterId==='cool-kid'?'GIGA CHAD RAMPAGE':
+      this.characterId==='alpha'?'UNSTOPPABLE CHAD':'ALPHA RAMPAGE';
+    if(family==='sigma')return this.characterId==='nerd'?'SIGMA KID OVERCLOCK':
+      this.characterId==='six-seven'?'67 OVERDRIVE':
+      this.characterId==='ohio'?'OHIO BLITZ':'SIGMA OVERCLOCK';
+    return this.characterId==='rizzler'?'INFINITE RIZZ':'RIZZ TAKEOVER';
+  }
+  get flexActive():boolean {return this.flex.isActive(this.clock);}
   get orb(): Vec2 { return { x: this.pos.x + Math.cos(this.clock / 350) * 76, y: this.pos.y + Math.sin(this.clock / 350) * 76 }; }
 
   update(elapsed: number, input: Controls = {}): void {
@@ -93,7 +112,7 @@ export class Arena {
         this.wave++; this.waveClock = 0; this.spawnClock = 0;
         this.effects.beginWave();
         this.tookHitThisWave = false;
-        this.enemies = []; this.shots = []; this.drops = [];
+        this.enemies = []; this.shots = []; this.drops = []; this.essenceDrops = [];
         this.hp = Math.min(this.stats.maxHp, this.hp + 20); this.mode = 'playing';
       }
       return;
@@ -107,10 +126,16 @@ export class Arena {
       }
       return;
     }
-    if (input.flex && this.flex.tryStart(this.clock)) this.say('FLEX — keep 3 enemies nearby!');
-    if (input.focus && this.clock >= this.focusReady) {
-      this.focusUntil = this.clock + GAME.focusDurationMs;
-      this.focusReady = this.clock + GAME.focusCooldownMs;
+    this.flex.sync(this.clock,this.aura.value);
+    if (input.flex && this.flex.activate(this.clock,this.aura.value,this.flexVariant)) {
+      this.aura.spend();
+      this.flexSuccesses++;
+      this.auraBursts++; // Legacy local achievement/event counter now tracks FLEX Ultimate.
+      this.maxAura=100;
+      this.flexHitAt.clear();
+      this.flexBossDamage.clear();
+      this.nextRizzPulse=this.clock;
+      this.say('FLEX! '+this.flexName);
     }
     // Small steps prevent projectile tunnelling; discard long inactive-tab gaps.
     let remaining = clamp(elapsed, 0, 250);
@@ -122,20 +147,19 @@ export class Arena {
 
   private step(dt: number, input: Controls): void {
     this.clock += dt; this.waveClock += dt; this.spawnClock += dt;
-    const charging = this.flex.state === 'charging';
-    if (!charging) {
-      const v = normalized(input.x ?? 0, input.y ?? 0);
-      const speed = this.stats.speed * this.aura.moveMultiplier;
-      const previousX = this.pos.x, previousY = this.pos.y;
-      this.pos.x = clamp(this.pos.x + v.x * speed * dt / 1000, 25, 935);
-      this.pos.y = clamp(this.pos.y + v.y * speed * dt / 1000, 105, 575);
-      if (this.characterId === 'ohio') {
-        this.movedDistance += Math.hypot(this.pos.x - previousX, this.pos.y - previousY);
-        if (this.movedDistance >= 280 && this.enemies.length) {
-          this.movedDistance -= 280;
-          const target = this.enemies.reduce((a, b) => distance(a, this.pos) < distance(b, this.pos) ? a : b);
-          this.shoot(this.pos, target, this.damage(10));
-        }
+    this.flex.sync(this.clock,this.aura.value);
+    const active=this.flexActive,variant=this.flex.variant;
+    const v=normalized(input.x??0,input.y??0);
+    const speed=this.stats.speed*this.aura.moveMultiplier*(active&&variant==='alpha'?1.65:1);
+    const previousX=this.pos.x,previousY=this.pos.y;
+    this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);
+    this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);
+    if (this.characterId==='ohio') {
+      this.movedDistance+=Math.hypot(this.pos.x-previousX,this.pos.y-previousY);
+      if(this.movedDistance>=280&&this.enemies.length){
+        this.movedDistance-=280;
+        const target=this.enemies.reduce((a,b)=>distance(a,this.pos)<distance(b,this.pos)?a:b);
+        this.shoot(this.pos,target,this.damage(10));
       }
     }
     if (this.waveClock < GAME.waveDurationMs && this.spawnClock >= Math.max(300, 1100 - this.wave * 120)) {
@@ -152,8 +176,8 @@ export class Arena {
     for (const e of this.enemies) {
       const stats = ENEMIES[e.type];
       const d = distance(e, this.pos), v = normalized(this.pos.x - e.x, this.pos.y - e.y);
-      // Keep Focus unchanged; simultaneous slows use the stronger effect, not a product.
-      const slow = Math.min(this.clock < this.focusUntil ? .62 : 1, rizzSpeed(e, e.type === 'boss', this.clock));
+      // Rizz Ultimate slows crowds, with reduced effects on bosses.
+      const slow=rizzSpeed(e,e.type==='boss',this.clock);
       // Haters stop at range and fire aimed, dodgeable projectiles.
       if (e.type !== 'hater' || d > 235) {
         e.x += v.x * stats.speed * dt / 1000 * slow;
@@ -169,8 +193,18 @@ export class Arena {
         if (this.mode === 'dead') return;
       }
     }
-    // Existing projectiles can finish their flight during FLEX; no new attacks start.
-    if (!charging) this.attack();
+    if(active&&variant==='alpha')this.rampage();
+    if(active&&variant==='rizz'&&this.clock>=this.nextRizzPulse){
+      this.nextRizzPulse=this.clock+700;
+      for(const e of [...this.enemies]){
+        if(distance(e,this.pos)>235)continue;
+        e.rizzSlowUntil=this.clock+(e.type==='boss'?600:1350);
+        this.hit(e,Math.min(e.type==='boss'?11:22,this.damage(18)),'flex');
+      }
+    }
+    // Alpha RAMPAGE replaces ordinary auto-fire; prevents five seconds of
+    // invulnerable boss DPS stacking outside the per-activation stomp cap.
+    if(!(active&&variant==='alpha'))this.attack();
     for (const shot of [...this.shots]) {
       shot.x += shot.vx * dt / 1000; shot.y += shot.vy * dt / 1000; shot.ttl -= dt;
       if (shot.ttl <= 0) { this.removeShot(shot); continue; }
@@ -184,17 +218,34 @@ export class Arena {
         if (enemy) {
           this.removeShot(shot);
           this.hit(enemy, shot.damage);
-          // A ricochet continues an existing attack, including during FLEX.
-          const target = this.buffs['skibidi-bounce'] ? findBounce(shot, enemy, this.enemies) : undefined;
-          if (target) {
-            const bounce = this.shoot(enemy, target, shot.damage * .55);
-            bounce.bounced = true; bounce.targetId = target.id;
+          // Piercing Sigma FLEX makes one additional bounded strike. Ordinary
+          // Skibidi ricochet remains available and can never loop indefinitely.
+          const target=shot.piercing
+            ? this.enemies.find(e=>e.id!==enemy.id && distance(e,enemy)<120)
+            : this.buffs['skibidi-bounce']?findBounce(shot,enemy,this.enemies):undefined;
+          if(target){
+            if(shot.piercing)this.hit(target,shot.damage*.6,'flex');
+            else{
+              const bounce=this.shoot(enemy,target,shot.damage*.55);
+              bounce.bounced=true;bounce.targetId=target.id;
+            }
           }
         }
       }
     }
-    const flexResult = this.flex.update(this.clock, this.nearby);
-    if (flexResult !== 'waiting') this.finishFlex(flexResult);
+    for(const drop of [...this.essenceDrops]){
+      const d=distance(drop,this.pos);
+      if(d<26){
+        this.essenceDrops.splice(this.essenceDrops.indexOf(drop),1);
+        collectAffinity(this.affinities,drop.affinity);
+        this.lastEssence=drop.affinity;
+        this.say(drop.affinity.toUpperCase()+' ESSENCE +1');
+      }else if(d<110){
+        const v=normalized(this.pos.x-drop.x,this.pos.y-drop.y);
+        const step=Math.min(d,310*dt/1000);
+        drop.x+=v.x*step;drop.y+=v.y*step;
+      }
+    }
     for (const drop of [...this.drops]) {
       const d = distance(drop, this.pos);
       if (d < 26) {
@@ -209,10 +260,8 @@ export class Arena {
       }
     }
     this.hp = this.effects.heal(this.hp, this.stats.maxHp, this.clock, this.lastDamageAt, this.buffs['touch-grass'] > 0);
-    if (this.aura.burstUntil > this.trackedBurstUntil) {
-      this.trackedBurstUntil = this.aura.burstUntil; this.auraBursts++; this.maxAura = 100;
-    }
-    this.maxAura = Math.max(this.maxAura, this.aura.value);
+    this.flex.sync(this.clock,this.aura.value);
+    this.maxAura=Math.max(this.maxAura,this.aura.peak);
     if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
     if (this.waveClock >= GAME.waveDurationMs) {
       if (this.wave < GAME.waveCount) {
@@ -227,8 +276,10 @@ export class Arena {
     if (!this.enemies.length) return;
     if (this.clock >= this.fireReady) {
       const target = this.enemies.reduce((a, b) => distance(a, this.pos) < distance(b, this.pos) ? a : b);
-      this.shoot(this.pos, target, this.damage(18));
-      this.fireReady = this.clock + 420 / (this.aura.fireRateMultiplier * this.stats.fireRate);
+      const shot=this.shoot(this.pos,target,this.damage(18));
+      if(this.flexActive&&this.flex.variant==='sigma')shot.piercing=true;
+      this.fireReady = this.clock + 420 / (this.aura.fireRateMultiplier * this.stats.fireRate *
+        (this.flexActive && this.flex.variant==='sigma'?2.6:1));
     }
     if (this.buffs['mewing-jaw'] && this.clock >= this.jawReady && this.enemies.some(e => distance(e, this.pos) < 95)) {
       this.jawReady = this.clock + 1100; this.jawUntil = this.clock + 160;
@@ -245,7 +296,9 @@ export class Arena {
 
   private damage(base: number): number {
     const stats = this.stats;
-    return base * this.aura.attackMultiplier(this.clock) * stats.damage * (this.random() < stats.critChance ? 2 : 1);
+    const sigma=this.flexActive&&this.flex.variant==='sigma';
+    return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.45:1)*
+      (this.random()<Math.min(1,stats.critChance+(sigma?.2:0))?2:1);
   }
 
   private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): Shot {
@@ -260,20 +313,26 @@ export class Arena {
     if (index >= 0) this.shots.splice(index, 1);
   }
 
-  private hit(enemy: Enemy, damage: number): void {
-    enemy.hp -= firstHitDamage(enemy, ENEMIES[enemy.type].hp, damage, this.buffs.mogged);
+  private hit(enemy: Enemy, damage: number,source:'normal'|'flex'='normal'): void {
+    enemy.hp-=source==='flex'?damage:firstHitDamage(enemy,ENEMIES[enemy.type].hp,damage,this.buffs.mogged);
     if (enemy.hp > 0) return;
     const index = this.enemies.indexOf(enemy);
     if (index < 0) return;
     this.enemies.splice(index, 1); this.kills++;
     this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
     if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER defeated!'); }
-    if (this.kills % 5 === 0) this.aura.change(10, this.clock);
+    // Active FLEX kills must not immediately recharge the Ultimate.
+    if(!this.flexActive)this.aura.change(5+(distance(enemy,this.pos)<=135?2:0),this.clock);
+    if(this.random()<.38){
+      const affinity:Affinity=enemy.type==='beta'?'alpha':enemy.type==='hater'?'sigma':
+        this.random()<.34?'alpha':this.random()<.5?'sigma':'rizz';
+      this.essenceDrops.push({x:enemy.x,y:enemy.y,affinity});
+    }
     if (this.buffs['rizz-aura'] && this.kills % 12 === 0) {
       rizzPulse(this.enemies, this.pos, this.clock);
       this.effects.rizzPulseUntil = this.clock + 300;
     }
-    if (this.buffs['six-seven'] && this.kills % 67 === 0 && this.flex.state !== 'charging') {
+    if (this.buffs['six-seven'] && this.kills % 67 === 0 && !this.flexActive) {
       this.sixSevenTriggered = true;
       for (let i = 0; i < 7; i++) {
         const angle = i * Math.PI * 2 / 7;
@@ -284,7 +343,8 @@ export class Arena {
     }
   }
 
-  private hurt(amount: number): void {
+  private hurt(amount:number):void {
+    if(this.flexActive&&this.flex.variant==='alpha')return;
     const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage;
     const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
     if (result.ignored) return;
@@ -293,26 +353,34 @@ export class Arena {
     this.tookHitThisWave = true;
     this.effects.tookDamage(this.clock);
     this.lastDamageAt = this.clock;
-    this.aura.change(-20, this.clock);
-    if (this.flex.interrupt(this.clock) === 'interrupted') {
-      this.flexInterruptions++; this.say('FLEX interrupted!');
-    }
+    // HP damage does not erase earned FLEX charge: prevents melee death spirals.
+    // Existing Delulu and incoming armor calculations remain unchanged.
     if (result.saved) this.say('DELULU SAVED YOU!');
     if (this.hp <= 0) this.mode = 'dead';
   }
 
-  private finishFlex(result: FlexResult): void {
-    if (result === 'success') {
-      this.flexSuccesses++;
-      this.aura.change(25, this.clock);
-      for (const enemy of this.enemies) {
-        if (distance(enemy, this.pos) > GAME.flexRadius) continue;
-        const v = normalized(enemy.x - this.pos.x, enemy.y - this.pos.y);
-        enemy.x = clamp(enemy.x + v.x * 85, 20, 940);
-        enemy.y = clamp(enemy.y + v.y * 85, 105, 575);
+  private rampage():void {
+    for(const e of [...this.enemies]){
+      if(distance(e,this.pos)>ENEMIES[e.type].radius+GAME.playerRadius+12)continue;
+      if(this.clock<(this.flexHitAt.get(e.id)??-1))continue;
+      this.flexHitAt.set(e.id,this.clock+350);
+      const base=32*this.stats.damage*(1+this.buffs['mewing-jaw']*.12);
+      if(e.type==='boss'){
+        const total=ENEMIES.boss.hp*.25;
+        const already=this.flexBossDamage.get(e.id)??0;
+        const actual=Math.min(Math.max(0,total-already),base);
+        if(actual<=0)continue;
+        this.flexBossDamage.set(e.id,already+actual);
+        this.hit(e,actual,'flex');
+      }else{
+        this.hit(e,base,'flex');
+        if(this.enemies.includes(e)){
+          const direction=normalized(e.x-this.pos.x,e.y-this.pos.y);
+          e.x=clamp(e.x+direction.x*21,25,935);
+          e.y=clamp(e.y+direction.y*21,105,575);
+        }
       }
-      this.say('FLEX! +25 AURA');
-    } else if (result === 'no-audience') this.say('No audience: need 3 enemies within 145px.');
+    }
   }
 
   private offerUpgrade(): void {
@@ -325,7 +393,18 @@ export class Arena {
       const j = Math.floor(this.random() * (i + 1));
       [options[i], options[j]] = [options[j], options[i]];
     }
-    this.choices = options.slice(0, 3); this.mode = 'upgrades';
+    // Prefer matching essence builds, but preserve cross-affinity choices.
+    const current=this.flexVariant;
+    const tags:Record<string,Affinity>={alpha:'alpha',drip:'alpha','thick-skin':'alpha','mewing-jaw':'alpha',
+      sigma:'sigma',mewing:'sigma','locked-in':'sigma','skibidi-bounce':'sigma','six-seven':'sigma',
+      'rizz-aura':'rizz','touch-grass':'rizz',delulu:'rizz',speed:'rizz'};
+    const collected=this.affinities[current];
+    const aligned=collected?options.filter(o=>tags[o.id]===current):[];
+    const neutral=options.filter(o=>!aligned.includes(o));
+    const preferred=aligned.slice(0,Math.min(collected?2:0,3));
+    this.choices=[...preferred,...neutral].slice(0,3);
+    if(this.choices.length<3)this.choices.push(...aligned.slice(preferred.length,3));
+    this.mode='upgrades';
   }
 
   private spawn(type: EnemyType): void {

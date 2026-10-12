@@ -1,3 +1,4 @@
+import {starterPortrait} from '../game/render/newStarters';
 import { isFinalArt } from '../game/render/finalArt';
 import { isGateB2, gateB2Portrait } from '../game/render/gateB2Heroes';
 import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
@@ -114,6 +115,7 @@ export class GameShell {
    * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
    */
   private previewPortrait(id: CharacterId): string {
+    if(id==='cool-kid'||id==='nerd')return starterPortrait(id);
     if(isFinalArt() && (id==='ohio'||id==='fanum'||id==='six-seven'))return gateB2Portrait(id);
     if(isFinalArt() && (id==='alpha'||id==='rizzler'))return gateBPortraitUrl(id);
     if(isFinalArt() && id==='sigma')return gateAHeroUrl();
@@ -126,6 +128,7 @@ export class GameShell {
     const strip = !isFinalArt() && !isGateB2() && (id === 'ohio' || id === 'fanum' || id === 'six-seven');
     const fallback: Record<CharacterId,string> = {
       sigma: 'S', alpha: 'A', rizzler: 'R', ohio: 'OK', fanum: 'FL', 'six-seven': '67',
+      'cool-kid':'CK',nerd:'N',
     };
     return `<span class="meta-avatar-fallback" aria-hidden="true">${fallback[id]}</span>
       <img src="${this.previewPortrait(id)}"

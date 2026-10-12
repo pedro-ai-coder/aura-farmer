@@ -43,12 +43,13 @@ test('real keyboard, rendering, natural auto-combat, pickup and upgrade choice',
   expect(await read(page, a => a.pos.x)).toBeGreaterThan(x);
   await press(page, 'w');
   expect(await read(page, a => a.pos.y)).toBeLessThan(330);
-  await press(page, 'e');
-  await expect.poll(() => read(page, a => a.flex.state)).toBe('charging');
-  await expect.poll(() => read(page, a => a.flex.state)).toBe('cooldown');
-  expect(await read(page, a => a.aura.value)).toBe(0);
-  await press(page, 'Space');
-  expect(await read(page, a => a.focusReady)).toBeGreaterThan(0);
+  await press(page,'e');
+  expect(await read(page,a=>a.flex.state)).toBe('farming');
+  await page.evaluate(()=>{const a=(window.__game.scene.scenes[0] as ArenaScene).arena;a.aura.change(100,a.clock);});
+  await expect.poll(()=>read(page,a=>a.flex.state)).toBe('ready');
+  await press(page,'e');
+  await expect.poll(()=>read(page,a=>a.flex.state)).toBe('active');
+  expect(await read(page,a=>a.aura.value)).toBe(0);
   await expect.poll(() => read(page, a => a.kills), { timeout: 25000 }).toBeGreaterThan(0);
   expect(await read(page, a => a.drops.length)).toBeGreaterThan(0);
   // Move onto a real kill's drop to check collection through the running scene.
@@ -77,40 +78,25 @@ test('real keyboard, rendering, natural auto-combat, pickup and upgrade choice',
   await page.screenshot({ path: 'test-results/combat.png' });
 });
 
-test('FLEX success, 15s cooldown, damage interrupt, radius and timed Aura Burst', async ({ page }) => {
-  await page.evaluate(() => {
-    const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.enemies = [270, 330, 390].map((y, id) => ({ x: 610, y, id, type: 'npc', hp: 10000, nextHit: Infinity, nextShot: Infinity }));
+test('FLEX requires a full Aura meter, shows READY and stays active for five seconds',async({page})=>{
+  const a=()=>read(page,a=>a.flex.state);
+  expect(await a()).toBe('farming');
+  await press(page,'e');expect(await a()).toBe('farming');
+  await page.evaluate(()=>{
+    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+    a.aura.change(100,a.clock);
   });
-  await press(page, 'e');
-  await expect.poll(() => read(page, a => a.flex.state)).toBe('charging');
-  const position = await read(page, a => a.pos.x);
-  await press(page, 'd'); expect(await read(page, a => a.pos.x)).toBe(position);
-  await expect.poll(() => read(page, a => a.aura.value)).toBe(25);
-  await press(page, 'e'); expect(await read(page, a => a.flex.state)).toBe('cooldown');
-  expect(await read(page, a => a.enemies[1].x)).toBeGreaterThan(600);
-  await page.evaluate(() => {
-    const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.clock = a.flex.cooldownUntil;
-    a.enemies = [{ ...a.pos, id: 99, type: 'npc', hp: 10000, nextHit: 0, nextShot: Infinity }];
-    a.flex.tryStart(a.clock); a.update(10);
-  });
-  expect(await read(page, a => a.flex.state)).toBe('cooldown');
-  expect(await read(page, a => a.feedback)).toContain('interrupted');
-  expect(await read(page, a => a.aura.value)).toBe(5);
-  await page.evaluate(() => {
-    const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.enemies = []; a.shots = [];
-    a.aura.change(100, a.clock);
-  });
-  expect(await read(page, a => a.aura.value)).toBe(40);
-  expect(await read(page, a => a.aura.attackMultiplier(a.clock))).toBe(1.2);
-  await page.screenshot({ path: 'test-results/burst.png' });
-  await page.evaluate(() => {
-    const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.clock = a.aura.burstUntil;
-  });
-  expect(await read(page, a => a.aura.attackMultiplier(a.clock))).toBe(1);
+  await expect.poll(a).toBe('ready');
+  await expect(page.locator('#flex-ultimate-hud')).toContainText('FLEX READY');
+  await press(page,'e');
+  await expect.poll(a).toBe('active');
+  expect(await read(page,a=>a.aura.value)).toBe(0);
+  const remaining=await read(page,a=>a.flex.remaining(a.clock));
+  expect(remaining).toBeGreaterThan(0);
+  await press(page,'e');expect(await a()).toBe('active');
+  await page.evaluate(()=>{const a=(window.__game.scene.scenes[0] as ArenaScene).arena;a.clock=a.flex.activeUntil;});
+  await expect.poll(a).toBe('farming');
+  await expect(page.locator('.controls')).not.toContainText('Focus');
 });
 
 test('all wave transitions, boss kill required, victory and clean restart', async ({ page }) => {

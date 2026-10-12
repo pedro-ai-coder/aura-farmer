@@ -1,3 +1,4 @@
+// RunResult.auraBursts retains its v1 save key but now counts FLEX Ultimate activations.
 import type { Arena } from '../game/core/arena';
 import type { CharacterId } from '../game/data/characters';
 import { isCharacterId } from '../game/data/characters';
@@ -20,7 +21,7 @@ export const ACHIEVEMENTS: ReadonlyArray<{ id: AchievementId; name: string; desc
   { id:'flex3', name:'FLEX Master', description:'Land 3 successful FLEX moves in a single run.' },
   { id:'kill67', name:'SIX SEVEN', description:'Defeat 67 enemies in a single run.' },
   { id:'loot500', name:'Loot Goblin', description:'Collect 500 XP across runs. Unlock Fanum Lord.' },
-  { id:'god-aura', name:'God Aura', description:'Trigger 10 Aura Bursts across runs.' },
+  { id:'god-aura', name:'God Aura', description:'Activate FLEX Ultimate 10 times across runs.' },
   { id:'character-arc', name:'Character Arc', description:'Win with 3 different characters.' },
   { id:'clean-wave', name:'Touch Grass', description:'Clear a wave without damage.' },
   { id:'ultimate-67', name:'Ultimate 67', description:'Trigger Six Seven with Skibidi Bounce.' },
@@ -38,7 +39,7 @@ export type ProfileV1 = {
 const KEY = 'aura-farmer:profile:v1';
 export function newProfile(): ProfileV1 {
   return { schemaVersion:1, selectedCharacterId:'sigma',
-    unlockedCharacters:['sigma','alpha','rizzler','ohio'],
+    unlockedCharacters:['sigma','alpha','rizzler','ohio','cool-kid','nerd'],
     achievements:[],runHistory:[],lifetime:{runs:0,wins:0,xpCollected:0,flexSuccesses:0,auraBursts:0,winningCharacters:[]},settings:{reduceMotion:false} };
 }
 export function readProfile(): ProfileV1 {
@@ -52,7 +53,7 @@ export function readProfile(): ProfileV1 {
     const results = Array.isArray(data.runHistory) ? data.runHistory.filter(r =>
       r && typeof r.id === 'string' && isCharacterId(r.characterId) &&
       typeof r.score === 'number' && Number.isFinite(r.score)).slice(-40) : [];
-    const unlocked = new Set<CharacterId>(['sigma','alpha','rizzler','ohio']);
+    const unlocked = new Set<CharacterId>(['sigma','alpha','rizzler','ohio','cool-kid','nerd']);
     if (Array.isArray(data.unlockedCharacters)) for (const c of data.unlockedCharacters) if (isCharacterId(c)) unlocked.add(c);
     const selectedCharacterId = isCharacterId(data.selectedCharacterId) && unlocked.has(data.selectedCharacterId)
       ? data.selectedCharacterId : 'sigma';

@@ -1,5 +1,5 @@
 /** Character identities and starting kits. Keep character numbers separate from buffs. */
-export const CHARACTER_IDS = ['sigma','alpha','rizzler','ohio','fanum','six-seven'] as const;
+export const CHARACTER_IDS = ['sigma','alpha','rizzler','ohio','fanum','six-seven','cool-kid','nerd'] as const;
 export type CharacterId = typeof CHARACTER_IDS[number];
 export type CharacterDefinition = {
   id: CharacterId; name: string; subtitle: string; role: string;
@@ -33,6 +33,14 @@ export const CHARACTERS: readonly CharacterDefinition[] = [
     description:'Starts with Six Seven, but has lower max HP.',difficulty:'HARD',
     hp:.85,speed:1.04,damage:1,fireRate:1,crit:0,armor:0,color:0xffe58a,cssColor:'#d8ac3b',
     weapon:'67 Volley',passive:'Six Seven equipped from start',unlockedBy:'Kill 67 enemies and trigger Six Seven' },
+  { id:'cool-kid',name:'Cool Kid',subtitle:'Future Giga Chad energy',role:'Evolver / Melee',
+    description:'Gather Alpha Essence to unleash the five-second Giga Chad Rampage FLEX.',
+    difficulty:'EASY',hp:1.1,speed:1.05,damage:.95,fireRate:1,crit:0,armor:0,
+    color:0xf5b66d,cssColor:'#e7a45c',weapon:'Mewing Jaw',passive:'Starter melee strike · Alpha FLEX affinity' },
+  { id:'nerd',name:'Nerd',subtitle:'Calculating Sigma energy',role:'Evolver / Ranged',
+    description:'Gather Sigma Essence to fire piercing, accelerated FLEX projectiles.',
+    difficulty:'MEDIUM',hp:.85,speed:1.02,damage:1.06,fireRate:1.08,crit:.04,armor:0,
+    color:0x8fe4f1,cssColor:'#5aa2c8',weapon:'Aura Shot',passive:'Precision starter · Sigma FLEX affinity' },
 ];
 export function getCharacter(id: CharacterId): CharacterDefinition {
   return CHARACTERS.find(c => c.id === id) ?? CHARACTERS[0];

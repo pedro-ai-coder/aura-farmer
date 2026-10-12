@@ -80,16 +80,14 @@ for (const layout of [
         await expect.poll(() => state(page, a => a.mode)).toBe('playing');
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-      if (layout.mobile) {
-        await page.locator('[data-game-action="focus"]').tap();
-        await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
-        await page.locator('[data-game-action="flex"]').tap();
-      } else {
-        await page.keyboard.press('Space');
-        await expect.poll(() => state(page, a => a.focusReady)).toBeGreaterThan(0);
-        await page.keyboard.press('e');
-      }
-      await expect.poll(() => state(page, a => a.flex.state)).not.toBe('ready');
+      await page.evaluate(()=>{
+        const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+        a.aura.change(100,a.clock);
+      });
+      await expect.poll(()=>state(page,a=>a.flex.state)).toBe('ready');
+      if(layout.mobile)await page.locator('[data-game-action="flex"]').tap();
+      else await page.keyboard.press('e');
+      await expect.poll(()=>state(page,a=>a.flex.state)).toBe('active');
     });
   });
 }
@@ -107,8 +105,7 @@ test('Ultimate 67 renders once and its radial projectiles ricochet without chain
     ];
     a.shots = [{ x: 200, y: 200, vx: 0, vy: 0, damage: 1, ttl: 1000, hostile: false }];
     a.update(1);
-    // Existing volley continues during FLEX, while extra auto-fire is prevented.
-    a.flex.tryStart(a.clock);
+    // Existing volley resolves independently of whether FLEX is charged.
   });
   await expect.poll(() => canvasText(page)).toContain('ULTIMATE 67');
   await expect.poll(() => state(page, a => a.enemies.find(e => e.id === 102)?.hp ?? 72)).toBeLessThan(72);

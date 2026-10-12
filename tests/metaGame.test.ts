@@ -4,11 +4,17 @@ import { CHARACTERS } from '../src/game/data/characters';
 import { ACHIEVEMENTS, newProfile, recordRun, runResult, personalBest, type RunResult } from '../src/meta/profile';
 
 describe('character roster and game progression', () => {
-  it('has six valid distinct characters with four starters', () => {
-    expect(CHARACTERS).toHaveLength(6);
-    expect(new Set(CHARACTERS.map(c=>c.id)).size).toBe(6);
+  it('new starter IDs preserve old local profile unlocks when reading existing saves',()=>{
+    const p=newProfile();
+    expect(p.unlockedCharacters).toEqual(expect.arrayContaining(['sigma','alpha','cool-kid','nerd']));
+  });
+
+  it('preserves six Veterans and introduces two evolvable starter archetypes', () => {
+    expect(CHARACTERS).toHaveLength(8);
+    expect(new Set(CHARACTERS.map(c=>c.id)).size).toBe(8);
     const starters=CHARACTERS.filter(c=>!c.unlockedBy);
-    expect(starters).toHaveLength(4);
+    expect(starters).toHaveLength(6);
+    expect(starters.map(c=>c.id)).toEqual(expect.arrayContaining(['cool-kid','nerd']));
   });
   it('preserves Sigma balance and lets all characters complete a fresh run', () => {
     const sigma=new Arena(()=>.5); sigma.update(0,{confirm:true});
@@ -30,6 +36,10 @@ describe('character roster and game progression', () => {
     const fanum=new Arena(()=>.5,'fanum');fanum.start();
     fanum.drops.push({ ...fanum.pos, xp:8 });fanum.update(1);
     expect(fanum.xpCollected).toBe(10);
+    const cool=new Arena(()=>.5,'cool-kid');cool.start();
+    expect(cool.buffs['mewing-jaw']).toBe(1);expect(cool.flexVariant).toBe('alpha');
+    const nerd=new Arena(()=>.5,'nerd');nerd.start();
+    expect(nerd.flexVariant).toBe('sigma');
     const six=new Arena(()=>.5,'six-seven');six.start();
     expect(six.buffs['six-seven']).toBe(1);
     alpha.hp=1;alpha.mode='dead';alpha.update(0,{confirm:true});

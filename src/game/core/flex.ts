@@ -1,42 +1,25 @@
-import { GAME } from './constants';
-import { clamp } from './math';
-
-export type FlexState = 'ready' | 'charging' | 'cooldown';
-export type FlexResult = 'waiting' | 'success' | 'no-audience' | 'interrupted';
+export type FlexVariant='alpha'|'sigma'|'rizz';
+export type FlexState='farming'|'ready'|'active';
+/** Ability availability comes from the Aura gauge; no audience/cast interruption. */
 export class FlexSystem {
-  state: FlexState = 'ready';
-  startedAt = 0;
-  cooldownUntil = 0;
-
-  tryStart(now: number): boolean {
-    if (!this.isReady(now)) return false;
-    this.startedAt = now;
-    this.state = 'charging';
+  state:FlexState='farming';
+  startedAt=0;
+  activeUntil=0;
+  variant:FlexVariant='sigma';
+  durationMs=5000;
+  isReady():boolean {return this.state==='ready';}
+  isActive(now:number):boolean {return this.state==='active'&&now<this.activeUntil;}
+  sync(now:number,charge:number):void {
+    if(this.state==='active'&&now>=this.activeUntil)this.state='farming';
+    if(this.state!=='active')this.state=charge>=100?'ready':'farming';
+  }
+  activate(now:number,charge:number,variant:FlexVariant):boolean {
+    this.sync(now,charge);
+    if(this.state!=='ready'||charge<100)return false;
+    this.variant=variant;this.startedAt=now;this.durationMs=5000;
+    this.activeUntil=now+this.durationMs;this.state='active';
     return true;
   }
-  isReady(now: number): boolean {
-    return this.state === 'ready' || (this.state === 'cooldown' && now >= this.cooldownUntil);
-  }
-  interrupt(now: number): FlexResult {
-    if (this.state !== 'charging') return 'waiting';
-    this.end(now);
-    return 'interrupted';
-  }
-  update(now: number, nearbyEnemies: number): FlexResult {
-    if (this.state === 'cooldown' && now >= this.cooldownUntil) this.state = 'ready';
-    if (this.state !== 'charging' || now - this.startedAt < GAME.flexDurationMs) return 'waiting';
-    this.end(now);
-    return nearbyEnemies >= 3 ? 'success' : 'no-audience';
-  }
-  progress(now: number): number {
-    return this.state === 'charging' ? clamp((now - this.startedAt) / GAME.flexDurationMs, 0, 1) : 0;
-  }
-  secondsUntilReady(now: number): number {
-    if (this.state === 'charging') return Math.ceil((this.startedAt + GAME.flexDurationMs - now) / 1000);
-    return this.isReady(now) ? 0 : Math.ceil((this.cooldownUntil - now) / 1000);
-  }
-  private end(now: number): void {
-    this.state = 'cooldown';
-    this.cooldownUntil = now + GAME.flexCooldownMs;
-  }
+  remaining(now:number):number{return this.isActive(now)?Math.max(0,this.activeUntil-now):0;}
+  progress(now:number):number{return this.isActive(now)?1-this.remaining(now)/this.durationMs:0;}
 }

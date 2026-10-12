@@ -22,5 +22,8 @@ export function setupSpotlights(): void {
     else if(wave===5) show('boss','DANGER · FINAL WAVE','THE BIG HATER','Show the BIG HATER who owns this arena!');
     else show('wave','THE HORDE IS GROWING',`WAVE ${wave}`,'Keep your Aura alive!');
   });
-  window.addEventListener('aura:burst',()=>show('aura','POWER UNLEASHED','AURA BURST!','Damage increased · +20%'));
+  window.addEventListener('aura:burst',(event:Event)=>{
+    const name=(event as CustomEvent<string>).detail || 'FLEX ULTIMATE';
+    show('aura','ULTIMATE ACTIVATED',name,'Five seconds of power · keep moving!');
+  });
 }

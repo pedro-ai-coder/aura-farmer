@@ -16,8 +16,14 @@
           <div class="af-loading-inner"><span class="af-loading-label">AURA <b>FARMER</b></span>
             <strong>GROW YOUR LEGEND</strong><span id="af-loading-stage">Loading the arena…</span>
             <div class="af-loading-track" role="progressbar" aria-label="Loading game assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="af-loading-fill"></span></div>
-            <small>TIP ✦ Time your FLEX to grow your Aura.</small>
+            <small>TIP ✦ Farm Aura to charge FLEX. Activate it when you need it most.</small>
           </div>
+        </div>
+        <div id="flex-ultimate-hud" class="flex-ultimate-hud" data-state="farming" data-affinity="sigma" aria-live="off" hidden>
+          <span class="flex-ultimate-kicker">◆ AURA FARM</span>
+          <strong id="flex-ultimate-name">SIGMA OVERCLOCK</strong>
+          <div class="flex-ultimate-track"><span id="flex-ultimate-fill"></span></div>
+          <span id="flex-ultimate-count">0/100 AURA</span>
         </div>
         <div id="af-spotlight" class="af-spotlight" role="status" aria-live="polite" hidden>
           <span id="af-spotlight-kicker"></span><strong id="af-spotlight-title"></strong><small id="af-spotlight-subtitle"></small>
@@ -33,7 +39,6 @@
             <button type="button" id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Toggle fullscreen landscape mode" aria-pressed="false">FULL SCREEN</button>
             <div id="touch-play-actions" class="touch-play-actions" hidden>
               <button type="button" class="touch-button touch-flex" data-game-action="flex" aria-label="Flex">FLEX</button>
-              <button type="button" class="touch-button touch-focus" data-game-action="focus" aria-label="Sigma Focus">FOCUS</button>
             </div>
             <div id="touch-confirm-actions" hidden>
               <button type="button" id="touch-confirm" class="touch-button touch-confirm" data-game-action="confirm">PLAY</button>
@@ -68,7 +73,7 @@
       </div>
       <p id="mobile-fullscreen-status" class="sr-only" role="status" aria-live="polite"></p>
       <p class="mobile-hint">For the best experience, tap FULL SCREEN and rotate your phone sideways.</p>
-      <p class="controls">Keyboard: WASD / arrows = move · E = FLEX (risky move) · SPACE = Sigma Focus · 1/2/3 = choose upgrade · ENTER = start / restart</p>
+      <p class="controls">Keyboard: WASD / arrows = move · Farm 100 Aura to unlock FLEX · E = activate FLEX Ultimate · 1/2/3 = choose upgrade · ENTER = start / restart</p>
       <p class="note">Solo browser prototype · Cartoon 2D graphics · No login or downloads required.</p>
     </main>
     <script type="module" src="/src/main.ts"></script>

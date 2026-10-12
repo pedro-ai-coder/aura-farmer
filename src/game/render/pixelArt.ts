@@ -1,3 +1,4 @@
+import {createStarterArt,starterSpriteKey} from './newStarters';
 import Phaser from 'phaser';
 import type { Arena } from '../core/arena';
 import type { EnemyType } from '../data/enemies';
@@ -222,6 +223,7 @@ export class PixelWorld {
   private player: Phaser.GameObjects.Image;
   private enemies = new Map<number, Phaser.GameObjects.Image>();
   private drops: Phaser.GameObjects.Image[] = [];
+  private essenceSprites: Phaser.GameObjects.Image[] = [];
   private shots: Phaser.GameObjects.Image[] = [];
   private orbiter: Phaser.GameObjects.Image;
   private shadowLayer: Phaser.GameObjects.Graphics;
@@ -243,6 +245,7 @@ export class PixelWorld {
     createGateA(scene);
     createGateBHeroes(scene);
     createGateB2Heroes(scene);
+    createStarterArt(scene);
     loadFinalArt(scene);
     scene.add.image(480,300,this.finalArt ? 'af-arena' :
       this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
@@ -272,9 +275,10 @@ export class PixelWorld {
     if (this.gateB) createGateBHeroes(this.scene);
     if (this.gateB2) createGateB2Heroes(this.scene);
     if (this.finalArt) loadFinalArt(this.scene);
+    createStarterArt(this.scene);
     const textures = this.scene.textures;
     for (const key of textures.getTextureKeys()) {
-      if (!key.startsWith('ga-') && !key.startsWith('gb-') && !key.startsWith('af-')) continue;
+      if (!key.startsWith('ga-') && !key.startsWith('gb-') && !key.startsWith('af-') && !key.startsWith('as-')) continue;
       const texture = textures.get(key);
       if (texture instanceof Phaser.Textures.CanvasTexture) texture.refresh();
     }
@@ -303,7 +307,7 @@ export class PixelWorld {
 
   sync(a: Arena): void {
     const frame = Math.floor(a.clock / 180) % 2;
-    const pose = a.flex.state === 'charging' ? 'flex'
+    const pose = a.flex.state === 'active' ? 'flex'
       : a.clock > 0 && a.clock - a.lastDamageAt < 180 ? 'hurt'
       : frame === 0 ? 'walk1' : 'walk2';
     const moveX = a.pos.x - this.lastX;
@@ -329,12 +333,18 @@ export class PixelWorld {
       this.auraFxAt=-1;this.healFxAt=-1;this.bossFxAt=-1;this.wasBoss=false;this.hitFx=[];
     }
     this.lastClock = a.clock;
+    const starter=a.characterId==='cool-kid'||a.characterId==='nerd';
     const gaSigma = this.gateA && a.characterId === 'sigma' && this.scene.textures.exists('ga-sigma-idle-0');
     const gbHero=this.gateB && (a.characterId==='alpha'||a.characterId==='rizzler')
       && this.scene.textures.exists('gb-'+a.characterId+'-idle-0');
     const gb2Hero=this.gateB2 && (a.characterId==='ohio'||a.characterId==='fanum'||a.characterId==='six-seven')
       && this.scene.textures.exists('gb2-'+a.characterId+'-idle-0');
-    if (gaSigma) {
+    if(starter){
+      const id=a.characterId as 'cool-kid'|'nerd';
+      const pose=a.mode==='dead'?'death':a.flexActive?'flex':
+        a.clock>0&&a.clock-a.lastDamageAt<180?'hurt':playerMoving?'move':'idle';
+      this.safeTexture(this.player,starterSpriteKey(id,pose,a.clock),'px-player-idle');
+    } else if (gaSigma) {
       if (a.flexSuccesses > this.lastFlexSuccesses) this.flexSuccessStartedAt = a.clock;
       this.lastFlexSuccesses = a.flexSuccesses;
       if (a.mode !== 'dead') this.deathStartedAt = -1;
@@ -348,7 +358,7 @@ export class PixelWorld {
         animation = 'flex_success';
       } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
         animation = 'hurt'; elapsed = a.clock - a.lastDamageAt;
-      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+      } else if (a.mode === 'playing' && a.flex.state === 'active') {
         animation = 'flex_charge';
       } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
                  a.clock - this.flexSuccessStartedAt < 345) {
@@ -373,7 +383,7 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
         animation = 'hurt';
         elapsed = a.clock - a.lastDamageAt;
-      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+      } else if (a.mode === 'playing' && a.flex.state === 'active') {
         animation = 'flex_charge';
         elapsed = a.clock;
       } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
@@ -398,7 +408,7 @@ export class PixelWorld {
         pose='flex_success';
       } else if (a.mode==='playing' && a.lastDamageAt>0 && a.clock-a.lastDamageAt<180) {
         pose='hurt'; elapsed=a.clock-a.lastDamageAt;
-      } else if (a.mode==='playing' && a.flex.state==='charging') {
+      } else if (a.mode==='playing' && a.flex.state==='active') {
         pose='flex_charge';
       } else if (a.mode==='playing' && this.flexSuccessStartedAt>=0 &&
         a.clock-this.flexSuccessStartedAt<360) {
@@ -434,7 +444,7 @@ export class PixelWorld {
         pose='flex_success';
       } else if (a.mode==='playing' && a.lastDamageAt>0 && a.clock-a.lastDamageAt<180) {
         pose='hurt';elapsed=a.clock-a.lastDamageAt;
-      } else if (a.mode==='playing' && a.flex.state==='charging') {
+      } else if (a.mode==='playing' && a.flex.state==='active') {
         pose='flex_charge';
       } else if (a.mode==='playing' && this.flexSuccessStartedAt>=0
         && a.clock-this.flexSuccessStartedAt<350) {
@@ -467,7 +477,7 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
         animation = 'hurt';
         elapsed = a.clock - a.lastDamageAt;
-      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+      } else if (a.mode === 'playing' && a.flex.state === 'active') {
         animation = 'flex_charge';
       } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
                  a.clock - this.flexSuccessStartedAt < 345) {
@@ -497,7 +507,7 @@ export class PixelWorld {
       } else if (a.mode === 'playing' && a.lastDamageAt > 0 && a.clock - a.lastDamageAt < 180) {
         animation = 'hurt';
         elapsed = a.clock - a.lastDamageAt;
-      } else if (a.mode === 'playing' && a.flex.state === 'charging') {
+      } else if (a.mode === 'playing' && a.flex.state === 'active') {
         animation = 'flex_charge';
       } else if (a.mode === 'playing' && this.flexSuccessStartedAt >= 0 &&
                  a.clock - this.flexSuccessStartedAt < 345) {
@@ -518,7 +528,9 @@ export class PixelWorld {
       this.safeTexture(this.player,hasCharacterSheet ? characterSprite : 'spr-sigma','px-player-idle',actorFrame);
     } else this.safeTexture(this.player,'px-player-' + (a.mode === 'playing' ? pose : 'idle'),'px-player-idle');
     this.player.setPosition(a.pos.x, a.pos.y).setFlipX(!this.facingRight)
-      .setTint(gaSigma || gbHero || gb2Hero || sigmaB1 || alphaB2 || rizzlerB3 || hasCharacterSheet ? 0xffffff : getCharacter(a.characterId).color);
+      .setTint(a.flexActive ?
+        (a.flex.variant==='alpha'?0xffe59a:a.flex.variant==='sigma'?0xa5f5ff:0xf5b8ff) :
+        (starter||gaSigma||gbHero||gb2Hero||sigmaB1||alphaB2||rizzlerB3||hasCharacterSheet ? 0xffffff:getCharacter(a.characterId).color));
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
     this.player.setAlpha(a.clock < a.effects.invulnerableUntil ? .65 : 1);
     this.shadowLayer.clear();
@@ -672,6 +684,17 @@ export class PixelWorld {
         else if(atlas)this.safeTexture(img,'spr-items','px-xp',2);
         img.setPosition(drop.x,drop.y-2-Math.sin(a.clock/230+i)*2);
         img.setRotation(Math.sin(a.clock/460+i)*.10);
+      }
+    });
+    while(this.essenceSprites.length<a.essenceDrops.length)
+      this.essenceSprites.push(this.scene.add.image(0,0,this.finalArt?'af-xp':'px-xp').setDepth(.85));
+    this.essenceSprites.forEach((img,i)=>{
+      const essence=a.essenceDrops[i];img.setVisible(!!essence);
+      if(essence){
+        this.safeTexture(img,this.finalArt?'af-xp':'px-xp','px-xp');
+        img.setTint(essence.affinity==='alpha'?0xffa16c:essence.affinity==='sigma'?0x6bdfff:0xe1a3fd);
+        img.setScale(1.5);
+        img.setPosition(essence.x,essence.y-3-Math.sin(a.clock/220+i)*2);
       }
     });
     // Reusable, low-noise projectile trails: never allocate a GameObject per shot.
