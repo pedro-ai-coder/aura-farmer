@@ -61,7 +61,11 @@ export function setupMobileFullscreen(): void {
     else void exit();
   });
   document.addEventListener('fullscreenchange', () => {
-    if (mode === 'native' && document.fullscreenElement !== stage) setMode('off');
+    // Native fullscreen can also be entered directly (browser/API), rather
+    // than through our button. Keep controls and CSS in sync either way.
+    if (document.fullscreenElement === stage) {
+      if (mode !== 'native') setMode('native');
+    } else if (mode === 'native') setMode('off');
   });
   window.addEventListener('resize', () => {
     if (mode !== 'off') notice.textContent = isLandscape()

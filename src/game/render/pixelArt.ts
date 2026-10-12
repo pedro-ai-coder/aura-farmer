@@ -289,9 +289,16 @@ export class PixelWorld {
     if (!valid(key, frame) && this.gateB) createGateBHeroes(this.scene);
     if (!valid(key, frame) && this.gateB2) createGateB2Heroes(this.scene);
     if (!valid(key, frame) && this.finalArt) loadFinalArt(this.scene);
-    if (valid(key,frame)) img.setTexture(key,frame);
-    else if (valid(fallback)) img.setTexture(fallback);
-    else img.setVisible(false);
+    const target = valid(key,frame) ? key : valid(fallback) ? fallback : null;
+    if (!target) { img.setVisible(false); return; }
+    const targetFrame = target===key ? String(frame??'__BASE') : '__BASE';
+    // Phaser setTexture rebinds geometry and emits events. Hundreds of
+    // unmodified actors/particles should not do this on every render frame.
+    if (img.texture.key!==target || String(img.frame.name)!==targetFrame) {
+      if (target===key) img.setTexture(target,frame);
+      else img.setTexture(target);
+    }
+    if (!img.visible) img.setVisible(true);
   }
 
   sync(a: Arena): void {
