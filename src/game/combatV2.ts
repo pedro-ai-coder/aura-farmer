@@ -57,22 +57,22 @@ export const PASSIVES_V2: readonly Passive[] = [
 ];
 export type Weapon = {id:string;name:string;role:string;baseDamage:number;intervalSeconds:number;maxLevel:4};
 export const WEAPONS_V2: readonly Weapon[] = [
-  {id:"aura-blaster",name:"Aura Blaster",role:"targeted-projectile",baseDamage:18,intervalSeconds:0.6,maxLevel:4},
-  {id:"sigma-sword",name:"Sigma Sword",role:"melee-arc",baseDamage:32,intervalSeconds:1.1,maxLevel:4},
-  {id:"boom-box",name:"Boom Box",role:"area-pulse",baseDamage:22,intervalSeconds:2.5,maxLevel:4},
-  {id:"meme-launcher",name:"Meme Launcher",role:"explosion",baseDamage:45,intervalSeconds:3,maxLevel:4},
-  {id:"orbiting-drip",name:"Orbiting Drip",role:"orbit-contact",baseDamage:12,intervalSeconds:0.5,maxLevel:4},
-  {id:"rizz-beam",name:"Rizz Beam",role:"piercing-beam",baseDamage:38,intervalSeconds:2.2,maxLevel:4}
+  {id:"aura-shot",name:"Aura Shot",role:"targeted-projectile",baseDamage:18,intervalSeconds:0.42,maxLevel:4},
+  {id:"mewing-jaw",name:"Mewing Jaw",role:"melee-arc",baseDamage:26,intervalSeconds:1.1,maxLevel:4},
+  {id:"ohio-orbiter",name:"Ohio Orbiter",role:"orbit-contact",baseDamage:14,intervalSeconds:0.35,maxLevel:4},
+  {id:"six-seven",name:"Six Seven",role:"radial-projectiles",baseDamage:11,intervalSeconds:6.5,maxLevel:4},
+  {id:"rizz-blast",name:"Rizz Pulse",role:"area-pulse",baseDamage:13,intervalSeconds:4.8,maxLevel:4},
+  {id:"meme-launcher",name:"Meme Launcher",role:"explosive-projectile",baseDamage:45,intervalSeconds:3,maxLevel:4}
 ];
 export type Flex = {characterId:string;name:string;role:string;durationSeconds:number;effect:string};
 export const FLEXES_V2: readonly Flex[] = [
  {characterId:"cool-kid",name:"Untouchable",role:"mobility",durationSeconds:5,effect:"Invulnerable; +60% move speed; 50 contact DPS; 0.5s per-target ICD; boss cap 25% max HP"},
- {characterId:"alpha-chad",name:"Sigma Slam",role:"burst-control",durationSeconds:5,effect:"220 damage, 4m radius slam; push 2.5m/stun 1.5s nonboss; +20% weapon damage for 5s"},
- {characterId:"the-sigma",name:"Sigma Lock-In",role:"precision",durationSeconds:5,effect:"+25% attack cadence; piercing shots; +15pp crit chance; secondary proc capped once/s"},
- {characterId:"ohio-kid",name:"Ohio Blitz",role:"mobility-burst",durationSeconds:5,effect:"+45% speed; 3 dash charges with 60 contact damage; target ICD 0.5s"},
- {characterId:"the-rizzler",name:"Rizz Takeover",role:"area-control",durationSeconds:5,effect:"Pulse every 1s; 45 area damage; 40% nonboss slow for 2s"},
- {characterId:"fanum-lord",name:"Fanum Tax Break",role:"sustain",durationSeconds:5,effect:"+20% melee damage; recover 3 HP per kill max 1/s, heal cap 15% max HP/activation"},
- {characterId:"six-seven-kid",name:"67 Overdrive",role:"area-projectiles",durationSeconds:5,effect:"+2 capped radial shots per volley; +15% projectile damage; max one ricochet"},
+ {characterId:"alpha",name:"Sigma Slam",role:"burst-control",durationSeconds:5,effect:"220 damage, 4m radius slam; push 2.5m/stun 1.5s nonboss; +20% weapon damage for 5s"},
+ {characterId:"sigma",name:"Sigma Lock-In",role:"precision",durationSeconds:5,effect:"+25% attack cadence; piercing shots; +15pp crit chance; secondary proc capped once/s"},
+ {characterId:"ohio",name:"Ohio Blitz",role:"mobility-burst",durationSeconds:5,effect:"+45% speed; 3 dash charges with 60 contact damage; target ICD 0.5s"},
+ {characterId:"rizzler",name:"Rizz Takeover",role:"area-control",durationSeconds:5,effect:"Pulse every 1s; 45 area damage; 40% nonboss slow for 2s"},
+ {characterId:"fanum",name:"Fanum Tax Break",role:"sustain",durationSeconds:5,effect:"+20% melee damage; recover 3 HP per kill max 1/s, heal cap 15% max HP/activation"},
+ {characterId:"six-seven",name:"67 Overdrive",role:"area-projectiles",durationSeconds:5,effect:"+2 capped radial shots per volley; +15% projectile damage; max one ricochet"},
  {characterId:"nerd",name:"Sigma Kid Overclock",role:"rapid-fire",durationSeconds:5,effect:"+30% attack speed; piercing projectiles; +10pp crit; secondary capped once/s"}
 ];
 export type Equip = {id:string;level:number};
