@@ -118,3 +118,29 @@ html.cartoon-v1{
   .cartoon-v1 .meta-button,.cartoon-v1 .meta-character,
   .cartoon-v1 .af-home-art .af-hero-art{transition:none!important;animation:none!important}
 }
+
+/* Upgrade is a combat decision, not a marketing card grid. */
+.cartoon-v1 .upgrade-dialog,.cartoon-v1 .wave-dialog{
+ background:#f3edd9!important;color:#294053!important;
+ border:4px solid #2c485f!important;border-radius:2px!important;
+ box-shadow:7px 8px 0 #527487!important;backdrop-filter:none!important;
+}
+.cartoon-v1 .upgrade-header,.cartoon-v1 .wave-sign{
+ background:#ffd16d!important;color:#263c52!important;
+ border:3px solid #344d61!important;border-radius:0!important;
+ box-shadow:3px 3px 0 #ca9657!important;
+ font-family:Impact,'Arial Black',sans-serif;
+}
+.cartoon-v1 .upgrade-choice,
+.cartoon-v1 .upgrade-choice[data-rarity="common"],
+.cartoon-v1 .upgrade-choice[data-rarity="rare"],
+.cartoon-v1 .upgrade-choice[data-rarity="epic"]{
+ background:#e8eee4!important;color:#293c50!important;
+ border:3px solid #3f5d75!important;border-radius:2px!important;
+ box-shadow:3px 4px 0 #8c9ca5!important;
+}
+.cartoon-v1 .upgrade-choice[data-rarity="rare"]{border-left:9px solid #379db9!important}
+.cartoon-v1 .upgrade-choice[data-rarity="epic"]{border-left:9px solid #ae72c9!important}
+.cartoon-v1 .upgrade-choice[data-rarity="common"]{border-left:9px solid #73ad77!important}
+.cartoon-v1 .upgrade-choice:focus-visible{outline:3px dashed #bc6939!important;outline-offset:2px}
+.cartoon-v1 .upgrade-paused{background:#d6e4e2!important;color:#34495a!important}
