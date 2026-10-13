@@ -120,9 +120,11 @@ describe('upgrades', () => {
     for (const b of BUFFS) a.buffs[b.id] = b.maxStacks;
     a.buffs.speed=2;a.buffs['gym-routine']=3;
     a.xp.level=10;
-    a.drops.push({...a.pos,xp:100});
+    a.pendingUpgrades=1;
     a.update(1);
-    expect(a.choices.every(b=>b.id==='gym-routine')).toBe(true);
+    expect(a.mode).toBe('upgrades');
+    expect(a.choices).toHaveLength(1);
+    expect(a.choices[0].id).toBe('gym-routine');
     a.update(0,{choice:0});
     expect(a.buffs['gym-routine']).toBe(4);
     expect(a.buffs.speed).toBe(2);
