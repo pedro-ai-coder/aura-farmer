@@ -66,9 +66,9 @@ export const WEAPONS_V2: readonly Weapon[] = [
 ];
 export type Flex = {characterId:string;name:string;role:string;durationSeconds:number;effect:string};
 export const FLEXES_V2: readonly Flex[] = [
- {characterId:"cool-kid",name:"Untouchable",role:"mobility",durationSeconds:5,effect:"Invulnerable; +60% move speed; 50 contact DPS; 0.5s per-target ICD; boss cap 25% max HP"},
- {characterId:"alpha",name:"Sigma Slam",role:"burst-control",durationSeconds:5,effect:"220 damage, 4m radius slam; push 2.5m/stun 1.5s nonboss; +20% weapon damage for 5s"},
- {characterId:"sigma",name:"Sigma Lock-In",role:"precision",durationSeconds:5,effect:"+25% attack cadence; piercing shots; +15pp crit chance; secondary proc capped once/s"},
+ {characterId:"cool-kid",name:"Giga Chad Rampage",role:"mobility",durationSeconds:5,effect:"Invulnerable; +60% move speed; 50 contact DPS; 0.5s per-target ICD; boss cap 25% max HP"},
+ {characterId:"alpha",name:"Unstoppable Chad",role:"burst-control",durationSeconds:5,effect:"72% damage reduction; 145px shockwave every 0.8s; weapons stay active for 5s"},
+ {characterId:"sigma",name:"Sigma Lock-In",role:"precision",durationSeconds:5,effect:"+25% attack cadence; piercing shots; +15pp crit chance for 5s"},
  {characterId:"ohio",name:"Ohio Blitz",role:"mobility-burst",durationSeconds:5,effect:"+45% speed; 3 dash charges with 60 contact damage; target ICD 0.5s"},
  {characterId:"rizzler",name:"Rizz Takeover",role:"area-control",durationSeconds:5,effect:"Pulse every 1s; 45 area damage; 40% nonboss slow for 2s"},
  {characterId:"fanum",name:"Fanum Tax Break",role:"sustain",durationSeconds:5,effect:"+20% melee damage; recover 3 HP per kill max 1/s, heal cap 15% max HP/activation"},
