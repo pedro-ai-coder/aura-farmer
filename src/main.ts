@@ -7,7 +7,9 @@ import './styles/gateA.css';
 import './styles/finalVisual.css';
 import './styles/flexUltimate.css';
 import './styles/equipment.css';
+import './styles/cartoonV1.css';
 import { isFinalArt } from './game/render/finalArt';
+import { isCartoonArt } from './game/render/cartoonArt';
 import { isGateA } from './game/render/gateAArena';
 import { isGateB } from './game/render/gateBHeroes';
 import { isGateB2 } from './game/render/gateB2Heroes';
@@ -16,13 +18,14 @@ import { setupMobileFullscreen } from './game/input/mobileFullscreen';
 import { setupGameShell } from './meta/shell';
 
 setupMobileFullscreen();
+if(isCartoonArt())document.documentElement.classList.add('cartoon-v1');
 if(isGateA() || isFinalArt()){
   document.documentElement.classList.add('gate-a-mode');
   if(isFinalArt())document.documentElement.classList.add('aura-final');
   const label=document.querySelector<HTMLElement>('.masthead .tag:last-child');
-  if(label) label.textContent=isFinalArt() ? 'FIVE WAVES · ONE LEGEND' : isGateB2() ? 'GATE B2 · SIX HEROES' : isGateB() ? 'GATE B · HERO ART PREVIEW' : 'GATE A · PLAYABLE PREVIEW';
+  if(label) label.textContent=isCartoonArt() ? 'CARTOON V1 · ART PREVIEW' : isFinalArt() ? 'FIVE WAVES · ONE LEGEND' : isGateB2() ? 'GATE B2 · SIX HEROES' : isGateB() ? 'GATE B · HERO ART PREVIEW' : 'GATE A · PLAYABLE PREVIEW';
   const loadingStage=document.querySelector<HTMLElement>('#af-loading-stage');
-  if(loadingStage)loadingStage.textContent=isFinalArt() ? 'Getting the arena ready…' : isGateB2() ? 'Loading the complete hero lineup…' : isGateB() ? 'Loading hero identity studies…' : 'Preparing the Aura Arena…';
+  if(loadingStage)loadingStage.textContent=isCartoonArt() ? 'Drawing the Cartoon Arena…' : isFinalArt() ? 'Getting the arena ready…' : isGateB2() ? 'Loading the complete hero lineup…' : isGateB() ? 'Loading hero identity studies…' : 'Preparing the Aura Arena…';
   const tip=document.querySelector<HTMLElement>('.af-loading-inner small');
   if(tip)tip.textContent='TIP ◆ FLEX at the right moment to gain Aura.';
   const title=document.querySelector<HTMLElement>('#af-loading .af-loading-inner strong');
