@@ -307,6 +307,11 @@ export class Arena {
     this.hp = Math.min(this.stats.maxHp,this.hp+(this.buffs['recovery-snack']??0)*.2*dt/1000);
     this.flex.sync(this.clock,this.aura.value);
     this.maxAura=Math.max(this.maxAura,this.aura.peak);
+    // Finishing a five-wave run takes priority over any XP upgrade awarded
+    // by the killing blow; never trap the victor in an upgrade dialog.
+    if(this.wave===GAME.waveCount&&this.bossDefeated&&this.waveClock>=GAME.waveDurationMs){
+      this.pendingUpgrades=0;this.choices=[];this.mode='win';return;
+    }
     if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
     if (this.waveClock >= GAME.waveDurationMs) {
       if (this.wave < GAME.waveCount) {
