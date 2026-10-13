@@ -15,7 +15,9 @@ test('single FLEX HUD without Focus, legal manual charging and playable new hero
  await expect(page.locator('[data-character="cool-kid"]')).toBeEnabled();
  await expect(page.locator('[data-character="nerd"]')).toBeEnabled();
  await page.locator('[data-character="cool-kid"]').click();
- await expect(page.locator('.meta-character[data-character="cool-kid"] img')).toHaveAttribute('src',/^data:image/);
+ const portrait=page.locator('.meta-character[data-character="cool-kid"] img');
+ await expect(portrait).toHaveAttribute('src','/assets/cartoon/v1/characters/cool-kid.svg');
+ await expect.poll(()=>portrait.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
  await page.locator('[data-menu="start"]').click();
  await expect(page.locator('#meta-shell')).toBeHidden();
  await expect(page.locator('[data-game-action="focus"]')).toHaveCount(0);
@@ -28,15 +30,13 @@ test('single FLEX HUD without Focus, legal manual charging and playable new hero
  await page.keyboard.press('e');
  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flex.state)).toBe('active');
  await expect(page.locator('#flex-ultimate-hud')).toContainText('GIGA CHAD RAMPAGE');
- const data=await page.evaluate(()=>{
+ await expect.poll(()=>page.evaluate(()=>{
    const scene=window.__game.scene.scenes[0] as ArenaScene;
    const a=scene.arena;
-   return {hero:a.characterId,aura:a.aura.value,art:scene.children.list
-     .filter(o=>o.type==='Image').map(o=>(o as Phaser.GameObjects.Image).texture.key)
-     .find(k=>k.startsWith('as-cool-kid-flex'))};
- });
- expect(data.hero).toBe('cool-kid');expect(data.aura).toBe(0);
- expect(data.art).toContain('as-cool-kid-flex');
+   const hero=scene.children.list.find(o=>o.type==='Image' &&
+     (o as Phaser.GameObjects.Image).texture.key==='ct-hero-cool-kid') as Phaser.GameObjects.Image | undefined;
+   return {hero:a.characterId,aura:a.aura.value,art:hero?.texture.key,tint:hero?.tintTopLeft,visible:hero?.visible};
+ })).toEqual({hero:'cool-kid',aura:0,art:'ct-hero-cool-kid',tint:0xffe59a,visible:true});
 });
 test('Essence pickup visibly affects Sigma/Rizz/Alpha affinity, new Nerd supports Overclock',async({page})=>{
  await boot(page);

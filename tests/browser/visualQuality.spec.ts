@@ -43,7 +43,7 @@ test('Big Hater health bar and hit flash render with no gameplay hitbox changes'
   });
   await expect.poll(()=>page.evaluate(()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;
-    return scene.children.list.some(o=>o.type==='Image'&&(o as Phaser.GameObjects.Image).texture.key.startsWith('af-enemy-boss-')&&(o as Phaser.GameObjects.Image).visible);
+    return scene.children.list.some(o=>o.type==='Image'&&(o as Phaser.GameObjects.Image).texture.key==='ct-enemy-boss'&&(o as Phaser.GameObjects.Image).visible);
   })).toBe(true);
   await page.screenshot({path:'test-results/visual-quality-boss.png'});
   const hp=await page.evaluate(()=> (window.__game.scene.scenes[0] as ArenaScene).arena.hp);

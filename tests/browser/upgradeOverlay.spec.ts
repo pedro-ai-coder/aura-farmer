@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import type { ArenaScene } from '../../src/game/scenes/ArenaScene';
+import { offerCatalogUpgrades } from './upgradeFixtures';
 
 declare global { interface Window { __game: Phaser.Game } }
 
@@ -17,16 +18,7 @@ async function boot(page:Page,width:number,height:number):Promise<void> {
 }
 
 async function injectLevelUp(page:Page):Promise<void> {
-  await page.evaluate(()=>{
-    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.enemies=[];a.shots=[];a.drops=[];
-    a.mode='upgrades';a.pendingUpgrades=1;
-    a.choices=[
-      {id:'sigma',name:'Sigma Aura',description:'Increase player damage',rarity:'RARE',maxStacks:2},
-      {id:'alpha',name:'Alpha Aura',description:'Increases your attack speed',rarity:'RARE',maxStacks:3},
-      {id:'speed',name:'Bro Has Motion',description:'Move faster in combat',rarity:'COMMON',maxStacks:3},
-    ];
-  });
+  await offerCatalogUpgrades(page,['sigma','alpha','speed']);
   await expect(page.locator('#upgrade-overlay')).toBeVisible();
 }
 
@@ -63,5 +55,9 @@ for (const dim of [
     await expect(page.locator('#upgrade-overlay')).toBeHidden();
     await expect(page.locator('[data-game-action="flex"]')).toBeVisible();
     await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.buffs.alpha)).toBe(1);
+    expect(await page.evaluate(()=>{
+      const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+      return {mode:a.mode,pending:a.pendingUpgrades,weapons:a.loadout.weapons,passives:a.loadout.passives};
+    })).toEqual({mode:'playing',pending:0,weapons:['aura-shot'],passives:['alpha']});
   });
 }

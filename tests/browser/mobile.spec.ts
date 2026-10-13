@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import type { Arena } from '../../src/game/core/arena';
 import type { ArenaScene } from '../../src/game/scenes/ArenaScene';
+import { offerCatalogUpgrades } from './upgradeFixtures';
 
 declare global { interface Window { __game: Phaser.Game } }
 
@@ -55,21 +56,14 @@ test('portrait touch controls: start, analog movement, manual FLEX, upgrade and 
   await tap(page,'[data-game-action="flex"]');
   await expect.poll(()=>state(page,a=>a.flex.state)).toBe('active');
 
-  await page.evaluate(() => {
-    const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.mode = 'upgrades';
-    a.pendingUpgrades = 1;
-    a.choices = [
-      { id: 'sigma', name: 'Sigma Aura', description: 'Damage up', maxStacks: 2, rarity: 'RARE' },
-      { id: 'alpha', name: 'Alpha Aura', description: 'Damage up', maxStacks: 2, rarity: 'RARE' },
-      { id: 'speed', name: 'Bro Has Motion', description: 'Speed up', maxStacks: 3, rarity: 'COMMON' },
-    ];
-  });
+  await offerCatalogUpgrades(page,['sigma','alpha','speed']);
   await expect(page.locator('[data-game-action="choice0"]')).toBeVisible();
   await expect(page.locator('[data-game-action="choice0"]')).toContainText('Sigma Aura');
   await tap(page, '[data-game-action="choice0"]');
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
   expect(await state(page, a => a.buffs.sigma)).toBe(1);
+  expect(await state(page, a => a.pendingUpgrades)).toBe(0);
+  expect(await state(page, a => a.loadout.passives)).toEqual(['sigma']);
 
   await page.evaluate(() => {
     (window.__game.scene.scenes[0] as ArenaScene).arena.mode = 'dead';
@@ -124,7 +118,10 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   const stage = (await page.locator('.play-layout').boundingBox())!;
   const arena = (await page.locator('#game').boundingBox())!;
   const stick = (await page.locator('#joystick-track').boundingBox())!;
-  const focus = (await page.locator('[data-game-action="focus"]').boundingBox())!;
+  const flexButton = page.locator('[data-game-action="flex"]');
+  await expect(flexButton).toHaveCount(1);
+  await expect(flexButton).toBeVisible();
+  const flex = (await flexButton.boundingBox())!;
   expect(stage.width).toBeGreaterThanOrEqual(840);
   expect(stage.height).toBeLessThanOrEqual(391);
   // Full-bleed: gameplay canvas fills the screen and the controls float above it.
@@ -136,24 +133,32 @@ test('fullscreen button enables immersive landscape, preserves touch controls an
   expect(gameCanvas.height).toBeGreaterThanOrEqual(385);
   expect(stick.x).toBeGreaterThanOrEqual(arena.x);
   expect(stick.x + stick.width).toBeLessThan(arena.x + arena.width / 2);
-  expect(focus.x).toBeGreaterThan(arena.x + arena.width / 2);
-  expect(focus.x + focus.width).toBeLessThanOrEqual(arena.x + arena.width + 2);
+  expect(flex.x).toBeGreaterThan(arena.x + arena.width / 2);
+  expect(flex.x + flex.width).toBeLessThanOrEqual(arena.x + arena.width + 2);
   // Keep all navigation off the HUD and away from the main touch targets.
   const menu = (await page.locator('#menu-open').boundingBox())!;
-  const flex = (await page.locator('[data-game-action="flex"]').boundingBox())!;
   const waveHudBottom = gameCanvas.y + gameCanvas.height * (80 / 600);
   expect(menu.y).toBeGreaterThanOrEqual(waveHudBottom - 2);
   expect(menu.x).toBeGreaterThan(gameCanvas.x + gameCanvas.width / 2);
   expect(menu.y + menu.height).toBeLessThan(flex.y);
-  expect(flex.y + flex.height).toBeLessThanOrEqual(focus.y + 1);
+  expect(flex.y + flex.height).toBeLessThanOrEqual(stage.y + stage.height);
   expect(stick.width).toBeLessThanOrEqual(125);
   expect(stick.height).toBeLessThanOrEqual(125);
   expect(flex.width).toBeLessThanOrEqual(155);
-  expect(focus.width).toBeLessThanOrEqual(155);
   await expect(toggle).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 
   await expect(page.locator('[data-game-action="focus"]')).toHaveCount(0);
+  await expect(flexButton).toBeDisabled();
+  await page.evaluate(()=>{
+    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
+    a.aura.change(100,a.clock);
+  });
+  await expect(flexButton).toBeEnabled();
+  await flexButton.tap();
+  await expect.poll(()=>state(page,a=>a.flex.state)).toBe('active');
+  expect(await state(page,a=>a.aura.value)).toBe(0);
+  await expect(flexButton).toBeDisabled();
   await page.screenshot({ path: 'test-results/immersive-landscape.png' });
 
   await page.locator('#menu-open').tap();

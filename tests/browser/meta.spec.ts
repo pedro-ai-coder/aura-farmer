@@ -12,13 +12,13 @@ async function load(page:Page):Promise<void> {
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
   await expect.poll(() => page.evaluate(() => {
     const scene=window.__game.scene.scenes[0];
-    return ['sigma','alpha','rizzler','ohio','fanum','six-seven'].every(id => scene.textures.exists('spr-'+id));
+    return ['sigma','alpha','rizzler','ohio','fanum','six-seven','cool-kid','nerd'].every(id => scene.textures.exists('ct-hero-'+id));
   })).toBe(true);
 }
 test('new home, character selection, run results, local save and leaderboard survive refresh',async({page})=>{
   await load(page);
   await page.locator('[data-menu="play"]').click();
-  await expect(page.locator('[data-menu="choose"]')).toHaveCount(6);
+  await expect(page.locator('[data-menu="choose"]')).toHaveCount(8);
   await expect(page.locator('[data-character="fanum"]')).toBeDisabled();
   await page.locator('[data-character="alpha"]').click();
   await page.locator('[data-menu="start"]').click();

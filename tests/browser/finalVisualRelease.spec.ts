@@ -9,14 +9,17 @@ async function openGame(page:Page,path:string){
  await page.goto(path);
  await expect(page.locator('[data-menu="play"]')).toBeVisible();
 }
-test('new Aura Arena is production default, not the old garden event',async({page})=>{
+test('Cartoon V1 is the production default with the existing effects and fallbacks loaded',async({page})=>{
  await openGame(page,'/');
  await expect(page.locator('html')).toHaveClass(/aura-final/);
+ await expect(page.locator('html')).toHaveClass(/cartoon-v1/);
  await expect(page.locator('.af-home-event')).toContainText('FIVE WAVES');
  await expect(page.locator('.af-home-event')).not.toContainText('WITHERROOT');
  const loaded=await page.evaluate(()=>{
   const scene=window.__game.scene.scenes[0] as ArenaScene;
-  return ['af-arena','af-xp','af-shot','af-hostile','af-enemy-boss-idle-0','af-enemy-beta-attack-4',
+  return ['ct-arena',...['sigma','alpha','rizzler','ohio','fanum','six-seven','cool-kid','nerd'].map(id=>'ct-hero-'+id),
+    ...['npc','hater','beta','boss'].map(id=>'ct-enemy-'+id),
+    'af-arena','af-xp','af-shot','af-hostile','af-enemy-boss-idle-0','af-enemy-beta-attack-4',
     'af-fx-hit-0','af-fx-burst-6','ga-sigma-idle-0','gb-alpha-idle-0','gb2-ohio-idle-0']
     .every(key=>scene.textures.exists(key));
  });
@@ -45,8 +48,9 @@ test('combat and fullscreen show NPC Hater Beta boss and XP without missing text
  });
  await expect.poll(()=>page.evaluate(()=>{
   const s=window.__game.scene.scenes[0] as ArenaScene;
-  const keys=s.children.list.filter(o=>o.type==='Image').map(o=>(o as Phaser.GameObjects.Image).texture.key);
-  return ['npc','hater','beta','boss'].every(t=>keys.some(k=>k.startsWith('af-enemy-'+t+'-'))) && keys.includes('af-xp');
+  const keys=s.children.list.filter(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).visible)
+    .map(o=>(o as Phaser.GameObjects.Image).texture.key);
+  return ['npc','hater','beta','boss'].every(t=>keys.includes('ct-enemy-'+t)) && keys.includes('af-xp') && keys.includes('ct-arena');
  })).toBe(true);
  const bad=()=>page.evaluate(()=>{
   const s=window.__game.scene.scenes[0] as ArenaScene;
@@ -65,5 +69,7 @@ test('original unlock rules still apply in full visual mode',async({page})=>{
  await page.locator('[data-menu="play"]').click();
  await expect(page.locator('[data-character="fanum"]')).toBeDisabled();
  await expect(page.locator('[data-character="six-seven"]')).toBeDisabled();
- await expect(page.locator('.meta-character[data-character="sigma"] img')).toHaveAttribute('src',/^data:image/);
+ const portrait=page.locator('.meta-character[data-character="sigma"] img');
+ await expect(portrait).toHaveAttribute('src','/assets/cartoon/v1/characters/sigma.svg');
+ await expect.poll(()=>portrait.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
 });
