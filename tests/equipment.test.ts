@@ -4,14 +4,14 @@ import {BUFFS,emptyBuffLevels} from '../src/game/data/buffs';
 import {canEquip,equipment,isWeapon,legalUpgrades,MAX_PASSIVE_SLOTS,MAX_WEAPON_SLOTS} from '../src/game/core/equipment';
 
 const byId=(id:string)=>BUFFS.find(b=>b.id===id)!;
-describe('strict 3 weapon + 3 passive equipment',()=>{
+describe('strict 3 weapon + 5 passive equipment',()=>{
  it('starts every hero with a visible ranged weapon and existing class bonuses',()=>{
    for(const hero of ['sigma','alpha','rizzler','ohio','fanum','six-seven','cool-kid','nerd'] as const){
      const a=new Arena(()=>.5,hero);a.start();
      expect(a.buffs['aura-shot']).toBe(1);
      expect(a.loadout.weapons).toContain('aura-shot');
      expect(a.loadout.weapons.length).toBeLessThanOrEqual(3);
-     expect(a.loadout.passives.length).toBeLessThanOrEqual(3);
+     expect(a.loadout.passives.length).toBeLessThanOrEqual(5);
    }
  });
  it('blocks a fourth weapon but still allows upgrades of the three equipped weapons',()=>{
@@ -26,9 +26,9 @@ describe('strict 3 weapon + 3 passive equipment',()=>{
    expect(offers.some(b=>b.id==='six-seven')).toBe(false);
    expect(offers.some(b=>b.id==='mewing-jaw')).toBe(true);
  });
- it('blocks a fourth passive and never turns a passive upgrade into another slot',()=>{
+ it('blocks a sixth passive and never turns a passive upgrade into another slot',()=>{
    const levels=emptyBuffLevels();
-   levels['aura-shot']=1;levels.drip=1;levels.speed=1;levels['thick-skin']=1;
+   levels['aura-shot']=1;levels.drip=1;levels.speed=1;levels['thick-skin']=1;levels.mewing=1;levels.alpha=1;
    expect(equipment(levels).passives).toHaveLength(MAX_PASSIVE_SLOTS);
    expect(canEquip(levels,byId('sigma'))).toBe(false);
    expect(canEquip(levels,byId('drip'))).toBe(true);
