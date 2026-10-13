@@ -205,7 +205,7 @@ export class TouchControls {
       heading.textContent=buff.name;
       const rarity = document.createElement('span');
       rarity.className='upgrade-rarity';
-      rarity.textContent=(isWeapon(buff.id)?'WEAPON':'PASSIVE')+' · '+buff.rarity;
+      rarity.textContent=isWeapon(buff.id)?'WEAPON':`PASSIVE · ${buff.rarity==='COMMON'?'NORMAL':buff.rarity}`;
       const level = document.createElement('span');
       level.className='upgrade-stack';
       level.textContent=`LV ${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)}/${buff.maxStacks}`;
