@@ -8,11 +8,11 @@ export function combatStats(buffs: BuffLevels, aura: number, nearby: number, cle
   const bonusDamage =
     (aura>=50?(buffs.sigma??0)*.15:0) +
     (buffs.alpha??0)*.015*Math.min(10,nearby) +
-    (crashOut?.4:0) +
+    (crashOut ? 0.4 : 0) +
     (buffs['gym-routine']??0)*.04 +
-    (lowHp ? (buffs.berserker===2?.20:buffs.berserker===1?.12:0) : 0);
+    (lowHp ? (buffs.berserker===2 ? 0.20 : buffs.berserker===1 ? 0.12 : 0) : 0);
   const speedBonus=(buffs.speed??0)*.12+(buffs['speed-shoes']??0)*.04+
-    (lowHp?(buffs.adrenaline??0)*.04+((buffs.adrenaline??0)>0?.04:0):0);
+    (lowHp?(buffs.adrenaline??0)*.04+((buffs.adrenaline??0)>0 ? 0.04 : 0):0);
   const fireBonus=(cleanMs>=8000?(buffs['locked-in']??0)*.25:0) +
     (buffs['quick-hands']??0)*.03 + (buffs['cardio-king']??0)*.03;
   const damageReduction=Math.min(.35,(buffs['iron-will']??0)*.03);
