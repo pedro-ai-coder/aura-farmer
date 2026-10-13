@@ -16,7 +16,7 @@ import { RUIN_ALLEY, moveOnMap, chaseOnMap, blocksProjectile, pickSpawnNearPlaye
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; confirm?: boolean; choice?: number }
 export interface Enemy extends BuffTarget { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
-export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean; piercing?: boolean }
+export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean; piercing?: boolean; splash?: number }
 export interface Drop extends Vec2 { xp: number }
 
 /** Phaser-free simulation. All durations use active simulation time, including cooldowns. */
@@ -134,7 +134,7 @@ export class Arena {
       const buff = input.choice === undefined ? undefined : this.choices[input.choice];
       if (buff && BUFFS.includes(buff) && canEquip(this.buffs,buff)) {
         this.buffs[buff.id]++;
-        if (buff.id === 'thick-skin') this.hp = Math.min(this.stats.maxHp, this.hp + 20);
+        if (buff.id === 'thick-skin') this.hp = Math.min(this.stats.maxHp, this.hp + Math.ceil(this.stats.maxHp*.05));
         this.pendingUpgrades--; this.offerUpgrade();
       } else if (buff) {
         // Ignore stale/tampered rewards rather than bypassing slot capacity.
@@ -261,6 +261,11 @@ export class Arena {
         if (enemy) {
           this.removeShot(shot);
           this.hit(enemy, shot.damage);
+          if(shot.splash)for(const other of [...this.enemies])if(other!==enemy&&distance(other,enemy)<shot.splash)
+            this.hit(other,shot.damage*.55,'flex');
+          if(this.buffs['chain-reaction']>0&&this.random()<this.buffs['chain-reaction']*.05)
+            for(const other of this.enemies.filter(e=>e!==enemy&&distance(e,enemy)<100).slice(0,1))
+              this.hit(other,shot.damage*.4,'flex');
           // Piercing Sigma FLEX makes one additional bounded strike. Ordinary
           // Skibidi ricochet remains available and can never loop indefinitely.
           const target=shot.piercing
@@ -284,13 +289,14 @@ export class Arena {
         const amount = this.characterId === 'fanum' ? Math.ceil(drop.xp * 1.25) : drop.xp;
         this.xpCollected += amount;
         this.pendingUpgrades += this.xp.gain(amount);
-      } else if (d < 100) {
+      } else if (d < 100+(this.buffs['magnet-mode']??0)*12) {
         const v = normalized(this.pos.x - drop.x, this.pos.y - drop.y);
         const step = Math.min(d, 300 * dt / 1000);
         drop.x += v.x * step; drop.y += v.y * step;
       }
     }
     this.hp = this.effects.heal(this.hp, this.stats.maxHp, this.clock, this.lastDamageAt, this.buffs['touch-grass'] > 0);
+    this.hp = Math.min(this.stats.maxHp,this.hp+(this.buffs['recovery-snack']??0)*.2*dt/1000);
     this.flex.sync(this.clock,this.aura.value);
     this.maxAura=Math.max(this.maxAura,this.aura.peak);
     if (this.pendingUpgrades > 0) { this.offerUpgrade(); if (this.mode === 'upgrades') return; }
@@ -309,9 +315,11 @@ export class Arena {
     if(auraShot>0 && this.clock>=this.fireReady){
       const target=this.enemies.reduce((x,y)=>distance(x,this.pos)<distance(y,this.pos)?x:y);
       const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.23)));
-      if(this.flexActive&&this.flex.variant==='sigma')shot.piercing=true;
+      if(this.buffs['double-trouble']>0&&this.random()<(this.buffs['double-trouble']===2?.18:.1))
+        this.shoot(this.pos,target,this.damage(10));
+      if(this.flexActive&&(this.characterId==='sigma'||this.characterId==='nerd'))shot.piercing=true;
       this.fireReady=this.clock+420/(this.aura.fireRateMultiplier*this.stats.fireRate*
-        (1+(auraShot-1)*.13)*(this.flexActive&&this.flex.variant==='sigma'?2.6:1));
+        (1+(auraShot-1)*.13)*(this.flexActive&&this.characterId==='nerd'?1.3:this.flexActive&&this.characterId==='sigma'?1.25:1)*(this.clock<this.timeWarpUntil?1.25:1));
     }
     const jawLevel=this.buffs['mewing-jaw'];
     const jawRadius=90+Math.max(0,jawLevel-1)*10;
@@ -342,6 +350,13 @@ export class Arena {
           this.damage(11+(volleyLevel-1)*4),false,400);
       }
     }
+    const memeLevel=this.buffs['meme-launcher'];
+    if(memeLevel>0&&this.clock>=this.memeReady){
+      const target=this.enemies.reduce((a,b)=>distance(a,this.pos)<distance(b,this.pos)?a:b);
+      const shot=this.shoot(this.pos,target,this.damage(45*(1+(memeLevel-1)*.22)),false,320);
+      shot.splash=88+(memeLevel-1)*13;
+      this.memeReady=this.clock+3000/(1+(memeLevel-1)*.14);
+    }
     const rizzLevel=this.buffs['rizz-blast'];
     const radius=110+(rizzLevel-1)*19;
     if(rizzLevel>0 && this.clock>=this.rizzBlastReady &&
@@ -358,9 +373,9 @@ export class Arena {
 
   private damage(base: number): number {
     const stats = this.stats;
-    const sigma=this.flexActive&&this.flex.variant==='sigma';
-    return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.45:1)*
-      (this.random()<Math.min(1,stats.critChance+(sigma?.2:0))?2:1);
+    const sigma=this.flexActive&&(this.characterId==='sigma'||this.characterId==='nerd');
+    return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.15:1)*(this.clock<this.flexDamageUntil&&this.buffs['main-character-energy']>0?1.25:1)*
+      (this.random()<Math.min(.5,stats.critChance+(sigma?.15:0))?2:1);
   }
 
   private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): Shot {
@@ -376,7 +391,9 @@ export class Arena {
   }
 
   private hit(enemy: Enemy, damage: number,source:'normal'|'flex'='normal'): void {
-    enemy.hp-=source==='flex'?damage:firstHitDamage(enemy,ENEMIES[enemy.type].hp,damage,this.buffs.mogged);
+    const elite=enemy.type==='boss'||enemy.type==='beta';
+    const dealt=damage*(elite&&this.buffs['final-boss-energy']>0?1.15:1);
+    enemy.hp-=source==='flex'?dealt:firstHitDamage(enemy,ENEMIES[enemy.type].hp*difficultyV2(this.wave).hp,dealt,this.buffs.mogged);
     if (enemy.hp > 0) return;
     const index = this.enemies.indexOf(enemy);
     if (index < 0) return;
@@ -384,7 +401,17 @@ export class Arena {
     this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
     if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER defeated!'); }
     // Active FLEX kills must not immediately recharge the Ultimate.
-    if(!this.flexActive)this.aura.change(5+(distance(enemy,this.pos)<=135?2:0),this.clock);
+    if(!this.flexActive)this.aura.change(5+(distance(enemy,this.pos)<=135?2:0)+(elite&&this.buffs['final-boss-energy']>0?15:0),this.clock);
+    if(this.buffs['vampire-mode']>0&&this.clock>=(this.effectCooldowns.get('vampire')??0)){
+      this.hp=Math.min(this.stats.maxHp,this.hp+1+this.buffs['vampire-mode']);
+      this.effectCooldowns.set('vampire',this.clock+2000);
+    }
+    if(this.characterId==='fanum'&&this.flexActive&&this.clock>=(this.effectCooldowns.get('fanum')??0)){
+      this.hp=Math.min(this.stats.maxHp,this.hp+3);this.effectCooldowns.set('fanum',this.clock+1000);
+    }
+    if(enemy.type==='beta'&&this.buffs['time-warp']>0)this.timeWarpUntil=this.clock+3000;
+    if(this.buffs['explosive-finish']>0&&this.random()<this.buffs['explosive-finish']*.04)
+      for(const e of [...this.enemies])if(distance(e,enemy)<95)this.hit(e,35+15*(this.buffs['explosive-finish']-1),'flex');
 
     if (this.buffs['rizz-aura'] && this.kills % 12 === 0) {
       rizzPulse(this.enemies, this.pos, this.clock);
@@ -404,6 +431,10 @@ export class Arena {
   private hurt(amount:number):void {
     if(this.flexActive&&this.characterId==='cool-kid')return;
     const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage * (this.flexActive&&this.characterId==='alpha'?.28:1);
+    if(this.buffs['guardian-angel']>0&&this.clock>=(this.effectCooldowns.get('guardian')??0)){
+      this.effectCooldowns.set('guardian',this.clock+(this.buffs['guardian-angel']===2?45000:60000));
+      return;
+    }
     const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
     if (result.ignored) return;
     this.hp = result.hp;
@@ -414,6 +445,13 @@ export class Arena {
     // HP damage does not erase earned FLEX charge: prevents melee death spirals.
     // Existing Delulu and incoming armor calculations remain unchanged.
     if (result.saved) this.say('DELULU SAVED YOU!');
+    if(this.hp<=0&&this.buffs['built-different']>0&&!this.builtDifferentUsed){
+      this.builtDifferentUsed=true;this.hp=Math.ceil(this.stats.maxHp*.25);this.say('BUILT DIFFERENT!');
+    }
+    if(this.hp>0&&this.hp<this.stats.maxHp*.3&&this.buffs['second-wind']>0&&this.clock>=(this.effectCooldowns.get('second-wind')??0)){
+      this.hp=Math.min(this.stats.maxHp,this.hp+4+4*this.buffs['second-wind']);
+      this.effectCooldowns.set('second-wind',this.clock+45000);
+    }
     if (this.hp <= 0) this.mode = 'dead';
   }
 
