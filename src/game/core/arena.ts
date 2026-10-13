@@ -133,7 +133,7 @@ export class Arena {
     }
     if (this.mode === 'upgrades') {
       const buff = input.choice === undefined ? undefined : this.choices[input.choice];
-      if (buff && BUFFS.includes(buff) && canEquip(this.buffs,buff)) {
+      if (buff && BUFFS.includes(buff) && availableBuffs(this.buffs,this.xp.level).includes(buff) && canEquip(this.buffs,buff)) {
         this.buffs[buff.id]++;
         if (buff.id === 'thick-skin') this.hp = Math.min(this.stats.maxHp, this.hp + Math.ceil(this.stats.maxHp*.05));
         this.pendingUpgrades--; this.offerUpgrade();
