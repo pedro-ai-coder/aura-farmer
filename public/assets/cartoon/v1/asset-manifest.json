@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "reference": "AF-CARTOON-001",
+  "pathRoot": "public/assets/cartoon/v1",
+  "productionStatus": "first_playable_art_pass",
+  "notes": "Only runtime_first_pass entries exist; planned_not_in_repository are reserved names, not existing assets.",
+  "assets": [
+    {
+      "id": "hero_sigma",
+      "status": "runtime_first_pass",
+      "path": "characters/sigma.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_alpha",
+      "status": "runtime_first_pass",
+      "path": "characters/alpha.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_rizzler",
+      "status": "runtime_first_pass",
+      "path": "characters/rizzler.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_ohio",
+      "status": "runtime_first_pass",
+      "path": "characters/ohio.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_fanum",
+      "status": "runtime_first_pass",
+      "path": "characters/fanum.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_six-seven",
+      "status": "runtime_first_pass",
+      "path": "characters/six-seven.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_cool-kid",
+      "status": "runtime_first_pass",
+      "path": "characters/cool-kid.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "hero_nerd",
+      "status": "runtime_first_pass",
+      "path": "characters/nerd.svg",
+      "notes": "Vector sprite/portrait; directional atlases pending"
+    },
+    {
+      "id": "enemy_npc",
+      "status": "runtime_first_pass",
+      "path": "enemies/npc.svg",
+      "notes": "Vector sprite; animated atlases pending"
+    },
+    {
+      "id": "enemy_hater",
+      "status": "runtime_first_pass",
+      "path": "enemies/hater.svg",
+      "notes": "Vector sprite; animated atlases pending"
+    },
+    {
+      "id": "enemy_beta",
+      "status": "runtime_first_pass",
+      "path": "enemies/beta.svg",
+      "notes": "Vector sprite; animated atlases pending"
+    },
+    {
+      "id": "enemy_boss",
+      "status": "runtime_first_pass",
+      "path": "enemies/boss.svg",
+      "notes": "Vector sprite; animated atlases pending"
+    },
+    {
+      "id": "arena_aura_court",
+      "status": "runtime_first_pass",
+      "path": "arenas/aura-court.svg",
+      "notes": "Cosmetic background, no scrolling/collisions"
+    },
+    {
+      "id": "hero_sigma_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/sigma.atlas.png"
+    },
+    {
+      "id": "hero_sigma_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/sigma.atlas.json"
+    },
+    {
+      "id": "hero_alpha_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/alpha.atlas.png"
+    },
+    {
+      "id": "hero_alpha_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/alpha.atlas.json"
+    },
+    {
+      "id": "hero_rizzler_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/rizzler.atlas.png"
+    },
+    {
+      "id": "hero_rizzler_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/rizzler.atlas.json"
+    },
+    {
+      "id": "hero_ohio_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/ohio.atlas.png"
+    },
+    {
+      "id": "hero_ohio_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/ohio.atlas.json"
+    },
+    {
+      "id": "hero_fanum_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/fanum.atlas.png"
+    },
+    {
+      "id": "hero_fanum_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/fanum.atlas.json"
+    },
+    {
+      "id": "hero_six-seven_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/six-seven.atlas.png"
+    },
+    {
+      "id": "hero_six-seven_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/six-seven.atlas.json"
+    },
+    {
+      "id": "hero_cool-kid_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/cool-kid.atlas.png"
+    },
+    {
+      "id": "hero_cool-kid_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/cool-kid.atlas.json"
+    },
+    {
+      "id": "hero_nerd_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "characters/nerd.atlas.png"
+    },
+    {
+      "id": "hero_nerd_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "characters/nerd.atlas.json"
+    },
+    {
+      "id": "enemy_npc_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "enemies/npc.atlas.png"
+    },
+    {
+      "id": "enemy_npc_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "enemies/npc.atlas.json"
+    },
+    {
+      "id": "enemy_hater_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "enemies/hater.atlas.png"
+    },
+    {
+      "id": "enemy_hater_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "enemies/hater.atlas.json"
+    },
+    {
+      "id": "enemy_beta_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "enemies/beta.atlas.png"
+    },
+    {
+      "id": "enemy_beta_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "enemies/beta.atlas.json"
+    },
+    {
+      "id": "enemy_boss_atlas_png",
+      "status": "planned_not_in_repository",
+      "path": "enemies/boss.atlas.png"
+    },
+    {
+      "id": "enemy_boss_atlas_json",
+      "status": "planned_not_in_repository",
+      "path": "enemies/boss.atlas.json"
+    },
+    {
+      "id": "form_giga-chad_png",
+      "status": "planned_not_in_repository",
+      "path": "forms/giga-chad.atlas.png"
+    },
+    {
+      "id": "form_giga-chad_json",
+      "status": "planned_not_in_repository",
+      "path": "forms/giga-chad.atlas.json"
+    },
+    {
+      "id": "form_sigma-kid_png",
+      "status": "planned_not_in_repository",
+      "path": "forms/sigma-kid.atlas.png"
+    },
+    {
+      "id": "form_sigma-kid_json",
+      "status": "planned_not_in_repository",
+      "path": "forms/sigma-kid.atlas.json"
+    },
+    {
+      "id": "weapon_aura-shot_png",
+      "status": "planned_not_in_repository",
+      "path": "weapons/aura-shot.atlas.png"
+    },
+    {
+      "id": "weapon_aura-shot_json",
+      "status": "planned_not_in_repository",
+      "path": "weapons/aura-shot.atlas.json"
+    },
+    {
+      "id": "weapon_mewing-jaw_png",
+      "status": "planned_not_in_repository",
+      "path": "weapons/mewing-jaw.atlas.png"
+    },
+    {
+      "id": "weapon_mewing-jaw_json",
+      "status": "planned_not_in_repository",
+      "path": "weapons/mewing-jaw.atlas.json"
+    },
+    {
+      "id": "weapon_ohio-orbiter_png",
+      "status": "planned_not_in_repository",
+      "path": "weapons/ohio-orbiter.atlas.png"
+    },
+    {
+      "id": "weapon_ohio-orbiter_json",
+      "status": "planned_not_in_repository",
+      "path": "weapons/ohio-orbiter.atlas.json"
+    },
+    {
+      "id": "weapon_six-seven_png",
+      "status": "planned_not_in_repository",
+      "path": "weapons/six-seven.atlas.png"
+    },
+    {
+      "id": "weapon_six-seven_json",
+      "status": "planned_not_in_repository",
+      "path": "weapons/six-seven.atlas.json"
+    },
+    {
+      "id": "weapon_rizz-pulse_png",
+      "status": "planned_not_in_repository",
+      "path": "weapons/rizz-pulse.atlas.png"
+    },
+    {
+      "id": "weapon_rizz-pulse_json",
+      "status": "planned_not_in_repository",
+      "path": "weapons/rizz-pulse.atlas.json"
+    },
+    {
+      "id": "map_ruin-alley_tileset",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/ruin-alley.tileset.png"
+    },
+    {
+      "id": "map_ruin-alley_collision",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/ruin-alley.map.json"
+    },
+    {
+      "id": "map_ruin-alley_preview",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/ruin-alley.preview.webp"
+    },
+    {
+      "id": "map_crown-chamber_tileset",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/crown-chamber.tileset.png"
+    },
+    {
+      "id": "map_crown-chamber_collision",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/crown-chamber.map.json"
+    },
+    {
+      "id": "map_crown-chamber_preview",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/crown-chamber.preview.webp"
+    },
+    {
+      "id": "map_toxic-rooftop_tileset",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/toxic-rooftop.tileset.png"
+    },
+    {
+      "id": "map_toxic-rooftop_collision",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/toxic-rooftop.map.json"
+    },
+    {
+      "id": "map_toxic-rooftop_preview",
+      "status": "planned_not_in_repository",
+      "path": "arenas/planned/toxic-rooftop.preview.webp"
+    },
+    {
+      "id": "ui_home",
+      "status": "planned_not_in_repository",
+      "path": "ui/home.svg"
+    },
+    {
+      "id": "ui_character-select",
+      "status": "planned_not_in_repository",
+      "path": "ui/character-select.svg"
+    },
+    {
+      "id": "ui_achievements",
+      "status": "planned_not_in_repository",
+      "path": "ui/achievements.svg"
+    },
+    {
+      "id": "ui_leaderboards",
+      "status": "planned_not_in_repository",
+      "path": "ui/leaderboards.svg"
+    },
+    {
+      "id": "ui_settings",
+      "status": "planned_not_in_repository",
+      "path": "ui/settings.svg"
+    },
+    {
+      "id": "ui_pause",
+      "status": "planned_not_in_repository",
+      "path": "ui/pause.svg"
+    },
+    {
+      "id": "ui_quit-confirm",
+      "status": "planned_not_in_repository",
+      "path": "ui/quit-confirm.svg"
+    },
+    {
+      "id": "ui_reset-confirm",
+      "status": "planned_not_in_repository",
+      "path": "ui/reset-confirm.svg"
+    },
+    {
+      "id": "ui_results-win",
+      "status": "planned_not_in_repository",
+      "path": "ui/results-win.svg"
+    },
+    {
+      "id": "ui_results-defeat",
+      "status": "planned_not_in_repository",
+      "path": "ui/results-defeat.svg"
+    },
+    {
+      "id": "ui_level-up",
+      "status": "planned_not_in_repository",
+      "path": "ui/level-up.svg"
+    },
+    {
+      "id": "ui_between-wave",
+      "status": "planned_not_in_repository",
+      "path": "ui/between-wave.svg"
+    },
+    {
+      "id": "ui_loadout",
+      "status": "planned_not_in_repository",
+      "path": "ui/loadout.svg"
+    },
+    {
+      "id": "ui_flex",
+      "status": "planned_not_in_repository",
+      "path": "ui/flex.svg"
+    },
+    {
+      "id": "ui_touch-controls",
+      "status": "planned_not_in_repository",
+      "path": "ui/touch-controls.svg"
+    },
+    {
+      "id": "ui_map-select",
+      "status": "planned_not_in_repository",
+      "path": "ui/map-select.svg"
+    },
+    {
+      "id": "ui_core-choice",
+      "status": "planned_not_in_repository",
+      "path": "ui/core-choice.svg"
+    },
+    {
+      "id": "fx_flex-alpha",
+      "status": "planned_not_in_repository",
+      "path": "fx/flex-alpha.atlas.png"
+    },
+    {
+      "id": "fx_flex-sigma",
+      "status": "planned_not_in_repository",
+      "path": "fx/flex-sigma.atlas.png"
+    },
+    {
+      "id": "fx_flex-rizz",
+      "status": "planned_not_in_repository",
+      "path": "fx/flex-rizz.atlas.png"
+    },
+    {
+      "id": "fx_impact-friendly",
+      "status": "planned_not_in_repository",
+      "path": "fx/impact-friendly.atlas.png"
+    },
+    {
+      "id": "fx_impact-hostile",
+      "status": "planned_not_in_repository",
+      "path": "fx/impact-hostile.atlas.png"
+    },
+    {
+      "id": "fx_crit",
+      "status": "planned_not_in_repository",
+      "path": "fx/crit.atlas.png"
+    },
+    {
+      "id": "fx_heal",
+      "status": "planned_not_in_repository",
+      "path": "fx/heal.atlas.png"
+    },
+    {
+      "id": "fx_essence-alpha",
+      "status": "planned_not_in_repository",
+      "path": "fx/essence-alpha.atlas.png"
+    },
+    {
+      "id": "fx_essence-sigma",
+      "status": "planned_not_in_repository",
+      "path": "fx/essence-sigma.atlas.png"
+    },
+    {
+      "id": "fx_essence-rizz",
+      "status": "planned_not_in_repository",
+      "path": "fx/essence-rizz.atlas.png"
+    }
+  ]
+}

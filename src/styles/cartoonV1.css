@@ -1,0 +1,18 @@
+/* Cartoon V1 runtime skin. Only art treatment changes; layout/input stay intact. */
+.cartoon-v1 body { background:#BFCFE4; color:#18263F; }
+.cartoon-v1 .play-layout { border-color:#36496D; box-shadow:0 7px 0 #344467,0 12px 32px #2332515e; }
+.cartoon-v1 .af-home-art { background:#A8D8E7!important; border-color:#536C99!important; }
+.cartoon-v1 .af-home-art .af-hero-art {
+  image-rendering:auto!important; filter:drop-shadow(4px 7px 0 #23314a72);
+  object-fit:contain; max-height:78%; height:78%;
+}
+.cartoon-v1 .meta-avatar img { image-rendering:auto!important; object-fit:contain; }
+.cartoon-v1 .af-home-event { border-color:#64BCD2!important; }
+.cartoon-v1 .meta-button.primary, .cartoon-v1 .touch-flex[data-state="ready"] {
+  background:#FFD25C; color:#20304C; border-color:#FFF1A0;
+}
+.cartoon-v1 .meta-panel { border-color:#64B8D3; }
+.cartoon-v1 .af-wordmark { text-shadow:2px 3px 0 #121D32; }
+@media(prefers-reduced-motion: reduce){
+ .cartoon-v1 .af-home-art .af-hero-art { transition:none!important; }
+}

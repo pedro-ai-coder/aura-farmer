@@ -5,6 +5,7 @@ import { BUFFS } from '../data/buffs';
 import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
+import { preloadCartoonArt } from '../render/cartoonArt';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import { isGateA, drawGateAHudChrome, drawGateAHudMeter } from '../render/gateAArena';
 import { isFinalArt } from '../render/finalArt';
@@ -35,6 +36,7 @@ export class ArenaScene extends Phaser.Scene {
   constructor() { super('ArenaScene'); }
 
   preload(): void {
+    preloadCartoonArt(this);
     const loading=document.querySelector<HTMLElement>('#af-loading');
     const track=loading?.querySelector<HTMLElement>('[role="progressbar"]');
     const fill=document.querySelector<HTMLElement>('#af-loading-fill');
