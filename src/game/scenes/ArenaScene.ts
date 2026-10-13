@@ -5,7 +5,8 @@ import { BUFFS } from '../data/buffs';
 import { xpToNextLevel } from '../core/progression';
 import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
-import { preloadCartoonArt } from '../render/cartoonArt';
+import { preloadCartoonArt, isCartoonArt } from '../render/cartoonArt';
+import { drawRuinAlley } from '../render/ruinAlleyArt';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import { isGateA, drawGateAHudChrome, drawGateAHudMeter } from '../render/gateAArena';
 import { isFinalArt } from '../render/finalArt';
@@ -13,8 +14,9 @@ import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
 
 export class ArenaScene extends Phaser.Scene {
-  readonly arena = new Arena();
+  readonly arena = new Arena(Math.random, 'sigma', isCartoonArt() ? 'ruin-alley' : null);
   private g!: Phaser.GameObjects.Graphics;
+  private worldFx!: Phaser.GameObjects.Graphics;
   private modalBg!: Phaser.GameObjects.Graphics;
   private pixelWorld!: PixelWorld;
   private buffIcons: Phaser.GameObjects.Image[] = [];
@@ -60,12 +62,18 @@ export class ArenaScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.pixelWorld = new PixelWorld(this);
-    this.g = this.add.graphics().setDepth(0);
-    this.modalBg = this.add.graphics().setDepth(4);
+    document.querySelector<HTMLElement>('.play-layout')?.setAttribute('data-map',this.arena.world?.id ?? 'classic');
+    if(this.arena.world){
+      drawRuinAlley(this,this.arena.world);
+      this.cameras.main.setBounds(0,0,this.arena.world.width,this.arena.world.height);
+    }
+    this.pixelWorld = new PixelWorld(this,this.arena.world);
+    this.worldFx = this.add.graphics().setDepth(1.65);
+    this.g = this.add.graphics().setDepth(1.8).setScrollFactor(0);
+    this.modalBg = this.add.graphics().setDepth(4).setScrollFactor(0);
     if (this.textures.exists('spr-icons')) {
       this.buffIcons = Array.from({ length: 16 }, () =>
-        this.add.image(0,0,'spr-icons',0).setDepth(3).setScale(1.5).setVisible(false));
+        this.add.image(0,0,'spr-icons',0).setDepth(3).setScrollFactor(0).setScale(1.5).setVisible(false));
     }
     this.hud = [66, 274, 591, 780].map(x => this.label(x, 14, 15));
     this.status = this.label(44, 65, 12);
@@ -118,6 +126,12 @@ export class ArenaScene extends Phaser.Scene {
       confirm: just('ENTER') || touch.confirm,
       choice: one ? 0 : two ? 1 : three ? 2 : touch.choice,
     });
+    if(this.arena.world) {
+      const map=this.arena.world;
+      this.cameras.main.setScroll(
+        Phaser.Math.Clamp(this.arena.pos.x-GAME.width/2,0,map.width-GAME.width),
+        Phaser.Math.Clamp(this.arena.pos.y-GAME.height/2,0,map.height-GAME.height));
+    }
     this.draw();
     this.pixelWorld.sync(this.arena);
     if(this.arena.mode==='playing' && this.notifiedWave!==this.arena.wave){
@@ -142,48 +156,48 @@ export class ArenaScene extends Phaser.Scene {
   private clearKeys(): void { this.pendingKeys.clear(); }
 
   private label(x: number, y: number, size: number): Phaser.GameObjects.Text {
-    return this.add.text(x, y, '', { fontFamily: 'Arial, sans-serif', fontSize: size, fontStyle: 'bold', color: '#fff6e8' }).setDepth(2);
+    return this.add.text(x, y, '', { fontFamily: 'Arial, sans-serif', fontSize: size, fontStyle: 'bold', color: '#fff6e8' }).setDepth(2).setScrollFactor(0);
   }
 
   private draw(): void {
-    const a = this.arena, g = this.g, stats = a.stats;
-    g.clear();
+    const a = this.arena, g = this.g, fx = this.worldFx, stats = a.stats;
+    g.clear();fx.clear();
     if(isGateA() || isFinalArt()) drawGateAHudChrome(g);
     else drawHudChrome(g);
     // The light Lavender Pop arena and all character/projectile textures are
     // cached once; Phaser Graphics only draws warnings, HUD and combat FX.
     const charging = a.flexActive, burst = a.flexActive;
-    if (a.clock < a.effects.rizzPulseUntil) g.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
-    if (a.clock < a.effects.invulnerableUntil) g.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
+    if (a.clock < a.effects.rizzPulseUntil) fx.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
+    if (a.clock < a.effects.invulnerableUntil) fx.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
     if(burst&&a.flex.variant==='alpha'){
-      g.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
-      g.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
+      fx.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
+      fx.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
     }
     if(burst&&a.flex.variant==='sigma'){
-      g.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
-      g.lineStyle(2,0xc3ffff,.7).strokeCircle(a.pos.x,a.pos.y,62);
+      fx.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
+      fx.lineStyle(2,0xc3ffff,.7).strokeCircle(a.pos.x,a.pos.y,62);
     }
-    if(burst&&a.flex.variant==='rizz')g.lineStyle(3,0xeb9afa,.7).strokeCircle(a.pos.x,a.pos.y,220);
+    if(burst&&a.flex.variant==='rizz')fx.lineStyle(3,0xeb9afa,.7).strokeCircle(a.pos.x,a.pos.y,220);
     if(charging){
-      g.lineStyle(4,0xffd574,.85).strokeCircle(a.pos.x,a.pos.y,35);
+      fx.lineStyle(4,0xffd574,.85).strokeCircle(a.pos.x,a.pos.y,35);
     }
-    if (a.clock < a.jawUntil) g.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y,
+    if (a.clock < a.jawUntil) fx.lineStyle(6, 0xaaf1cf, .7).strokeCircle(a.pos.x, a.pos.y,
       90+Math.max(0,a.buffs['mewing-jaw']-1)*10);
     if(a.clock<a.rizzBlastUntil){
-      g.fillStyle(0xb760e5,.10).fillCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
-      g.lineStyle(5,0xe6a8fa,.85).strokeCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
+      fx.fillStyle(0xb760e5,.10).fillCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
+      fx.lineStyle(5,0xe6a8fa,.85).strokeCircle(a.pos.x,a.pos.y,a.rizzBlastRadius);
     }
-    if (a.buffs['ohio-orbiter']) g.lineStyle(1, 0x8b5bd8, .45).strokeCircle(a.pos.x, a.pos.y, 76);
+    if (a.buffs['ohio-orbiter']) fx.lineStyle(1, 0x8b5bd8, .45).strokeCircle(a.pos.x, a.pos.y, 76);
     if (burst) {
-      g.lineStyle(5, ART.aura, .84).strokeCircle(a.pos.x, a.pos.y, 37 + 5 * Math.sin(a.clock / 145));
-      g.lineStyle(2, 0xfff8e7, .72).strokeCircle(a.pos.x, a.pos.y, 45);
+      fx.lineStyle(5, ART.aura, .84).strokeCircle(a.pos.x, a.pos.y, 37 + 5 * Math.sin(a.clock / 145));
+      fx.lineStyle(2, 0xfff8e7, .72).strokeCircle(a.pos.x, a.pos.y, 45);
     }
     // Readable orbiting sparks identify the five-second FLEX window.
     if (charging) {
       const p = 1-a.flex.progress(a.clock);
       for (let i=0;i<4;i++) {
         const angle = i * Math.PI/2 + a.clock/500;
-        g.fillStyle(ART.aura, .6+p*.4).fillRect(a.pos.x+Math.cos(angle)*31-3,a.pos.y+Math.sin(angle)*31-3,6,6);
+        fx.fillStyle(ART.aura, .6+p*.4).fillRect(a.pos.x+Math.cos(angle)*31-3,a.pos.y+Math.sin(angle)*31-3,6,6);
       }
     }
 
@@ -201,7 +215,7 @@ export class ArenaScene extends Phaser.Scene {
       a.flex.isReady()?`FLEX READY · PRESS E · ${a.flexName}`:
       `FARM AURA ${a.aura.value}/100 · ${a.flexName}`;
     this.status.setColor(a.flex.isReady()?'#ffdb6d':'#fff8e7')
-      .setText(`${a.kills} KILLS · ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz} · ${flex}`);
+      .setText(`${a.kills} KILLS · ${a.world ? a.world.name + ' · ' : ''}ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz} · ${flex}`);
     touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,a.flex.remaining(a.clock),a.flexVariant);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');

@@ -10,6 +10,7 @@ import { availableBuffs, BUFFS, emptyBuffLevels, type BuffDefinition, type BuffI
 import {canEquip,equipment,legalUpgrades} from './equipment';
 import { ENEMIES, type EnemyType } from '../data/enemies';
 import { getCharacter, type CharacterId } from '../data/characters';
+import { RUIN_ALLEY, moveOnMap, chaseOnMap, blocksProjectile, pickSpawnNearPlayer, type WorldDefinition, type WorldId } from './worldMaps';
 
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; confirm?: boolean; choice?: number }
@@ -21,6 +22,7 @@ export interface Drop extends Vec2 { xp: number }
 export class Arena {
   mode: Mode = 'intro';
   pos = { x: 480, y: 330 };
+  readonly world: WorldDefinition | null;
   hp = 100;
   aura = new AuraSystem();
   flex = new FlexSystem();
@@ -69,7 +71,9 @@ export class Arena {
   private rizzBlastReady=0;
   private nextId = 0;
 
-  constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma') {
+  constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma', readonly worldId: WorldId | null = null) {
+    this.world = worldId === 'ruin-alley' ? RUIN_ALLEY : null;
+    if (this.world) this.pos = { ...this.world.start };
     const selected = getCharacter(characterId);
     // Every starter carries one real automatic weapon, counted in the loadout.
     this.buffs['aura-shot']=1;
@@ -80,7 +84,7 @@ export class Arena {
   }
 
   start(characterId: CharacterId = this.characterId): void {
-    Object.assign(this, new Arena(this.random, characterId));
+    Object.assign(this, new Arena(this.random, characterId, this.worldId));
     this.mode = 'playing';
   }
 
@@ -163,8 +167,13 @@ export class Arena {
     const v=normalized(input.x??0,input.y??0);
     const speed=this.stats.speed*this.aura.moveMultiplier*(active&&variant==='alpha'?1.65:1);
     const previousX=this.pos.x,previousY=this.pos.y;
-    this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);
-    this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);
+    if(this.world) {
+      const moved=moveOnMap(this.pos,v.x*speed*dt/1000,v.y*speed*dt/1000,GAME.playerRadius,this.world);
+      this.pos.x=moved.x;this.pos.y=moved.y;
+    } else {
+      this.pos.x=clamp(this.pos.x+v.x*speed*dt/1000,25,935);
+      this.pos.y=clamp(this.pos.y+v.y*speed*dt/1000,105,575);
+    }
     if (this.characterId==='ohio') {
       this.movedDistance+=Math.hypot(this.pos.x-previousX,this.pos.y-previousY);
       if(this.movedDistance>=280&&this.enemies.length){
@@ -191,8 +200,13 @@ export class Arena {
       const slow=rizzSpeed(e,e.type==='boss',this.clock);
       // Haters stop at range and fire aimed, dodgeable projectiles.
       if (e.type !== 'hater' || d > 235) {
-        e.x += v.x * stats.speed * dt / 1000 * slow;
-        e.y += v.y * stats.speed * dt / 1000 * slow;
+        if(this.world) {
+          const next=chaseOnMap(e,this.pos,stats.speed*dt/1000*slow,stats.radius,this.world,e.id%2===0);
+          e.x=next.x;e.y=next.y;
+        } else {
+          e.x += v.x * stats.speed * dt / 1000 * slow;
+          e.y += v.y * stats.speed * dt / 1000 * slow;
+        }
       }
       if ((e.type === 'hater' || e.type === 'boss') && this.clock >= e.nextShot) {
         this.shoot(e, this.pos, stats.damage, true, 165);
@@ -217,8 +231,11 @@ export class Arena {
     // invulnerable boss DPS stacking outside the per-activation stomp cap.
     if(!(active&&variant==='alpha'))this.attack();
     for (const shot of [...this.shots]) {
+      const previous={x:shot.x,y:shot.y};
       shot.x += shot.vx * dt / 1000; shot.y += shot.vy * dt / 1000; shot.ttl -= dt;
-      if (shot.ttl <= 0) { this.removeShot(shot); continue; }
+      if (shot.ttl <= 0 || (this.world && blocksProjectile(previous,shot,this.world))) {
+        this.removeShot(shot); continue;
+      }
       if (shot.hostile) {
         if (distance(shot, this.pos) < GAME.playerRadius + 6) {
           this.removeShot(shot); this.hurt(shot.damage);
@@ -418,8 +435,13 @@ export class Arena {
         this.hit(e,base,'flex');
         if(this.enemies.includes(e)){
           const direction=normalized(e.x-this.pos.x,e.y-this.pos.y);
-          e.x=clamp(e.x+direction.x*21,25,935);
-          e.y=clamp(e.y+direction.y*21,105,575);
+          if(this.world){
+            const shoved=moveOnMap(e,direction.x*21,direction.y*21,ENEMIES[e.type].radius,this.world);
+            e.x=shoved.x;e.y=shoved.y;
+          } else {
+            e.x=clamp(e.x+direction.x*21,25,935);
+            e.y=clamp(e.y+direction.y*21,105,575);
+          }
         }
       }
     }
@@ -456,11 +478,17 @@ export class Arena {
   }
 
   private spawn(type: EnemyType): void {
-    const side = Math.floor(this.random() * 4), offset = this.random();
-    const pos = side < 2 ? { x: side === 0 ? 25 : 935, y: 105 + offset * 470 }
-      : { x: 25 + offset * 910, y: side === 2 ? 105 : 575 };
-    // Never materialize on the player, even when they hug an arena edge.
-    if (distance(pos, this.pos) < 220) { pos.x = 960 - pos.x; pos.y = 680 - pos.y; }
+    let pos: Vec2;
+    if(this.world) {
+      const result=pickSpawnNearPlayer(this.world,this.pos,ENEMIES[type].radius,this.random);
+      if(!result)return; // Never spawn inside an obstacle or directly on the hero.
+      pos=result;
+    } else {
+      const side = Math.floor(this.random() * 4), offset = this.random();
+      pos = side < 2 ? { x: side === 0 ? 25 : 935, y: 105 + offset * 470 }
+        : { x: 25 + offset * 910, y: side === 2 ? 105 : 575 };
+      if (distance(pos, this.pos) < 220) { pos.x = 960 - pos.x; pos.y = 680 - pos.y; }
+    }
     this.enemies.push({ ...pos, id: this.nextId++, type, hp: ENEMIES[type].hp, nextHit: this.clock, nextShot: this.clock + 1500 });
   }
 

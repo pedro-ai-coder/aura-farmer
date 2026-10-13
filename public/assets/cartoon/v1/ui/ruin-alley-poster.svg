@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#bee0e0"/>
+<path d="M0 300 L120 272 L180 300 L270 225 L330 280 L410 208 L520 255 L660 208 L740 265 L840 220 L950 255 L1080 190 L1180 248 L1280 215 V720 H0Z" fill="#7aa9b8"/>
+<path d="M0 350 L175 350 L175 260 L240 260 L240 333 L341 333 L341 280 L435 280 L435 320 L560 320 L560 253 L668 253 L668 368 L765 368 L765 300 L890 300 L890 340 L997 340 L997 245 L1102 245 L1102 360 L1280 360 V720H0Z" fill="#50778e"/>
+<path d="M0 430 L145 398 L290 450 L395 415 L515 448 L620 399 L744 450 L840 406 L951 444 L1080 412 L1280 450 V720 H0Z" fill="#e3d3a4"/>
+<path d="M0 485 L1280 485 V720H0Z" fill="#d0deda"/>
+<g fill="none" stroke="#a4baba" stroke-width="4">
+<path d="M0 558H1280 M0 646H1280 M74 485V558M180 558V646M320 485V558M465 558V646M600 485V558M760 558V646M900 485V558M1100 558V646"/>
+</g>
+<path d="M10 395 L180 370 L180 455 L10 480Z" fill="#f4b86b" stroke="#304765" stroke-width="9"/>
+<path d="M41 400 L120 389" stroke="#ffedbd" stroke-width="8"/>
+<path d="M225 450 L375 426 L391 550 L235 566Z" fill="#64b6bb" stroke="#385a6e" stroke-width="12"/>
+<path d="M249 473L362 455" stroke="#d7f0de" stroke-width="8"/>
+<path d="M930 455 L1110 434 L1130 546 L947 565Z" fill="#edb16f" stroke="#536778" stroke-width="12"/>
+<path d="M964 464L1093 450 M981 525L1100 515" stroke="#8a6d58" stroke-width="9"/>
+<path d="M610 510L654 463L702 512V566H610Z" fill="#fbdf89" stroke="#3c5d73" stroke-width="8"/>
+<g transform="translate(1060 184) rotate(-9)">
+<path d="M-50 30 L-59 -18 L-12 8 L0 -45 L19 6 L56 -23 L48 30Z" fill="#ffcc53" stroke="#3d526d" stroke-width="8"/>
+<path d="M-46 34H50" stroke="#f9eac9" stroke-width="12"/>
+</g>
+<g fill="#f9cc58" stroke="#5a6473" stroke-width="5">
+<circle cx="148" cy="550" r="16"/><circle cx="880" cy="620" r="18"/><circle cx="1210" cy="535" r="16"/>
+</g>
+<g transform="translate(590 386) rotate(-6)">
+<rect x="-172" y="-44" width="344" height="95" fill="#f9ce70" stroke="#39536a" stroke-width="13"/>
+<text x="0" y="-10" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-weight="900" font-size="37" fill="#32445a" letter-spacing="1">RUIN ALLEY</text>
+<text x="0" y="27" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="19" fill="#38495b" letter-spacing="3">NO HATERS ALLOWED</text>
+</g>
+<g fill="#fff4d9" stroke="#46637c" stroke-width="3">
+<path d="M48 180L86 157L107 195Z"/><path d="M1160 345 L1210 320 L1235 360Z"/>
+</g>
+</svg>

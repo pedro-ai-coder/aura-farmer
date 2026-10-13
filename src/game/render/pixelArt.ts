@@ -12,6 +12,7 @@ import { isGateB, createGateBHeroes, gateBHeroKey, type GateBHero, type GateBHer
 import { isGateB2, createGateB2Heroes, b2Key, type B2Id, type B2Pose } from './gateB2Heroes';
 import { isFinalArt, loadFinalArt, finalEnemyKey, finalFxKey, type EnemyPose } from './finalArt';
 import { isCartoonArt, cartoonHeroKey, cartoonEnemyKey } from './cartoonArt';
+import type { WorldDefinition } from '../core/worldMaps';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
 // low-resolution grid. No third-party assets, animation libraries, or downloads.
@@ -242,14 +243,14 @@ export class PixelWorld {
   private flexSuccessStartedAt = -1;
   private deathStartedAt = -1;
 
-  constructor(private scene: Phaser.Scene) {
+  constructor(private scene: Phaser.Scene, world: WorldDefinition | null = null) {
     createPixelTextures(scene);
     createGateA(scene);
     createGateBHeroes(scene);
     createGateB2Heroes(scene);
     createStarterArt(scene);
     loadFinalArt(scene);
-    scene.add.image(480,300,this.cartoonArt && scene.textures.exists('ct-arena') ? 'ct-arena' : this.finalArt ? 'af-arena' :
+    if(!world)scene.add.image(480,300,this.cartoonArt && scene.textures.exists('ct-arena') ? 'ct-arena' : this.finalArt ? 'af-arena' :
       this.gateA && scene.textures.exists('ga-floor') ? 'ga-floor' : 'px-floor').setDepth(-10);
     this.shadowLayer = scene.add.graphics().setDepth(.65);
     this.actionLayer = scene.add.graphics().setDepth(1.65);
