@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+<ellipse cx="49" cy="91" rx="31" ry="3.5" fill="#212D50" opacity=".20"/>
+<path d="M32 75 L30 86 L40 87 L46 76Z M51 76 L55 87 L66 86 L62 73Z" fill="#2D6694" stroke="#242332" stroke-width="4" stroke-linejoin="round"/>
+<path d="M25 87 Q31 82 41 86 L44 91 L26 91Z M55 86 Q65 82 70 88 L69 92 L53 92Z" fill="#FCFAEF" stroke="#252330" stroke-width="3"/><path d="M26 88 H42 M55 88 H69" stroke="#5F687B" stroke-width="1.5"/><path d="M27 55 Q18 54 15 65 L19 72 Q26 74 32 66Z M67 55 Q75 54 81 66 L77 72 Q69 74 63 67Z" fill="#2D6694" stroke="#232131" stroke-width="3.5"/><ellipse cx="17" cy="72" rx="7" ry="6" fill="#E2AA79" stroke="#232131" stroke-width="3"/><ellipse cx="80" cy="72" rx="7" ry="6" fill="#E2AA79" stroke="#232131" stroke-width="3"/><path d="M29 54 Q40 52 48 56 Q57 52 67 55 L73 77 Q51 85 24 77Z" fill="#2D6694" stroke="#232131" stroke-width="4" stroke-linejoin="round"/><path d="M29 59 Q46 62 64 58" fill="none" stroke="#3ED5F7" stroke-width="2" opacity=".8"/><path d="M49 59 l3 5 7 0 -5 4 2 7 -7 -3 -7 3 2 -7 -5 -4 7 0 Z" fill="#54CFFF" stroke="#272033" stroke-width="1.5"/><path d="M28 30 Q30 17 48 15 Q69 16 71 34 L68 49 Q63 58 48 59 Q31 58 27 46Z" fill="#E2AA79" stroke="#232332" stroke-width="3.5"/>
+<path d="M31 41 q17 7 36 0" fill="none" stroke="#B57765" stroke-width="1.4" opacity=".4"/>
+<path d="M36 38 l7 -2 M53 36 l8 2" stroke="#1D1B27" stroke-width="4" stroke-linecap="round"/>
+<ellipse cx="41" cy="42" rx="3.3" ry="3.9" fill="#1C1A27"/><ellipse cx="56" cy="42" rx="3.3" ry="3.9" fill="#1C1A27"/>
+<circle cx="42" cy="41" r="1" fill="#fff"/><circle cx="57" cy="41" r="1" fill="#fff"/>
+<path d="M45 50 Q49 52 53 50" stroke="#51372D" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M25 27 Q25 9 48 11 Q70 10 71 27 L70 32 L27 32Z" fill="#1577B8" stroke="#222837" stroke-width="3"/><path d="M25 29 Q48 23 72 29 L70 36 Q49 34 27 36Z" fill="#42BAEA" stroke="#243144" stroke-width="3"/><circle cx="48" cy="10" r="5" fill="#54D0F8" stroke="#243144" stroke-width="2"/>
+<path d="M26 58 l6 5 M67 58 l-5 5" stroke="#54CFFF" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+</svg>
