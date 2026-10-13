@@ -28,7 +28,7 @@ describe('Ruin Alley — functional scrolling map',()=>{
    expect(p.x).toBe(41);expect(p.y).toBe(41);
  });
  it('provides a route around solid scenery for enemy pursuit',()=>{
-   const start={x:930,y:325},target={x:930,y:100};
+   const start={x:930,y:306},target={x:930,y:100};
    const next=chaseOnMap(start,target,12,18,RUIN_ALLEY,true);
    expect(isWalkable(next,18,RUIN_ALLEY)).toBe(true);
    expect(next.x).not.toBe(start.x);
