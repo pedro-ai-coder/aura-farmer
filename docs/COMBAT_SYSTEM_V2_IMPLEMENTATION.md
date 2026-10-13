@@ -1,6 +1,6 @@
 # Combat System V2 — migration and delivery order
 
-Status: **isolated code registry committed; NOT integrated into the playable runtime**.
+Status: **runtime integration in progress on fix/combat-v2-runtime-hud; gated by exact-head TypeScript, unit tests, browser tests and preview approval**.
 
 ## Authority and coordination
 - Owner's newer decision supersedes the 3+3 loadout and Alpha/Sigma/Rizz essence mechanics in GAME_DESIGN_V1_LOCKED.md.
