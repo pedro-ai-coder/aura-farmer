@@ -62,6 +62,7 @@ export class ArenaScene extends Phaser.Scene {
   }
 
   create(): void {
+    document.querySelector<HTMLElement>('.play-layout')?.setAttribute('data-map',this.arena.world?.id ?? 'classic');
     if(this.arena.world){
       drawRuinAlley(this,this.arena.world);
       this.cameras.main.setBounds(0,0,this.arena.world.width,this.arena.world.height);
