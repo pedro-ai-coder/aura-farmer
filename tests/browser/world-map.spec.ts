@@ -29,3 +29,26 @@ test('short landscape menu still exposes play', async ({ page }) => {
   await expect(page.locator('.play-layout')).toHaveAttribute('data-map','ruin-alley');
   await expect(page.locator('[data-menu="play"]')).toBeVisible();
 });
+
+test('desktop cartoon home and character menu never collapse into a narrow strip',async({page})=>{
+  await page.setViewportSize({width:1412,height:900});
+  await page.goto('/?visual=cartoon');
+  const stage=page.locator('.play-layout');
+  await expect(stage).toHaveClass(/is-front-menu/);
+  const stageBox=await stage.boundingBox();
+  const panel=page.locator('#meta-shell .meta-panel');
+  const panelBox=await panel.boundingBox();
+  expect(stageBox).not.toBeNull();
+  expect(panelBox).not.toBeNull();
+  if(stageBox&&panelBox){
+    expect(stageBox.height).toBeGreaterThan(500);
+    expect(panelBox.height).toBeGreaterThan(160);
+    expect(panelBox.y).toBeGreaterThanOrEqual(stageBox.y);
+    expect(panelBox.y+panelBox.height).toBeLessThanOrEqual(stageBox.y+stageBox.height+1);
+  }
+  await page.locator('[data-menu="play"]').click();
+  const roster=page.locator('#meta-shell .meta-panel');
+  await expect(roster).toBeVisible();
+  const rosterBox=await roster.boundingBox();
+  expect(rosterBox?.height).toBeGreaterThan(160);
+});
