@@ -184,3 +184,6 @@ html.cartoon-v1{
   .cartoon-v1 .upgrade-dialog .touch-upgrades{grid-template-columns:1fr}
   .cartoon-v1 .upgrade-choice{min-height:105px}
 }
+
+/* Weapons have levels 1-4, but no passive rarity. Epic passives end at level 2. */
+.cartoon-v1 .upgrade-choice[data-rarity="weapon"]{border-left:9px solid #318ca9!important}
