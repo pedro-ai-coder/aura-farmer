@@ -67,20 +67,25 @@ test('v0.6 avoids re-binding unchanged hero texture on every render tick',async(
   await play(page);
   await expect.poll(()=>page.evaluate(()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;
-    return scene.children.list.some(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).texture.key.startsWith('ga-sigma-'));
+    return scene.children.list.some(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).texture.key==='ct-hero-sigma');
   })).toBe(true);
   const counts=await page.evaluate(async()=>{
     const scene=window.__game.scene.scenes[0] as ArenaScene;
-    const hero=scene.children.list.find(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).texture.key.startsWith('ga-sigma-')) as Phaser.GameObjects.Image;
-    let calls=0;
+    const hero=scene.children.list.find(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).texture.key==='ct-hero-sigma') as Phaser.GameObjects.Image;
+    let calls=0,frames=0;
     const original=hero.setTexture.bind(hero);
     hero.setTexture=((key:string, frame?:string|number)=>{calls++;return original(key,frame);}) as typeof hero.setTexture;
-    await new Promise(resolve=>setTimeout(resolve,140));
-    return calls;
+    await new Promise<void>(resolve=>{
+      const afterFrame=()=>{
+        if(++frames===8){scene.events.off('postupdate',afterFrame);resolve();}
+      };
+      scene.events.on('postupdate',afterFrame);
+    });
+    hero.setTexture=original;
+    return {calls,frames};
   });
-  // Sigma's idle animation changes frames once every ~175 ms, not 60
-  // redundant GPU texture bindings per second.
-  expect(counts).toBeLessThanOrEqual(3);
+  // Cartoon V1 animates the static SVG through transforms, without rebinding it.
+  expect(counts).toEqual({calls:0,frames:8});
 });
 
 test('v0.6 keeps smartphone pause/resume and upgrade controls accessible',async({page})=>{
