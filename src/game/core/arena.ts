@@ -323,7 +323,7 @@ export class Arena {
     if(auraShot>0 && this.clock>=this.fireReady){
       const target=this.enemies.reduce((x,y)=>distance(x,this.pos)<distance(y,this.pos)?x:y);
       const shot=this.shoot(this.pos,target,this.damage(18*(1+(auraShot-1)*.23)));
-      if(this.buffs['double-trouble']>0&&this.random()<(this.buffs['double-trouble']===2?.18:.1))
+      if(this.buffs['double-trouble']>0&&this.random()<(this.buffs['double-trouble']===2 ? .18 : .1))
         this.shoot(this.pos,target,this.damage(10));
       if(this.flexActive&&(this.characterId==='sigma'||this.characterId==='nerd'))shot.piercing=true;
       this.fireReady=this.clock+420/(this.aura.fireRateMultiplier*this.stats.fireRate*
@@ -382,7 +382,7 @@ export class Arena {
   private damage(base: number): number {
     const stats = this.stats;
     const sigma=this.flexActive&&(this.characterId==='sigma'||this.characterId==='nerd');
-    const crit=this.random()<Math.min(.5,this.stats.critChance+(sigma?.15:0));
+    const crit=this.random()<Math.min(.5,this.stats.critChance+(sigma ? .15 : 0));
     this.lastCrit=crit;
     return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.15:1)*(this.clock<this.flexDamageUntil&&this.buffs['main-character-energy']>0?1.25:1)*
       (crit?2:1);
@@ -457,7 +457,7 @@ export class Arena {
 
   private hurt(amount:number):void {
     if(this.flexActive&&this.characterId==='cool-kid')return;
-    const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage * (this.flexActive&&this.characterId==='alpha'?.28:1);
+    const damage = Math.max(1, amount - this.stats.armor) * this.stats.incomingDamage * (this.flexActive&&this.characterId==='alpha' ? .28 : 1);
     if(this.buffs['guardian-angel']>0&&this.clock>=(this.effectCooldowns.get('guardian')??0)){
       this.effectCooldowns.set('guardian',this.clock+(this.buffs['guardian-angel']===2?45000:60000));
       return;
