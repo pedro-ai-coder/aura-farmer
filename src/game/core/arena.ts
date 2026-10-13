@@ -448,7 +448,7 @@ export class Arena {
   }
 
   private offerUpgrade(): void {
-    const options=legalUpgrades(this.buffs,availableBuffs(this.buffs));
+    const options=legalUpgrades(this.buffs,availableBuffs(this.buffs,this.xp.level));
     if (!options.length || this.pendingUpgrades <= 0) {
       // Exhausted loadouts turn surplus XP into a small, deterministic resource
       // benefit instead of trapping the player on an empty choice screen.
