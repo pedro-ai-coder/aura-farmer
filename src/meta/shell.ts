@@ -1,4 +1,5 @@
 import {starterPortrait} from '../game/render/newStarters';
+import {isCartoonArt,cartoonHeroSrc} from '../game/render/cartoonArt';
 import { isFinalArt } from '../game/render/finalArt';
 import { isGateB2, gateB2Portrait } from '../game/render/gateB2Heroes';
 import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
@@ -115,6 +116,7 @@ export class GameShell {
    * sheet into the menu avatar. Keep the animation PNGs untouched for gameplay.
    */
   private previewPortrait(id: CharacterId): string {
+    if (isCartoonArt()) return cartoonHeroSrc(id);
     if(id==='cool-kid'||id==='nerd')return starterPortrait(id);
     if(isFinalArt() && (id==='ohio'||id==='fanum'||id==='six-seven'))return gateB2Portrait(id);
     if(isFinalArt() && (id==='alpha'||id==='rizzler'))return gateBPortraitUrl(id);
@@ -154,7 +156,7 @@ export class GameShell {
         const c=getCharacter(this.profile.selectedCharacterId);
         // Featured portrait follows the selected hero. Gate B gives Alpha/Rizzler
         // their own artwork, while all other characters retain a valid fallback.
-        const heroSrc = isGateA() || isFinalArt() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
+        const heroSrc = isCartoonArt() || isGateA() || isFinalArt() ? this.previewPortrait(c.id) : '/assets/identity/hero.svg';
         const heroStrip = isGateA() && !isFinalArt() && !isGateB2() && ['ohio','fanum','six-seven'].includes(c.id);
         return this.header(isFinalArt() ? 'AURA ARENA · CLASSIC SURVIVAL' : isGateB2() ? 'GATE B2 · FULL HERO ROSTER' : isGateB() ? 'GATE B · HERO PREVIEW' : isGateA() ? 'GATE A · VISUAL PREVIEW' : 'FARM · FIGHT · HARVEST')+`<div class="af-home-layout">
           <div class="af-home-nav">
