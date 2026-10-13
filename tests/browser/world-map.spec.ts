@@ -14,6 +14,8 @@ test('new world keeps game controls accessible during movement', async ({ page }
   await page.goto('/?visual=cartoon');
   await expect(page.locator('.play-layout')).toHaveAttribute('data-map','ruin-alley');
   await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
+  await expect(page.locator('#flex-ultimate-hud')).toBeVisible();
   await page.keyboard.down('D');
   await page.waitForTimeout(1200);
   await page.keyboard.up('D');

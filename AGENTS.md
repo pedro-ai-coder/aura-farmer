@@ -1,11 +1,7 @@
 # Agent instructions — Aura Farmer
 
-Source of truth in order: docs/DECISIONS.md, docs/COMBAT_SPEC.md, docs/TECH_PLAN.md, docs/ROADMAP.md, docs/GAME_DESIGN.md.
+Read **docs/AUTONOMOUS_DEVELOPMENT.md** before making any changes. It contains the current gameplay direction, budget constraints, security boundaries, test commands and PR delivery contract.
 
-- FLEX is an independent risky action: 1s immobile, attacks disabled, 15s cooldown, >=3 enemies within 145px for +25 Aura, interrupted on damage.
-- Aura 0-100 is separate from XP and coins; burst at 100 resets to 40.
-- Original Cartoon 2D visuals. No copied Riot or Brotato sprites.
-- Web solo prototype first. Do not add multiplayer or Discord in v0.1.
-- Pure logic must be testable without Phaser. TypeScript strict mode.
-- Begin with AF-000: npm install; commit package-lock.json; typecheck, tests, build, browser smoke test. Update docs/VALIDATION.md.
-- Small PRs, no unverified claims or silent gameplay changes.
+Do not assume older FLEX/Focus/multiple-Aura specifications are current. Never merge your own PR into main; the repository owner approves merges.
+
+For implementation: prefer independent TypeScript simulation logic, small testable changes, and faithful documentation. Report failed or unrun tests explicitly.
