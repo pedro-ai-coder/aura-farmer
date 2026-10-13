@@ -62,6 +62,7 @@ export class Arena {
   private timeWarpUntil = 0;
   private flexDamageUntil = 0;
   private builtDifferentUsed = false;
+  private lastCrit = false;
   private movedDistance = 0;
   bossSpawned = false;
   bossDefeated = false;
@@ -223,6 +224,13 @@ export class Arena {
       }
     }
     if(active&&this.characterId==='cool-kid')this.rampage();
+    if(active&&this.characterId==='six-seven'&&this.clock>=this.nextChadSlam){
+      this.nextChadSlam=this.clock+850;
+      for(let i=0;i<2;i++){
+        const angle=this.clock/500+i*Math.PI;
+        this.shoot(this.pos,{x:this.pos.x+Math.cos(angle),y:this.pos.y+Math.sin(angle)},this.damage(12));
+      }
+    }
     if(active&&this.characterId==='alpha'&&this.clock>=this.nextChadSlam){
       this.nextChadSlam=this.clock+800;
       for(const e of [...this.enemies])if(distance(e,this.pos)<145)
@@ -263,7 +271,7 @@ export class Arena {
           this.hit(enemy, shot.damage);
           if(shot.splash)for(const other of [...this.enemies])if(other!==enemy&&distance(other,enemy)<shot.splash)
             this.hit(other,shot.damage*.55,'flex');
-          if(this.buffs['chain-reaction']>0&&this.random()<this.buffs['chain-reaction']*.05)
+          if(this.buffs['chain-reaction']>0&&this.random()<(.05+this.buffs['chain-reaction']*.05))
             for(const other of this.enemies.filter(e=>e!==enemy&&distance(e,enemy)<100).slice(0,1))
               this.hit(other,shot.damage*.4,'flex');
           // Piercing Sigma FLEX makes one additional bounded strike. Ordinary
@@ -322,7 +330,7 @@ export class Arena {
         (1+(auraShot-1)*.13)*(this.flexActive&&this.characterId==='nerd'?1.3:this.flexActive&&this.characterId==='sigma'?1.25:1)*(this.clock<this.timeWarpUntil?1.25:1));
     }
     const jawLevel=this.buffs['mewing-jaw'];
-    const jawRadius=90+Math.max(0,jawLevel-1)*10;
+    const jawRadius=(90+Math.max(0,jawLevel-1)*10)*(1+this.buffs['long-reach']*.05);
     if(jawLevel>0 && this.clock>=this.jawReady &&
       this.enemies.some(e=>distance(e,this.pos)<jawRadius)){
       this.jawReady=this.clock+1100/(1+(jawLevel-1)*.12);
@@ -358,7 +366,7 @@ export class Arena {
       this.memeReady=this.clock+3000/(1+(memeLevel-1)*.14);
     }
     const rizzLevel=this.buffs['rizz-blast'];
-    const radius=110+(rizzLevel-1)*19;
+    const radius=(110+(rizzLevel-1)*19)*(1+this.buffs['long-reach']*.05);
     if(rizzLevel>0 && this.clock>=this.rizzBlastReady &&
       this.enemies.some(e=>distance(e,this.pos)<=radius)){
       this.rizzBlastReady=this.clock+4800/(1+(rizzLevel-1)*.13);
@@ -374,8 +382,10 @@ export class Arena {
   private damage(base: number): number {
     const stats = this.stats;
     const sigma=this.flexActive&&(this.characterId==='sigma'||this.characterId==='nerd');
+    const crit=this.random()<Math.min(.5,this.stats.critChance+(sigma?.15:0));
+    this.lastCrit=crit;
     return base*this.aura.attackMultiplier(this.clock)*stats.damage*(sigma?1.15:1)*(this.clock<this.flexDamageUntil&&this.buffs['main-character-energy']>0?1.25:1)*
-      (this.random()<Math.min(.5,stats.critChance+(sigma?.15:0))?2:1);
+      (crit?2:1);
   }
 
   private shoot(from: Vec2, to: Vec2, damage: number, hostile = false, speed = 470): Shot {
@@ -393,7 +403,24 @@ export class Arena {
   private hit(enemy: Enemy, damage: number,source:'normal'|'flex'='normal'): void {
     const elite=enemy.type==='boss'||enemy.type==='beta';
     const dealt=damage*(elite&&this.buffs['final-boss-energy']>0?1.15:1);
+    if(source==='normal'&&this.buffs['infinite-rizz']>0&&this.lastCrit&&this.clock>=(this.effectCooldowns.get('infinite-rizz')??0)){
+      this.effectCooldowns.set('infinite-rizz',this.clock+1000);
+      this.lastCrit=false;
+      enemy.hp-=dealt*.35;
+    }
+    if(source==='normal'&&this.buffs.shockwave>0&&this.random()<(.04+.04*this.buffs.shockwave)
+       &&this.clock>=(this.effectCooldowns.get('shockwave')??0)){
+      this.effectCooldowns.set('shockwave',this.clock+2000);
+      for(const other of [...this.enemies])if(other!==enemy&&distance(other,enemy)<105)
+        this.hit(other,dealt*.35,'flex');
+    }
     enemy.hp-=source==='flex'?dealt:firstHitDamage(enemy,ENEMIES[enemy.type].hp*difficultyV2(this.wave).hp,dealt,this.buffs.mogged);
+    if(source==='normal'&&this.buffs['heavy-impact']>0&&enemy.hp>0){
+      const dir=normalized(enemy.x-this.pos.x,enemy.y-this.pos.y);
+      const push=4+this.buffs['heavy-impact']*3;
+      if(this.world){const next=moveOnMap(enemy,dir.x*push,dir.y*push,ENEMIES[enemy.type].radius,this.world);enemy.x=next.x;enemy.y=next.y;}
+      else{enemy.x=clamp(enemy.x+dir.x*push,25,935);enemy.y=clamp(enemy.y+dir.y*push,105,575);}
+    }
     if (enemy.hp > 0) return;
     const index = this.enemies.indexOf(enemy);
     if (index < 0) return;
@@ -401,7 +428,7 @@ export class Arena {
     this.drops.push({ x: enemy.x, y: enemy.y, xp: ENEMIES[enemy.type].xp });
     if (enemy.type === 'boss') { this.bossDefeated = true; this.say('BIG HATER defeated!'); }
     // Active FLEX kills must not immediately recharge the Ultimate.
-    if(!this.flexActive)this.aura.change(5+(distance(enemy,this.pos)<=135?2:0)+(elite&&this.buffs['final-boss-energy']>0?15:0),this.clock);
+    if(!this.flexActive)this.aura.change(5+(distance(enemy,this.pos)<=135+(this.buffs['aura-magnet']??0)*18?2:0)+(elite&&this.buffs['final-boss-energy']>0?15:0),this.clock);
     if(this.buffs['vampire-mode']>0&&this.clock>=(this.effectCooldowns.get('vampire')??0)){
       this.hp=Math.min(this.stats.maxHp,this.hp+1+this.buffs['vampire-mode']);
       this.effectCooldowns.set('vampire',this.clock+2000);
