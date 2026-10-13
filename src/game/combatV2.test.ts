@@ -1,6 +1,6 @@
 import {describe,it,expect} from "vitest";
 import {PASSIVES_V2,WEAPONS_V2,FLEXES_V2,validateBuildV2,difficultyV2,eligiblePassivesV2} from "./combatV2";
-const weapons=[{id:"aura-blaster",level:1},{id:"sigma-sword",level:1},{id:"boom-box",level:1}];
+const weapons=[{id:"aura-shot",level:1},{id:"mewing-jaw",level:1},{id:"ohio-orbiter",level:1}];
 describe("Combat V2 isolated contract",()=>{
  it("defines exactly 6 weapons, 28 passives and 8 distinct Flexes",()=>{
   expect(WEAPONS_V2).toHaveLength(6);
@@ -15,7 +15,7 @@ describe("Combat V2 isolated contract",()=>{
  it("enforces exactly 3 weapons, max 5 passives and one legendary",()=>{
   expect(validateBuildV2({weapons,passives:[]})).toBe(true);
   expect(validateBuildV2({weapons:weapons.slice(1),passives:[]})).toBe(false);
-  expect(validateBuildV2({weapons:[...weapons,{id:"rizz-beam",level:1}],passives:[]})).toBe(false);
+  expect(validateBuildV2({weapons:[...weapons,{id:"rizz-blast",level:1}],passives:[]})).toBe(false);
   const passives=PASSIVES_V2.filter(x=>x.rarity==="normal").slice(0,5).map(p=>({id:p.id,level:1}));
   expect(validateBuildV2({weapons,passives})).toBe(true);
   expect(validateBuildV2({weapons,passives:[...passives,{id:"critical-drip",level:1}]})).toBe(false);
