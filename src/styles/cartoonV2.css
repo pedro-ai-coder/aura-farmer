@@ -144,3 +144,43 @@ html.cartoon-v1{
 .cartoon-v1 .upgrade-choice[data-rarity="common"]{border-left:9px solid #73ad77!important}
 .cartoon-v1 .upgrade-choice:focus-visible{outline:3px dashed #bc6939!important;outline-offset:2px}
 .cartoon-v1 .upgrade-paused{background:#d6e4e2!important;color:#34495a!important}
+
+/* Combat V2: keep the upgrade decision attached to the viewport, not to a
+   canvas whose intrinsic dimensions can change during Phaser reflow. */
+.cartoon-v1 .play-layout:not(.is-front-menu):not(.is-immersive):not(:fullscreen) #game{
+  width:100%;aspect-ratio:960 / 600;flex:0 0 auto;
+}
+.cartoon-v1 .upgrade-overlay{
+  position:fixed;inset:0;z-index:100;min-width:0;
+  max-height:100dvh;overflow-y:auto;overflow-x:hidden;
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right))
+          max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+}
+.cartoon-v1 .upgrade-dialog{
+  flex:0 1 900px;width:min(900px,100%);height:auto;
+  min-width:0;min-height:0;max-height:calc(100dvh - 24px);
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;
+}
+.cartoon-v1 .upgrade-dialog .touch-upgrades{
+  flex:0 0 auto;min-height:0;align-items:stretch;
+}
+.cartoon-v1 .upgrade-choice{
+  min-width:0;min-height:154px;white-space:normal;
+}
+.cartoon-v1 .upgrade-name{overflow-wrap:anywhere}
+.cartoon-v1 .upgrade-description{color:#2f495c!important}
+.cartoon-v1 .upgrade-choice[data-rarity="legendary"]{border-left:9px solid #d9a333!important}
+@media(max-height:680px) and (orientation:landscape){
+  .cartoon-v1 .upgrade-dialog{gap:7px;padding:10px;max-height:calc(100dvh - 20px)}
+  .cartoon-v1 .upgrade-choice{min-height:122px;padding:8px;gap:6px}
+  .cartoon-v1 .upgrade-art{height:38px}
+  .cartoon-v1 .upgrade-art svg{height:38px;width:38px}
+  .cartoon-v1 .upgrade-header{padding:6px 9px}
+  .cartoon-v1 .upgrade-dialog .touch-upgrades{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:660px){
+  .cartoon-v1 .upgrade-overlay{align-items:flex-start}
+  .cartoon-v1 .upgrade-dialog{width:100%;max-height:calc(100dvh - 24px)}
+  .cartoon-v1 .upgrade-dialog .touch-upgrades{grid-template-columns:1fr}
+  .cartoon-v1 .upgrade-choice{min-height:105px}
+}
