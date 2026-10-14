@@ -124,7 +124,8 @@ test('Ultimate 67 renders once and its radial projectiles ricochet without chain
 });
 
 test('Delulu protects against lethal collisions and resets on NEXT WAVE but not upgrades', async ({ page }) => {
-  await page.keyboard.press('Enter');
+  await page.locator('[data-menu="play"]').click();
+  await page.locator('[data-menu="start"]').click();
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
   await page.evaluate(() => {
     const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
