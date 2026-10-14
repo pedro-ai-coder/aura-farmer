@@ -1,81 +1,81 @@
 {
-  "schemaVersion": 1,
-  "reference": "AF-CARTOON-001",
+  "schemaVersion": 2,
+  "reference": "AF-CARTOON-ART-V3",
   "pathRoot": "public/assets/cartoon/v1",
-  "productionStatus": "first_playable_art_pass",
-  "notes": "Only runtime_first_pass entries exist; planned_not_in_repository are reserved names, not existing assets.",
+  "productionStatus": "cartoon_pose_and_three_worlds_playable",
+  "notes": "Runtime SVG assets + three code-authored collision worlds; planned texture atlases/tilesets remain separate future deliverables. This pack does not pretend complete frame-by-frame hand-drawn animation.",
   "assets": [
     {
       "id": "hero_sigma",
       "status": "runtime_first_pass",
       "path": "characters/sigma.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_alpha",
       "status": "runtime_first_pass",
       "path": "characters/alpha.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_rizzler",
       "status": "runtime_first_pass",
       "path": "characters/rizzler.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_ohio",
       "status": "runtime_first_pass",
       "path": "characters/ohio.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_fanum",
       "status": "runtime_first_pass",
       "path": "characters/fanum.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_six-seven",
       "status": "runtime_first_pass",
       "path": "characters/six-seven.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_cool-kid",
       "status": "runtime_first_pass",
       "path": "characters/cool-kid.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "hero_nerd",
       "status": "runtime_first_pass",
       "path": "characters/nerd.svg",
-      "notes": "Vector sprite/portrait; directional atlases pending"
+      "notes": "Cartoon V3 authored main pose / menu portrait, 128px transparent SVG, with run/attack/FLEX/hurt poses."
     },
     {
       "id": "enemy_npc",
       "status": "runtime_first_pass",
       "path": "enemies/npc.svg",
-      "notes": "Vector sprite; animated atlases pending"
+      "notes": "V3 unique silhouette main pose; move/attack/hit poses available."
     },
     {
       "id": "enemy_hater",
       "status": "runtime_first_pass",
       "path": "enemies/hater.svg",
-      "notes": "Vector sprite; animated atlases pending"
+      "notes": "V3 unique silhouette main pose; move/attack/hit poses available."
     },
     {
       "id": "enemy_beta",
       "status": "runtime_first_pass",
       "path": "enemies/beta.svg",
-      "notes": "Vector sprite; animated atlases pending"
+      "notes": "V3 unique silhouette main pose; move/attack/hit poses available."
     },
     {
       "id": "enemy_boss",
       "status": "runtime_first_pass",
       "path": "enemies/boss.svg",
-      "notes": "Vector sprite; animated atlases pending"
+      "notes": "V3 unique silhouette main pose; move/attack/hit poses available."
     },
     {
       "id": "arena_aura_court",
@@ -452,6 +452,342 @@
       "id": "fx_essence-rizz",
       "status": "planned_not_in_repository",
       "path": "fx/essence-rizz.atlas.png"
+    },
+    {
+      "id": "hero_sigma_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/sigma-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_sigma_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/sigma-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_sigma_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/sigma-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_sigma_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/sigma-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_sigma_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/sigma-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_alpha_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/alpha-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_alpha_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/alpha-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_alpha_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/alpha-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_alpha_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/alpha-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_alpha_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/alpha-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_rizzler_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/rizzler-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_rizzler_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/rizzler-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_rizzler_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/rizzler-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_rizzler_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/rizzler-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_rizzler_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/rizzler-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_ohio_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/ohio-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_ohio_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/ohio-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_ohio_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/ohio-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_ohio_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/ohio-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_ohio_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/ohio-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_fanum_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/fanum-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_fanum_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/fanum-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_fanum_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/fanum-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_fanum_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/fanum-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_fanum_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/fanum-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_six-seven_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/six-seven-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_six-seven_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/six-seven-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_six-seven_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/six-seven-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_six-seven_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/six-seven-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_six-seven_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/six-seven-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_cool-kid_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/cool-kid-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_cool-kid_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/cool-kid-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_cool-kid_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/cool-kid-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_cool-kid_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/cool-kid-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_cool-kid_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/cool-kid-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_nerd_run-a",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/nerd-run-a.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_nerd_run-b",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/nerd-run-b.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_nerd_attack",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/nerd-attack.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_nerd_flex",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/nerd-flex.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "hero_nerd_hurt",
+      "status": "runtime_first_pass",
+      "path": "characters/poses/nerd-hurt.svg",
+      "notes": "Runtime state-dependent cartoon pose."
+    },
+    {
+      "id": "enemy_npc_move",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/npc-move.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_npc_attack",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/npc-attack.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_npc_hit",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/npc-hit.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_hater_move",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/hater-move.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_hater_attack",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/hater-attack.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_hater_hit",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/hater-hit.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_beta_move",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/beta-move.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_beta_attack",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/beta-attack.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_beta_hit",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/beta-hit.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_boss_move",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/boss-move.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_boss_attack",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/boss-attack.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "enemy_boss_hit",
+      "status": "runtime_first_pass",
+      "path": "enemies/poses/boss-hit.svg",
+      "notes": "Enemy combat-state sprite."
+    },
+    {
+      "id": "map_ruin-alley_selector",
+      "status": "runtime_first_pass",
+      "path": "arenas/preview-ruin-alley.svg",
+      "notes": "Menu artwork for live scrolling collision world."
+    },
+    {
+      "id": "map_crown-chamber_selector",
+      "status": "runtime_first_pass",
+      "path": "arenas/preview-crown-chamber.svg",
+      "notes": "Menu artwork for live scrolling collision world."
+    },
+    {
+      "id": "map_toxic-rooftop_selector",
+      "status": "runtime_first_pass",
+      "path": "arenas/preview-toxic-rooftop.svg",
+      "notes": "Menu artwork for live scrolling collision world."
+    },
+    {
+      "id": "ui_ruin_alley_poster",
+      "status": "runtime_first_pass",
+      "path": "ui/ruin-alley-poster.svg",
+      "notes": "Illustrated menu backdrop tied to first arena."
     }
   ]
 }
