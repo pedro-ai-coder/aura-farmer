@@ -11,7 +11,7 @@ import { createGateA, isGateA, gateASigmaKey, gateAEnemyKey, type GateASigmaPose
 import { isGateB, createGateBHeroes, gateBHeroKey, type GateBHero, type GateBHeroPose } from './gateBHeroes';
 import { isGateB2, createGateB2Heroes, b2Key, type B2Id, type B2Pose } from './gateB2Heroes';
 import { isFinalArt, loadFinalArt, finalEnemyKey, finalFxKey, type EnemyPose } from './finalArt';
-import { isCartoonArt, cartoonHeroKey, cartoonEnemyKey } from './cartoonArt';
+import { isCartoonArt, cartoonHeroKey, cartoonEnemyKey, cartoonHeroPoseKey, cartoonEnemyPoseKey, type CartoonHeroPose, type CartoonEnemyPose } from './cartoonArt';
 import type { WorldDefinition } from '../core/worldMaps';
 
 // Original pixel characters produced from deliberate pixel rectangles at a fixed
@@ -343,7 +343,12 @@ export class PixelWorld {
     const gb2Hero=this.gateB2 && (a.characterId==='ohio'||a.characterId==='fanum'||a.characterId==='six-seven')
       && this.scene.textures.exists('gb2-'+a.characterId+'-idle-0');
     if(this.cartoonArt && this.scene.textures.exists(cartoonHeroKey(a.characterId))){
-      this.safeTexture(this.player,cartoonHeroKey(a.characterId),'px-player-idle');
+      const pose:CartoonHeroPose=a.mode==='dead'?'hurt':a.flexActive?'flex':
+        a.lastDamageAt>0 && a.clock-a.lastDamageAt<180?'hurt':
+        a.jawUntil>a.clock || a.rizzBlastUntil>a.clock ||
+        (a.characterId==='rizzler'&&a.effects.rizzPulseUntil>a.clock)?'attack':
+        playerMoving?(Math.floor(a.clock/145)%2===0?'run-a':'run-b'):'idle';
+      this.safeTexture(this.player,cartoonHeroPoseKey(a.characterId,pose),cartoonHeroKey(a.characterId));
     } else if(starter){
       const id=a.characterId as 'cool-kid'|'nerd';
       const pose=a.mode==='dead'?'death':a.flexActive?'flex':
@@ -537,7 +542,7 @@ export class PixelWorld {
         (a.flex.variant==='alpha'?0xffe59a:a.flex.variant==='sigma'?0xa5f5ff:0xf5b8ff) :
         (this.cartoonArt||starter||gaSigma||gbHero||gb2Hero||sigmaB1||alphaB2||rizzlerB3||hasCharacterSheet ? 0xffffff:getCharacter(a.characterId).color));
     if(this.cartoonArt) {
-      this.player.setDisplaySize(55,55);
+      this.player.setDisplaySize(a.characterId==='alpha'||a.characterId==='fanum'?66:61, a.characterId==='alpha'||a.characterId==='fanum'?66:61);
       this.player.setRotation(a.flexActive ? 0 : playerMoving ? Math.sin(a.clock/140)*.055 : Math.sin(a.clock/320)*.018);
     }
     if (a.clock > 180 && a.clock - a.lastDamageAt < 115) this.player.setTintFill(0xffe7f0);
@@ -581,10 +586,14 @@ export class PixelWorld {
       const gateEnemy=this.gateA && (enemy.type==='npc'||enemy.type==='hater')
         && this.scene.textures.exists('ga-'+enemy.type+'-move-0');
       if(this.cartoonArt && this.scene.textures.exists(cartoonEnemyKey(enemy.type))){
-        this.safeTexture(img,cartoonEnemyKey(enemy.type),'px-'+enemy.type+'-0');
-        const size=enemy.type==='boss'?140:enemy.type==='beta'?65:53;
+        const moving=!!previous && Math.hypot(enemy.x-previous.x,enemy.y-previous.y)>.07;
+        const attacking=(enemy.type==='hater'||enemy.type==='boss')&&
+          enemy.nextShot>a.clock&&enemy.nextShot-a.clock<240;
+        const enemyPose:CartoonEnemyPose=hitNow?'hit':attacking?'attack':moving?'move':'idle';
+        this.safeTexture(img,cartoonEnemyPoseKey(enemy.type,enemyPose),cartoonEnemyKey(enemy.type));
+        const size=enemy.type==='boss'?148:enemy.type==='beta'?72:59;
         img.setDisplaySize(size,size);
-        img.setRotation(Math.sin((a.clock+enemy.id*91)/290)*(enemy.type==='boss'?.018:.045));
+        img.setRotation(Math.sin((a.clock+enemy.id*91)/290)*(enemy.type==='boss'?.012:.03));
       } else if(this.finalArt){
         const moving=!!previous && Math.hypot(enemy.x-previous.x,enemy.y-previous.y)>.07;
         const attacking=enemy.type==='hater' && enemy.nextShot>a.clock && enemy.nextShot-a.clock<400;
