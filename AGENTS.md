@@ -1,7 +1,11 @@
-# Agent instructions — Aura Farmer
+# Aura Farmer — contributor instructions
 
-Read **docs/AUTONOMOUS_DEVELOPMENT.md** before making any changes. It contains the current gameplay direction, budget constraints, security boundaries, test commands and PR delivery contract.
+`docs/GDD.md` is the sole product, gameplay and visual specification. Read it before changing behavior. Do not infer requirements from old commits, removed documentation or historical PRs. Update the GDD when the owner approves a design change.
 
-Do not assume older FLEX/Focus/multiple-Aura specifications are current. Never merge your own PR into main; the repository owner approves merges.
-
-For implementation: prefer independent TypeScript simulation logic, small testable changes, and faithful documentation. Report failed or unrun tests explicitly.
+This file contains operational instructions only:
+- Work on a task branch and open a PR; the owner approves merging and production deployment.
+- Preserve saves and character IDs, with explicit versioned migrations where required.
+- Keep simulation independent of Phaser and share catalog rules with the UI.
+- Use no paid services without approval. Never expose secrets or enable privileged CI for untrusted PR code.
+- Validate with `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, and `npm run test:browser` for runtime changes. Fix failures before declaring ready; report blocked or unrun checks accurately.
+- PRs describe changes, actual validation, limitations and manual checks. Do not claim the full GDD is implemented just because tests pass.

@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
     const response = await route.fetch();
     await route.fulfill({ response, body: (await response.text()).replace('new Phaser.Game(', 'window.__game = new Phaser.Game(') });
   });
-  await page.goto('/?visual=legacy');
+  await page.goto('/');
   await expect(page.locator('canvas')).toBeAttached(); // front menus intentionally hide the combat stage
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('.controls')).toContainText('choose upgrade');
@@ -126,43 +126,24 @@ test('all wave transitions, boss kill required, victory and clean restart', asyn
 test('collision causes defeat and Enter restarts with full HP and no upgrades', async ({ page }) => {
   await page.evaluate(() => {
     const a = (window.__game.scene.scenes[0] as ArenaScene).arena;
-    a.hp = 1; a.buffs.speed = 3;
+    a.hp = 1; a.buffs['speed-shoes'] = 3;
     a.enemies = [{ ...a.pos, id: 0, type: 'npc', hp: 100, nextHit: 0, nextShot: Infinity }];
   });
   await expect.poll(() => read(page, a => a.mode)).toBe('dead');
   await page.screenshot({ path: 'test-results/defeat.png' });
   await press(page, 'Enter');
-  expect(await read(page, a => [a.mode, a.hp, a.buffs.speed])).toEqual(['playing', 100, 0]);
+  expect(await read(page, a => [a.mode, a.hp, a.buffs['speed-shoes']])).toEqual(['playing', 100, 0]);
 });
 
 
-test('pixel-cartoon assets load with the light Lavender Pop arena and remain visible', async ({ page }) => {
+test('current actor assets render without loading retired sheets', async ({ page }) => {
   const proof = await page.evaluate(() => {
     const scene = window.__game.scene.scenes[0] as ArenaScene;
-    const required = [
-      'px-floor', 'px-player-idle', 'px-player-flex',
-      'px-npc-0', 'px-hater-0', 'px-beta-0', 'px-boss-0',
-      'px-xp', 'px-shot', 'px-hostile',
-    ];
-    const missing = required.filter(key => !scene.textures.exists(key));
-    const imported = ['spr-sigma', 'spr-npc', 'spr-hater', 'spr-beta', 'spr-boss', 'spr-items', 'spr-icons'];
-    const missingSheets = imported.filter(key => !scene.textures.exists(key));
-    const spriteFrames = Object.fromEntries(imported.map(key =>
-      [key, scene.textures.exists(key) ? scene.textures.get(key).frameTotal : 0]));
-    const displayed = scene.children.list.filter(x => x.type === 'Image')
-      .map(x => (x as Phaser.GameObjects.Image).texture.key);
-    const canvas = scene.textures.get('px-floor').getSourceImage() as HTMLCanvasElement;
-    const pixel = [...canvas.getContext('2d')!.getImageData(0, 0, 1, 1).data].slice(0, 3);
-    const texturesVisible = scene.children.list.filter(x => x.type === 'Image' && (x as Phaser.GameObjects.Image).visible).length;
-    return { missing, missingSheets, spriteFrames, displayed, pixel, texturesVisible };
+    return {
+      loaded: ['ct-hero-sigma','ct-enemy-npc','af-xp','af-shot','af-hostile'].every(k=>scene.textures.exists(k)),
+      retired: scene.textures.getTextureKeys().filter(k=>/^(px-|spr-|ga-|gb-|gb2-)/.test(k)),
+      hero: scene.children.list.some(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).texture.key==='ct-hero-sigma' && (o as Phaser.GameObjects.Image).visible),
+    };
   });
-  expect(proof.missing).toEqual([]);
-  expect(proof.missingSheets).toEqual([]);
-  expect(proof.spriteFrames['spr-sigma']).toBeGreaterThan(5);
-  expect(proof.spriteFrames['spr-boss']).toBeGreaterThan(3);
-  expect(proof.spriteFrames['spr-icons']).toBeGreaterThan(16);
-  expect(proof.displayed).toContain('spr-sigma-b1');
-  expect(proof.pixel).toEqual([246, 240, 234]); // approved Cream: #F6F0EA
-  expect(proof.texturesVisible).toBeGreaterThanOrEqual(2); // player + arena
-  await page.screenshot({ path: 'test-results/pixel-cartoon.png' });
+  expect(proof).toEqual({loaded:true,retired:[],hero:true});
 });

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('Ruin Alley selected in cartoon mode, classic remains intact', async ({ page }) => {
   await page.goto('/?visual=cartoon');
   await expect(page.locator('.play-layout')).toHaveAttribute('data-map','ruin-alley');
-  await expect(page.locator('html')).toHaveClass(/cartoon-v1/);
+  await expect(page.locator('html')).toHaveClass(/cartoon-ui/);
   await expect(page.locator('button[data-menu="play"]')).toBeVisible();
 
   await page.goto('/?visual=arena');

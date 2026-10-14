@@ -105,17 +105,17 @@ export class TouchControls {
     return { x: this.x, y: this.y, flex: actions.has('flex'), confirm: actions.has('confirm'), choice };
   }
 
-  setFlexHUD(mode:Mode,charge:number,state:FlexState,name:string,remaining:number,affinity:FlexVariant):void{
+  setFlexHUD(mode:Mode,charge:number,state:FlexState,name:string,remaining:number,theme:FlexVariant):void{
     const visible=mode==='playing';
     this.flexRoot.hidden=!visible;
     if(!visible){this.lastFlexState='';return;}
     const progress=state==='active'?remaining/5000:charge/100;
     this.flexBar.style.width=Math.max(0,Math.min(100,progress*100)).toFixed(1)+'%';
-    this.flexRoot.dataset.state=state;this.flexRoot.dataset.affinity=affinity;
+    this.flexRoot.dataset.state=state;this.flexRoot.dataset.flexTheme=theme;
     this.flexNameElement.textContent=name;
     this.flexCount.textContent=state==='active'?(remaining/1000).toFixed(1)+'s':
       state==='ready'?'FLEX READY':charge+'/100 AURA';
-    const key=state+':'+name+':'+affinity;
+    const key=state+':'+name+':'+theme;
     if(key!==this.lastFlexState){
       this.lastFlexState=key;
       this.flexButton.disabled=state!=='ready';
@@ -153,10 +153,8 @@ export class TouchControls {
           art.className='equipment-icon';
           art.textContent={
             'aura-shot':'✦','mewing-jaw':'✊','ohio-orbiter':'◉','six-seven':'67',
-            'rizz-blast':'◈',drip:'⬡','thick-skin':'♥',speed:'»',mewing:'✧',
-            alpha:'◆',sigma:'✦','locked-in':'↗','touch-grass':'✚',
-            'rizz-aura':'◈',delulu:'◇','crash-out':'⚡',mogged:'★',
-            'skibidi-bounce':'↝'
+            'rizz-blast':'◈','thick-skin':'♥','speed-shoes':'»','quick-hands':'↗',
+            'iron-will':'⬡','gym-routine':'◆','lucky-charm':'✧'
           }[id]??'✦';
           const title=document.createElement('span');
           title.className='equipment-name';
@@ -220,10 +218,9 @@ export class TouchControls {
       bottom.append(heading,level);
       // A controlled icon mapping avoids guessing artwork from arbitrary labels.
       const glyphs:Record<string,string>={
-        drip:'shield','thick-skin':'heart',delulu:'spirit',alpha:'blade',sigma:'orb',
-        speed:'speed','touch-grass':'leaf','mewing':'star','locked-in':'bolt',
+        'iron-will':'shield','thick-skin':'heart','gym-routine':'blade',
+        'speed-shoes':'speed','quick-hands':'bolt','lucky-charm':'star',
         'six-seven':'crown','mewing-jaw':'blade','ohio-orbiter':'orb',
-        'crash-out':'bolt','skibidi-bounce':'orb',mogged:'star','rizz-aura':'spirit',
         'aura-shot':'orb','rizz-blast':'spirit'
       };
       const glyph=glyphs[buff.id] ?? 'star';

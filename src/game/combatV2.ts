@@ -1,13 +1,8 @@
 /**
  * Combat System V2 — self-contained, pure rules registry.
- * Integration with the live Phaser runtime is deliberately a separate, gated change.
+ * Current runtime catalog; target product behavior is specified only in docs/GDD.md.
  * No legacy save IDs are deleted by this module.
  */
-export const COMBAT_V2_VERSION = 2 as const;
-export const MAX_WEAPONS = 3 as const;
-export const MAX_PASSIVES = 5 as const;
-export const MAX_LEGENDARIES = 1 as const;
-export const FLEX_COST = 100 as const;
 export type Rarity = "normal" | "rare" | "epic" | "legendary";
 export type Passive = { id: string; name: string; rarity: Rarity; maxLevel: number; description: string };
 const normal = [
@@ -75,26 +70,7 @@ export const FLEXES_V2: readonly Flex[] = [
  {characterId:"six-seven",name:"67 Overdrive",role:"area-projectiles",durationSeconds:5,effect:"+2 capped radial shots per volley; +15% projectile damage; max one ricochet"},
  {characterId:"nerd",name:"Sigma Kid Overclock",role:"rapid-fire",durationSeconds:5,effect:"+30% attack speed; piercing projectiles; +10pp crit; secondary capped once/s"}
 ];
-export type Equip = {id:string;level:number};
-export type BuildV2 = {weapons:readonly Equip[];passives:readonly Equip[]};
-export function validateBuildV2(build:BuildV2):boolean {
- if(build.weapons.length!==MAX_WEAPONS || build.passives.length>MAX_PASSIVES) return false;
- if(new Set(build.weapons.map(x=>x.id)).size!==build.weapons.length || new Set(build.passives.map(x=>x.id)).size!==build.passives.length) return false;
- if(build.weapons.some(x=>!WEAPONS_V2.some(w=>w.id===x.id && Number.isInteger(x.level) && x.level>=1 && x.level<=w.maxLevel))) return false;
- if(build.passives.some(x=>!PASSIVES_V2.some(p=>p.id===x.id && Number.isInteger(x.level) && x.level>=1 && x.level<=p.maxLevel))) return false;
- return build.passives.filter(x=>PASSIVES_V2.some(p=>p.id===x.id && p.rarity==="legendary")).length<=MAX_LEGENDARIES;
-}
 export function difficultyV2(level:number) {
  if(!Number.isInteger(level) || level<1 || level>5) throw new RangeError("Difficulty level must be 1..5");
  return {hp:Math.pow(1.22,level-1), damage:Math.pow(1.13,level-1), spawnDensity:Math.pow(1.18,level-1)};
-}
-export function eligiblePassivesV2(build:BuildV2, xpLevel:number):Passive[] {
- const owned=new Map(build.passives.map(p=>[p.id,p.level]));
- const alreadyLegendary=build.passives.some(p=>PASSIVES_V2.some(x=>x.id===p.id && x.rarity==="legendary"));
- return PASSIVES_V2.filter(p=>{
-   if(p.rarity==="rare" && xpLevel<3 || p.rarity==="epic" && xpLevel<6 || p.rarity==="legendary" && xpLevel<10) return false;
-   const level=owned.get(p.id);
-   if(level!==undefined) return level<p.maxLevel;
-   return build.passives.length<MAX_PASSIVES && !(p.rarity==="legendary" && alreadyLegendary);
- });
 }

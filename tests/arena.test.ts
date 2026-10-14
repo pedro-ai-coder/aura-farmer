@@ -28,11 +28,11 @@ describe('arena combat', () => {
     a.pos = { ...a.drops[0] }; a.update(10);
     expect(a.drops).toHaveLength(0); expect(a.xp.xp).toBe(8);
   });
-  it('applies contact damage, armor and exactly one Aura penalty', () => {
-    const a = game(); a.aura.change(60); a.buffs.drip = 3; enemy(a, 480).hp = 1000;
+  it('applies contact mitigation without consuming Aura', () => {
+    const a = game(); a.aura.change(60); a.buffs['iron-will'] = 3; enemy(a, 480).hp = 1000;
     a.update(10, { flex: true });
-    expect(a.hp).toBe(95); expect(a.aura.value).toBe(60); expect(a.flex.state).toBe('farming');
-    advance(a, 100); expect(a.hp).toBe(95);
+    expect(a.hp).toBeCloseTo(100-8*.91); expect(a.aura.value).toBe(60); expect(a.flex.state).toBe('farming');
+    advance(a, 100); expect(a.hp).toBeCloseTo(100-8*.91);
   });
   it('stops immediately on lethal damage without awarding a coincident level or win', () => {
     const a = game(); a.hp = 1; a.wave = 5; a.waveClock = 50000; a.bossSpawned = true; a.bossDefeated = true;
@@ -79,7 +79,7 @@ describe('FLEX Ultimate gameplay',()=>{
     expect(alpha.hp).toBeLessThan(initial);
     expect(alpha.hp).toBeGreaterThan(initial-8);
   });
-  it('sigma rapid fire and rizz slow reflect default hero affinity',()=>{
+  it('sigma rapid fire and rizz slow reflect character-specific Flex',()=>{
     const sigma=game();sigma.aura.change(100);sigma.update(0,{flex:true});
     enemy(sigma,900).hp=10000; sigma.update(100);
     expect(sigma.shots[0].piercing).toBe(true);
@@ -90,11 +90,11 @@ describe('FLEX Ultimate gameplay',()=>{
     expect(target.rizzSlowUntil).toBeGreaterThan(rizz.clock);
     expect(target.hp).toBeLessThan(100);
   });
-  it('universal Aura always activates the hero-specific Flex, not an essence affinity',()=>{
+  it('universal Aura always activates the hero-specific Flex, with a single Aura resource',()=>{
     const sigma=game();
-    sigma.essenceDrops=[{...sigma.pos,affinity:'alpha'}];
+
     sigma.update(5);
-    expect(sigma.affinities.alpha).toBe(0);
+
     expect(sigma.flexVariant).toBe('sigma');
     sigma.aura.change(100);sigma.update(0,{flex:true});
     expect(sigma.flex.variant).toBe('sigma');
@@ -115,10 +115,9 @@ describe('upgrades', () => {
     const a = game(); a.hp = 50; a.mode = 'upgrades'; a.pendingUpgrades = 1;
     a.choices = [BUFFS.find(b => b.id === 'thick-skin')!]; a.update(0, { choice: 0 });
     expect(a.hp).toBe(56); expect(a.stats.maxHp).toBe(105);
-    // Fully cap the legal V2 catalogue, then an XP award restores HP instead
-    // of showing an impossible old 'speed' offer.
+    // Fully cap the catalog except one eligible upgrade.
     for (const b of BUFFS) a.buffs[b.id] = b.maxStacks;
-    a.buffs.speed=2;a.buffs['gym-routine']=3;
+    a.buffs['gym-routine']=3;
     a.xp.level=10;
     a.pendingUpgrades=1;
     a.update(1);
@@ -127,7 +126,7 @@ describe('upgrades', () => {
     expect(a.choices[0].id).toBe('gym-routine');
     a.update(0,{choice:0});
     expect(a.buffs['gym-routine']).toBe(4);
-    expect(a.buffs.speed).toBe(2);
+    expect(a.buffs['speed-shoes']).toBe(4);
   });
   it('Mewing Jaw damages nearby enemies and Ohio Orbiter damages on contact', () => {
     const a = game(); a.buffs['mewing-jaw'] = 1; const e = enemy(a, 550); e.hp = 100;
@@ -136,21 +135,13 @@ describe('upgrades', () => {
     b.update(1); expect(t.hp).toBe(86);
   });
   it('applies damage upgrades, critical hits and Burst to emitted projectiles', () => {
-    const a = game(); a.clock = 8000; a.buffs.sigma = 1; a.buffs.alpha = 1;
+    const a = game(); a.clock = 8000; a.buffs['gym-routine'] = 1; a.buffs['quick-hands'] = 1;
     a.aura.change(100, 8000); a.update(0,{flex:true}); enemy(a, 610).hp = 1000;
     a.update(1);
     expect(a.shots[0].damage).toBeGreaterThan(18 * 1.1 * 1.15);
     const b = new Arena(() => 0); b.update(0, { confirm: true });
-    b.clock = 8000; b.buffs.mewing = 1; enemy(b, 610).hp = 1000; b.update(1);
+    b.clock = 8000; b.buffs['lucky-charm'] = 1; enemy(b, 610).hp = 1000; b.update(1);
     expect(b.shots[0].damage).toBe(36);
-  });
-  it('Locked In increases actual auto-fire cadence and taking damage resets the clean streak', () => {
-    const a = game(), b = game(); a.clock = b.clock = 8000; a.buffs['locked-in'] = 2;
-    enemy(a, 900).hp = 10000; enemy(b, 900).hp = 10000;
-    advance(a, 300); advance(b, 300);
-    expect(a.shots).toHaveLength(2); expect(b.shots).toHaveLength(1);
-    enemy(a, a.pos.x, a.pos.y); a.update(1);
-    expect(a.stats.fireRate).toBe(1); expect(a.lastDamageAt).toBe(a.clock);
   });
   it('Six Seven fires seven radial shots on the 67th kill', () => {
     const a = game(); a.buffs['six-seven'] = 1; a.kills = 66; enemy(a, 530).hp = 1;
@@ -179,9 +170,9 @@ describe('wave and restart lifecycle', () => {
   });
   it('waits for the wave timer if the boss is killed early and resets all run state after death', () => {
     const a = game(); a.wave = 5; a.bossSpawned = true; a.bossDefeated = true; a.update(1); expect(a.mode).toBe('playing');
-    a.mode = 'dead'; a.buffs.speed = 3; a.aura.change(100); a.pendingUpgrades = 2;
+    a.mode = 'dead'; a.buffs['speed-shoes'] = 3; a.aura.change(100); a.pendingUpgrades = 2;
     a.update(0, { confirm: true });
-    expect(a.buffs.speed).toBe(0);expect(a.buffs['aura-shot']).toBe(1);
+    expect(a.buffs['speed-shoes']).toBe(0);expect(a.buffs['aura-shot']).toBe(1);
     expect(a.aura.value).toBe(0);expect(a.flex.state).toBe('farming');expect(a.pendingUpgrades).toBe(0);
   });
   it('is consistent for equivalent small and large frames and ignores inactive-tab gaps', () => {

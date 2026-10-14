@@ -1,57 +1,36 @@
 import Phaser from 'phaser';
+import './styles/app.css';
 import { ArenaScene } from './game/scenes/ArenaScene';
-import './styles/main.css';
-import './styles/identity.css';
-import './styles/identity-v2.css';
-import './styles/gateA.css';
-import './styles/finalVisual.css';
-import './styles/flexUltimate.css';
-import './styles/equipment.css';
-import './styles/cartoonV1.css';
-import './styles/cartoonV2.css';
-import { isFinalArt } from './game/render/finalArt';
-import { isCartoonArt } from './game/render/cartoonArt';
-import { isGateA } from './game/render/gateAArena';
-import { isGateB } from './game/render/gateBHeroes';
-import { isGateB2 } from './game/render/gateB2Heroes';
 import { setupSpotlights } from './meta/spotlight';
 import { setupMobileFullscreen } from './game/input/mobileFullscreen';
 import { setupGameShell } from './meta/shell';
-
 setupMobileFullscreen();
-if(isCartoonArt())document.documentElement.classList.add('cartoon-v1');
-if(isGateA() || isFinalArt()){
-  document.documentElement.classList.add('gate-a-mode');
-  if(isFinalArt())document.documentElement.classList.add('aura-final');
-  const label=document.querySelector<HTMLElement>('.masthead .tag:last-child');
-  if(label) label.textContent=isCartoonArt() ? 'CARTOON V1 · ART PREVIEW' : isFinalArt() ? 'FIVE WAVES · ONE LEGEND' : isGateB2() ? 'GATE B2 · SIX HEROES' : isGateB() ? 'GATE B · HERO ART PREVIEW' : 'GATE A · PLAYABLE PREVIEW';
-  const loadingStage=document.querySelector<HTMLElement>('#af-loading-stage');
-  if(loadingStage)loadingStage.textContent=isCartoonArt() ? 'Drawing the Cartoon Arena…' : isFinalArt() ? 'Getting the arena ready…' : isGateB2() ? 'Loading the complete hero lineup…' : isGateB() ? 'Loading hero identity studies…' : 'Preparing the Aura Arena…';
-  const tip=document.querySelector<HTMLElement>('.af-loading-inner small');
-  if(tip)tip.textContent='TIP ◆ FLEX at the right moment to gain Aura.';
-  const title=document.querySelector<HTMLElement>('#af-loading .af-loading-inner strong');
-  if(title)title.textContent='STYLE IS POWER';
+document.documentElement.classList.add('cartoon-ui');
+{
+    document.documentElement.classList.add('game-ui');
+    document.documentElement.classList.add('game-theme');
+    const label = document.querySelector<HTMLElement>('.masthead .tag:last-child');
+    if (label)
+        label.textContent = 'AURA FARMER';
+    const loadingStage = document.querySelector<HTMLElement>('#af-loading-stage');
+    if (loadingStage)
+        loadingStage.textContent = 'Drawing the Cartoon Arena…';
+    const tip = document.querySelector<HTMLElement>('.af-loading-inner small');
+    if (tip)
+        tip.textContent = 'TIP ◆ Farm Aura to unlock your FLEX.';
+    const title = document.querySelector<HTMLElement>('#af-loading .af-loading-inner strong');
+    if (title)
+        title.textContent = 'STYLE IS POWER';
 }
-// Two branded art treatments for genuine startup asset loading, not a timed fake loader.
-const bootLoading=document.querySelector<HTMLElement>('#af-loading');
-if(bootLoading && !isGateA() && !isFinalArt() && Math.random()>.5){
-  bootLoading.dataset.variant='witherroot';
-  const stage=document.querySelector<HTMLElement>('#af-loading-stage');
-  if(stage) stage.textContent='Holding back the Witherroot…';
-  const tip=bootLoading.querySelector<HTMLElement>('.af-loading-inner small');
-  if(tip) tip.textContent='TIP ✦ Strong enemies signal danger before they strike.';
-}
-
 const game = new Phaser.Game({
-  type: Phaser.AUTO,
-  width: 960,
-  height: 600,
-  parent: 'game',
-  backgroundColor: '#172638',
-  render: { pixelArt: false, antialias: true },
-  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [ArenaScene],
+    type: Phaser.AUTO,
+    width: 960,
+    height: 600,
+    parent: 'game',
+    backgroundColor: '#172638',
+    render: { pixelArt: false, antialias: true },
+    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    scene: [ArenaScene],
 });
-
 setupGameShell(game);
 setupSpotlights();
