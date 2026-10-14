@@ -7,6 +7,8 @@ import { touchControls } from '../input/touchControls';
 import { ART, PixelWorld } from '../render/pixelArt';
 import { preloadCartoonArt, isCartoonArt } from '../render/cartoonArt';
 import { drawRuinAlley } from '../render/ruinAlleyArt';
+import { drawVariantWorld } from '../render/worldVariantsArt';
+import { selectedWorldFromQuery } from '../core/worldSelection';
 import { drawHudChrome, drawHudMeter } from '../render/hudArt';
 import { isGateA, drawGateAHudChrome, drawGateAHudMeter } from '../render/gateAArena';
 import { isFinalArt } from '../render/finalArt';
@@ -14,7 +16,7 @@ import type { CharacterId } from '../data/characters';
 import { runResult } from '../../meta/profile';
 
 export class ArenaScene extends Phaser.Scene {
-  readonly arena = new Arena(Math.random, 'sigma', isCartoonArt() ? 'ruin-alley' : null);
+  readonly arena = new Arena(Math.random, 'sigma', isCartoonArt() ? selectedWorldFromQuery(window.location.search) : null);
   private g!: Phaser.GameObjects.Graphics;
   private worldFx!: Phaser.GameObjects.Graphics;
   private modalBg!: Phaser.GameObjects.Graphics;
@@ -64,7 +66,8 @@ export class ArenaScene extends Phaser.Scene {
   create(): void {
     document.querySelector<HTMLElement>('.play-layout')?.setAttribute('data-map',this.arena.world?.id ?? 'classic');
     if(this.arena.world){
-      drawRuinAlley(this,this.arena.world);
+      if(this.arena.world.id==='ruin-alley')drawRuinAlley(this,this.arena.world);
+      else drawVariantWorld(this,this.arena.world);
       this.cameras.main.setBounds(0,0,this.arena.world.width,this.arena.world.height);
     }
     this.pixelWorld = new PixelWorld(this,this.arena.world);
