@@ -30,3 +30,17 @@
  .equipment-icon{font-size:14px;line-height:16px}.equipment-level{font-size:7px}
  .weapons-panel{left:6px}.passives-panel{right:6px}}
 @media(prefers-reduced-motion:reduce){.equipment-slot{transition:none!important}}
+
+/* Five passive slots: compact two-row panel without covering central FLEX. */
+.passives-panel .equipment-slots{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+.passives-panel .equipment-panel,.passives-panel .equipment-slot{min-width:0}
+.passives-panel .equipment-name{font-size:8px}
+@media(max-width:900px){
+  .passives-panel{width:31%;right:5px}
+  .passives-panel .equipment-name{display:none}
+}
+@media(max-width:580px){
+  .passives-panel{width:43%;bottom:78px}
+  .passives-panel .equipment-icon{font-size:12px}
+  .passives-panel .equipment-slot{height:35px}
+}

@@ -6,8 +6,8 @@ import type { BuffId } from '../../src/game/data/buffs';
 declare global { interface Window { __game: Phaser.Game } }
 
 const newBuffs: [BuffId, string][] = [
-  ['crash-out', 'Crash Out'], ['skibidi-bounce', 'Skibidi Bounce'], ['delulu', 'Delulu Is the Solulu'],
-  ['touch-grass', 'Touch Grass'], ['mogged', 'Mogged'], ['rizz-aura', 'Rizz Aura'],
+  ['gym-routine', 'Gym Routine'], ['speed-shoes', 'Speed Shoes'], ['thick-skin', 'Thick Skin'],
+  ['quick-hands', 'Quick Hands'], ['long-reach', 'Long Reach'], ['magnet-mode', 'Magnet Mode'],
 ];
 async function state<T>(page: Page, fn: (a: Arena) => T): Promise<T> {
   return page.evaluate(`(${fn.toString()})(window.__game.scene.scenes[0].arena)`);
@@ -41,7 +41,7 @@ for (const layout of [
 ]) {
   test.describe(layout.name, () => {
     test.use({ viewport: { width: layout.width, height: layout.height }, isMobile: layout.mobile, hasTouch: layout.mobile });
-    test('six compatible passives display and can be selected without bypassing build slots', async ({ page }) => {
+    test('six Combat V2 normal passives display and can be selected through legal upgrades', async ({ page }) => {
       test.setTimeout(90000);
       if (layout.mobile) {
         await page.locator('[data-menu="play"]').click();
@@ -51,7 +51,7 @@ for (const layout of [
       await expect.poll(() => state(page, a => a.mode)).toBe('playing');
       for (const [id, name] of newBuffs) {
         // Each item is tested in an empty LEGAL build; exhausting every item
-        // at once no longer works because the game enforces 3+3 slots.
+        // at once no longer works because the game enforces 3+5 slots.
         await page.evaluate(async buffId=>{
           const path='/src/game/data/buffs.ts';
           const {BUFFS,emptyBuffLevels}=await import(path) as typeof import('../../src/game/data/buffs');

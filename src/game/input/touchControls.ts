@@ -205,7 +205,7 @@ export class TouchControls {
       heading.textContent=buff.name;
       const rarity = document.createElement('span');
       rarity.className='upgrade-rarity';
-      rarity.textContent=(isWeapon(buff.id)?'WEAPON':'PASSIVE')+' · '+buff.rarity;
+      rarity.textContent=isWeapon(buff.id)?'WEAPON':`PASSIVE · ${buff.rarity==='COMMON'?'NORMAL':buff.rarity}`;
       const level = document.createElement('span');
       level.className='upgrade-stack';
       level.textContent=`LV ${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)}/${buff.maxStacks}`;
@@ -232,7 +232,7 @@ export class TouchControls {
       art.setAttribute('aria-hidden','true');
       art.innerHTML=`<svg viewBox="0 0 24 24"><use href="/assets/identity/ui-icons.svg#${glyph}"></use></svg>`;
       button.replaceChildren(top,art,bottom,description);
-      button.dataset.rarity=buff.rarity.toLowerCase();
+      button.dataset.rarity=isWeapon(buff.id)?'weapon':buff.rarity.toLowerCase();
       button.setAttribute('aria-label',`Choose ${isWeapon(buff.id)?'weapon':'passive'} ${buff.name}, level ${Math.min(buff.maxStacks,(stacks[buff.id] ?? 0) + 1)} of ${buff.maxStacks}, ${buff.description}`);
     });
   }

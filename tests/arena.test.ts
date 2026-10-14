@@ -55,20 +55,29 @@ describe('arena combat', () => {
 });
 
 describe('FLEX Ultimate gameplay',()=>{
-  it('alpha is invulnerable and moves/tramples without killing bosses instantly',()=>{
-    const a=new Arena(()=>.5,'alpha');a.start();a.aura.change(100);
-    a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
-    const e=enemy(a,a.pos.x+17,a.pos.y,'npc');e.hp=27;e.nextHit=0;
-    a.update(100,{x:1});
-    expect(a.hp).toBe(120);expect(a.pos.x).toBeGreaterThan(480);
-    expect(a.enemies).not.toContain(e);
-    const boss=enemy(a,a.pos.x+10,a.pos.y,'boss');boss.nextHit=0;
-    for(let i=0;i<48;i++)a.update(100);
-    // Boss damage from the 5s trample itself is capped at 25%;
-    // normal weapons are permitted to resume firing AFTER the window ends.
+  it('Cool Kid tramples invulnerably; Alpha Chad instead mitigates damage',()=>{
+    const cool=new Arena(()=>.5,'cool-kid');cool.start();cool.aura.change(100);
+    cool.update(0,{flex:true});
+    const target=enemy(cool,cool.pos.x+17,cool.pos.y,'npc');
+    target.hp=27; target.nextHit=0;
+    cool.update(100,{x:1});
+    expect(cool.hp).toBe(cool.stats.maxHp);
+    expect(cool.enemies).not.toContain(target);
+    const boss=enemy(cool,cool.pos.x+10,cool.pos.y,'boss');
+    boss.nextHit=0;
+    for(let i=0;i<48;i++) cool.update(100);
     expect(boss.hp).toBeGreaterThanOrEqual(ENEMIES.boss.hp*.75);
-    a.update(200);
-    expect(a.flex.state).toBe('farming');
+    cool.update(200);
+    expect(cool.flex.state).toBe('farming');
+
+    const alpha=new Arena(()=>.5,'alpha');alpha.start();alpha.aura.change(100);
+    alpha.update(0,{flex:true});expect(alpha.flexName).toBe('UNSTOPPABLE CHAD');
+    const initial=alpha.hp;
+    const attacker=enemy(alpha,alpha.pos.x,alpha.pos.y,'npc');
+    attacker.hp=1000;attacker.nextHit=0;
+    alpha.update(1);
+    expect(alpha.hp).toBeLessThan(initial);
+    expect(alpha.hp).toBeGreaterThan(initial-8);
   });
   it('sigma rapid fire and rizz slow reflect default hero affinity',()=>{
     const sigma=game();sigma.aura.change(100);sigma.update(0,{flex:true});
@@ -81,11 +90,15 @@ describe('FLEX Ultimate gameplay',()=>{
     expect(target.rizzSlowUntil).toBeGreaterThan(rizz.clock);
     expect(target.hp).toBeLessThan(100);
   });
-  it('essence pickups choose dominant FLEX family without occupying buff slots',()=>{
-    const a=game();a.essenceDrops=[{...a.pos,affinity:'alpha'},{...a.pos,affinity:'alpha'}];
-    a.update(5);expect(a.affinities.alpha).toBe(2);expect(a.flexVariant).toBe('alpha');
-    expect(Object.values(a.buffs).every((v,i)=>v===0||i===Object.keys(a.buffs).indexOf('aura-shot'))).toBe(true);
-    a.aura.change(100);a.update(0,{flex:true});expect(a.flex.variant).toBe('alpha');
+  it('universal Aura always activates the hero-specific Flex, not an essence affinity',()=>{
+    const sigma=game();
+    sigma.essenceDrops=[{...sigma.pos,affinity:'alpha'}];
+    sigma.update(5);
+    expect(sigma.affinities.alpha).toBe(0);
+    expect(sigma.flexVariant).toBe('sigma');
+    sigma.aura.change(100);sigma.update(0,{flex:true});
+    expect(sigma.flex.variant).toBe('sigma');
+    expect(sigma.flexName).toBe('SIGMA LOCK-IN');
   });
 });
 
@@ -101,11 +114,20 @@ describe('upgrades', () => {
   it('increases maximum HP and heals, excludes capped upgrades, and handles exhausted choices', () => {
     const a = game(); a.hp = 50; a.mode = 'upgrades'; a.pendingUpgrades = 1;
     a.choices = [BUFFS.find(b => b.id === 'thick-skin')!]; a.update(0, { choice: 0 });
-    expect(a.hp).toBe(70); expect(a.stats.maxHp).toBe(120);
+    expect(a.hp).toBe(56); expect(a.stats.maxHp).toBe(105);
+    // Fully cap the legal V2 catalogue, then an XP award restores HP instead
+    // of showing an impossible old 'speed' offer.
     for (const b of BUFFS) a.buffs[b.id] = b.maxStacks;
-    a.buffs.speed = 2; a.drops.push({ ...a.pos, xp: 100 }); a.update(1);
-    expect(a.choices.map(b => b.id)).toEqual(['speed']); a.update(0, { choice: 0 });
-    expect(a.mode).toBe('playing'); expect(a.pendingUpgrades).toBe(0); expect(a.buffs.speed).toBe(3);
+    a.buffs.speed=2;a.buffs['gym-routine']=3;
+    a.xp.level=10;
+    a.pendingUpgrades=1;
+    a.update(1);
+    expect(a.mode).toBe('upgrades');
+    expect(a.choices).toHaveLength(1);
+    expect(a.choices[0].id).toBe('gym-routine');
+    a.update(0,{choice:0});
+    expect(a.buffs['gym-routine']).toBe(4);
+    expect(a.buffs.speed).toBe(2);
   });
   it('Mewing Jaw damages nearby enemies and Ohio Orbiter damages on contact', () => {
     const a = game(); a.buffs['mewing-jaw'] = 1; const e = enemy(a, 550); e.hp = 100;

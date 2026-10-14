@@ -169,15 +169,15 @@ export class ArenaScene extends Phaser.Scene {
     const charging = a.flexActive, burst = a.flexActive;
     if (a.clock < a.effects.rizzPulseUntil) fx.lineStyle(3, 0xff9edc, .7).strokeCircle(a.pos.x, a.pos.y, 145);
     if (a.clock < a.effects.invulnerableUntil) fx.lineStyle(3, 0xafffea, .8).strokeCircle(a.pos.x, a.pos.y, 27);
-    if(burst&&a.flex.variant==='alpha'){
+    if(burst&&(a.characterId==='cool-kid'||a.characterId==='alpha')){
       fx.lineStyle(5,0xffcc55,.95).strokeCircle(a.pos.x,a.pos.y,32+Math.sin(a.clock/90)*3);
       fx.lineStyle(3,0xfff3c6,.9).strokeCircle(a.pos.x,a.pos.y,45);
     }
-    if(burst&&a.flex.variant==='sigma'){
+    if(burst&&a.flexVariant==='sigma'){
       fx.lineStyle(2,0x79eaf8,.65).strokeCircle(a.pos.x,a.pos.y,56);
       fx.lineStyle(2,0xc3ffff,.7).strokeCircle(a.pos.x,a.pos.y,62);
     }
-    if(burst&&a.flex.variant==='rizz')fx.lineStyle(3,0xeb9afa,.7).strokeCircle(a.pos.x,a.pos.y,220);
+    if(burst&&a.characterId==='rizzler')fx.lineStyle(3,0xeb9afa,.7).strokeCircle(a.pos.x,a.pos.y,220);
     if(charging){
       fx.lineStyle(4,0xffd574,.85).strokeCircle(a.pos.x,a.pos.y,35);
     }
@@ -215,7 +215,7 @@ export class ArenaScene extends Phaser.Scene {
       a.flex.isReady()?`FLEX READY · PRESS E · ${a.flexName}`:
       `FARM AURA ${a.aura.value}/100 · ${a.flexName}`;
     this.status.setColor(a.flex.isReady()?'#ffdb6d':'#fff8e7')
-      .setText(`${a.kills} KILLS · ${a.world ? a.world.name + ' · ' : ''}ALPHA ${a.affinities.alpha}  SIGMA ${a.affinities.sigma}  RIZZ ${a.affinities.rizz} · ${flex}`);
+      .setText(`${a.kills} KILLS · ${a.world ? a.world.name + ' · ' : ''}${a.loadout.weapons.length}/3 WEAPONS · ${a.loadout.passives.length}/5 PASSIVES · ${flex}`);
     touchControls.setFlexHUD(a.mode,a.aura.value,a.flex.state,a.flexName,a.flex.remaining(a.clock),a.flexVariant);
     this.feedback.setVisible(a.mode === 'playing').setText(a.clock < a.feedbackUntil ? a.feedback : a.wave === 5 && !a.bossDefeated && a.waveClock >= GAME.waveDurationMs ? 'Defeat the BIG HATER to finish!' : '');
     this.debug.setText(this.debugVisible ? `${Math.round(this.game.loop.actualFps)} FPS\n${a.enemies.length} enemies / ${a.shots.length} projectiles\n${a.clock.toFixed(0)} ms · ${a.mode}` : '');
@@ -233,7 +233,7 @@ export class ArenaScene extends Phaser.Scene {
       message = '';
     }
     this.buffIcons.forEach(icon => icon.setVisible(false));
-    for (const [i,buff] of BUFFS.filter(b => a.buffs[b.id] > 0).slice(0,this.buffIcons.length).entries()) {
+    for (const [i,buff] of BUFFS.filter((b,index) => index<16 && a.buffs[b.id] > 0).slice(0,this.buffIcons.length).entries()) {
       const image = this.buffIcons[i];
       image.setTexture('spr-icons', BUFFS.findIndex(b => b.id === buff.id));
       image.setPosition(isGateA() ? 33 + 28*i : 30 + 29*i, isGateA() ? 120 : 108).setVisible(true);

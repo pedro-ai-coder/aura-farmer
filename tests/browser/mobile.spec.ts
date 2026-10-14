@@ -56,14 +56,14 @@ test('portrait touch controls: start, analog movement, manual FLEX, upgrade and 
   await tap(page,'[data-game-action="flex"]');
   await expect.poll(()=>state(page,a=>a.flex.state)).toBe('active');
 
-  await offerCatalogUpgrades(page,['sigma','alpha','speed']);
+  await offerCatalogUpgrades(page,['gym-routine','speed-shoes','quick-hands']);
   await expect(page.locator('[data-game-action="choice0"]')).toBeVisible();
-  await expect(page.locator('[data-game-action="choice0"]')).toContainText('Sigma Aura');
+  await expect(page.locator('[data-game-action="choice0"]')).toContainText('Gym Routine');
   await tap(page, '[data-game-action="choice0"]');
   await expect.poll(() => state(page, a => a.mode)).toBe('playing');
-  expect(await state(page, a => a.buffs.sigma)).toBe(1);
+  expect(await state(page, a => a.buffs['gym-routine'])).toBe(1);
   expect(await state(page, a => a.pendingUpgrades)).toBe(0);
-  expect(await state(page, a => a.loadout.passives)).toEqual(['sigma']);
+  expect(await state(page, a => a.loadout.passives)).toEqual(['gym-routine']);
 
   await page.evaluate(() => {
     (window.__game.scene.scenes[0] as ArenaScene).arena.mode = 'dead';

@@ -12,7 +12,7 @@ export const CHARACTERS: readonly CharacterDefinition[] = [
   { id:'sigma', name:'The Sigma', subtitle:'Main character energy', role:'Balanced',
     description:'Classic Aura Shot and FLEX. No weaknesses.', difficulty:'EASY',
     hp:1,speed:1,damage:1,fireRate:1,crit:0,armor:0,color:0xffffff,cssColor:'#44345f',
-    weapon:'Aura Shot',passive:'Standard FLEX and Sigma Focus' },
+    weapon:'Aura Shot',passive:'Unique Sigma Lock-In FLEX' },
   { id:'alpha',name:'Alpha Chad',subtitle:'Certified unit',role:'Tank / Melee',
     description:'Heavy melee starter, durable but slower.',difficulty:'EASY',
     hp:1.2,speed:.92,damage:.9,fireRate:1,crit:0,armor:0,color:0xffbf81,cssColor:'#d98141',
@@ -34,13 +34,13 @@ export const CHARACTERS: readonly CharacterDefinition[] = [
     hp:.85,speed:1.04,damage:1,fireRate:1,crit:0,armor:0,color:0xffe58a,cssColor:'#d8ac3b',
     weapon:'67 Volley',passive:'Six Seven equipped from start',unlockedBy:'Kill 67 enemies and trigger Six Seven' },
   { id:'cool-kid',name:'Cool Kid',subtitle:'Future Giga Chad energy',role:'Evolver / Melee',
-    description:'Gather Alpha Essence to unleash the five-second Giga Chad Rampage FLEX.',
+    description:'Charge universal Aura to unleash the five-second Giga Chad Rampage FLEX.',
     difficulty:'EASY',hp:1.1,speed:1.05,damage:.95,fireRate:1,crit:0,armor:0,
-    color:0xf5b66d,cssColor:'#e7a45c',weapon:'Mewing Jaw',passive:'Starter melee strike · Alpha FLEX affinity' },
+    color:0xf5b66d,cssColor:'#e7a45c',weapon:'Mewing Jaw',passive:'Starter melee strike · Giga Chad Rampage FLEX' },
   { id:'nerd',name:'Nerd',subtitle:'Calculating Sigma energy',role:'Evolver / Ranged',
-    description:'Gather Sigma Essence to fire piercing, accelerated FLEX projectiles.',
+    description:'Charge universal Aura to fire piercing, accelerated FLEX projectiles.',
     difficulty:'MEDIUM',hp:.85,speed:1.02,damage:1.06,fireRate:1.08,crit:.04,armor:0,
-    color:0x8fe4f1,cssColor:'#5aa2c8',weapon:'Aura Shot',passive:'Precision starter · Sigma FLEX affinity' },
+    color:0x8fe4f1,cssColor:'#5aa2c8',weapon:'Aura Shot',passive:'Precision starter · Sigma Kid Overclock FLEX' },
 ];
 export function getCharacter(id: CharacterId): CharacterDefinition {
   return CHARACTERS.find(c => c.id === id) ?? CHARACTERS[0];

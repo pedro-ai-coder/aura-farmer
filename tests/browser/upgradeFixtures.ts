@@ -7,12 +7,12 @@ export async function offerCatalogUpgrades(page: Page, ids: BuffId[]): Promise<v
   await page.evaluate(async choiceIds => {
     const catalogPath = '/src/game/data/buffs.ts';
     const equipmentPath = '/src/game/core/equipment.ts';
-    const { BUFFS } = await import(catalogPath) as typeof import('../../src/game/data/buffs');
+    const { BUFFS, availableBuffs } = await import(catalogPath) as typeof import('../../src/game/data/buffs');
     const { canEquip } = await import(equipmentPath) as typeof import('../../src/game/core/equipment');
     const arena = (window.__game.scene.scenes[0] as ArenaScene).arena;
     const choices = choiceIds.map(id => {
       const buff = BUFFS.find(candidate => candidate.id === id);
-      if (!buff || !canEquip(arena.buffs, buff)) throw new Error(`Illegal upgrade fixture: ${id}`);
+      if (!buff || !canEquip(arena.buffs, buff) || !availableBuffs(arena.buffs,arena.xp.level).includes(buff)) throw new Error(`Illegal Combat V2 upgrade fixture: ${id}`);
       return buff;
     });
     arena.enemies = []; arena.shots = []; arena.drops = [];

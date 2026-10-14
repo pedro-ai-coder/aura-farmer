@@ -29,7 +29,7 @@ describe('character roster and game progression', () => {
   it('each loadout has real combat differences and replay keeps character', () => {
     const alpha=new Arena(()=>.5,'alpha');alpha.start();expect(alpha.hp).toBe(120);
     expect(alpha.buffs['mewing-jaw']).toBe(1);
-    const rizz=new Arena(()=>.5,'rizzler');rizz.start();expect(rizz.buffs['rizz-aura']).toBe(1);
+    const rizz=new Arena(()=>.5,'rizzler');rizz.start();expect(rizz.buffs['rizz-blast']).toBe(1);
     const ohio=new Arena(()=>.5,'ohio');ohio.start();expect(ohio.hp).toBe(75);
     expect(ohio.stats.speed).toBeGreaterThan(alpha.stats.speed);
     expect(ohio.stats.critChance).toBeCloseTo(.05);

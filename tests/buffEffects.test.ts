@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Arena, type Enemy, type Shot } from '../src/game/core/arena';
 import { BuffEffects, findBounce, firstHitDamage, rizzPulse, rizzSpeed } from '../src/game/core/buffEffects';
 import { combatStats } from '../src/game/core/combat';
-import { BUFFS, emptyBuffLevels, type BuffId } from '../src/game/data/buffs';
+import { BUFFS, emptyBuffLevels, availableBuffs, type BuffId } from '../src/game/data/buffs';
+import {PASSIVES_V2,WEAPONS_V2} from '../src/game/combatV2';
 import { ENEMIES, type EnemyType } from '../src/game/data/enemies';
 
 const additions: [BuffId, string, number][] = [
@@ -21,33 +22,29 @@ function hit(a: Arena, e: Enemy, damage = 10) {
   a.shots.push(shot(e, damage)); a.update(1);
 }
 
-describe('v0.3 catalog and unchanged baseline', () => {
-  it('retains the original buff identities plus five weapon choices', () => {
+describe('legacy save compatibility and Combat V2 active catalog', () => {
+  it('preserves old IDs but offers only six V2 weapons and 28 V2 passives', () => {
     expect(BUFFS.slice(2, 12).map(b => b.id)).toEqual(['sigma', 'alpha', 'mewing', 'locked-in', 'drip', 'speed', 'six-seven', 'thick-skin', 'mewing-jaw', 'ohio-orbiter']);
-    expect(BUFFS).toHaveLength(18); expect(new Set(BUFFS.map(b => b.id)).size).toBe(18);
+    expect(BUFFS).toHaveLength(46); expect(new Set(BUFFS.map(b => b.id)).size).toBe(46);
+    expect(WEAPONS_V2).toHaveLength(6);expect(PASSIVES_V2).toHaveLength(28);
     expect(combatStats(emptyBuffLevels(), 0, 0, 8000, 1)).toMatchObject({ damage: 1, incomingDamage: 1, fireRate: 1, critChance: 0, speed: 205 });
   });
-  it.each(additions)('%s has the specified rarity/limit and is selectable through XP level-up', (id, rarity, maxStacks) => {
+  it.each(additions)('%s keeps its historical save identity but is excluded from new V2 rewards', (id, rarity, maxStacks) => {
     expect(BUFFS.find(b => b.id === id)).toMatchObject({ rarity, maxStacks });
+    expect(availableBuffs(emptyBuffLevels(),10).some(b=>b.id===id)).toBe(false);
     const a=game();
-    // Test existing and newly chosen passive slots in a LEGAL build. The old
-    // test deliberately maxed all 16 simultaneously; that is now forbidden.
-    a.buffs[id]=maxStacks-1;
     a.mode='upgrades';a.pendingUpgrades=1;
     a.choices=[BUFFS.find(b=>b.id===id)!];
     a.update(0,{choice:0});
-    expect(a.buffs[id]).toBe(maxStacks);
-    expect(a.mode).toBe('playing');
-    a.drops.push({...a.pos,xp:200});a.update(1);
-    expect(a.choices.map(b=>b.id)).not.toContain(id);
+    expect(a.buffs[id]).toBe(0);
   });
 });
 
 describe('Crash Out', () => {
   it('uses an inclusive 35% threshold based on current maximum HP', () => {
     const b = emptyBuffLevels(); b['crash-out'] = 1; b['thick-skin'] = 3;
-    expect(combatStats(b, 0, 0, 0, 56)).toMatchObject({ damage: 1.4, incomingDamage: 1.2 });
-    expect(combatStats(b, 0, 0, 0, 56.01)).toMatchObject({ damage: 1, incomingDamage: 1 });
+    expect(combatStats(b, 0, 0, 0, 40.25)).toMatchObject({ damage: 1.4, incomingDamage: 1.2 });
+    expect(combatStats(b, 0, 0, 0, 40.26)).toMatchObject({ damage: 1, incomingDamage: 1 });
     expect(combatStats(b, 0, 0, 0, 160)).toMatchObject({ damage: 1, incomingDamage: 1 });
   });
   it('affects actual outgoing shots and applies incoming amplification after armor', () => {

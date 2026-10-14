@@ -45,16 +45,17 @@ test('wave celebration is one readable interactive HTML layer',async({page})=>{
 
 test('upgrade cards display real icons, with rarity and legible text',async({page})=>{
   await begin(page);
-  await offerCatalogUpgrades(page,['drip','thick-skin','delulu']);
+  await page.evaluate(()=>{(window.__game.scene.scenes[0] as ArenaScene).arena.xp.level=6;});
+  await offerCatalogUpgrades(page,['gym-routine','thick-skin','double-trouble']);
   await expect(page.locator('#upgrade-overlay')).toBeVisible();
   await expect(page.locator('.upgrade-art svg')).toHaveCount(3);
-  await expect(page.locator('[data-rarity="epic"]')).toContainText('Delulu Is the Solulu');
+  await expect(page.locator('[data-rarity="epic"]')).toContainText('Double Trouble');
   await page.locator('[data-game-action="choice2"]').click();
   await expect(page.locator('#upgrade-overlay')).toBeHidden();
   expect(await page.evaluate(()=>{
     const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
-    return {mode:a.mode,level:a.buffs.delulu,pending:a.pendingUpgrades,passives:a.loadout.passives};
-  })).toEqual({mode:'playing',level:1,pending:0,passives:['delulu']});
+    return {mode:a.mode,level:a.buffs['double-trouble'],pending:a.pendingUpgrades,passives:a.loadout.passives};
+  })).toEqual({mode:'playing',level:1,pending:0,passives:['double-trouble']});
 });
 
 test('wave CTA stays in viewport on portrait phone',async({page})=>{

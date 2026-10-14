@@ -38,7 +38,7 @@ test('single FLEX HUD without Focus, legal manual charging and playable new hero
    return {hero:a.characterId,aura:a.aura.value,art:hero?.texture.key,tint:hero?.tintTopLeft,visible:hero?.visible};
  })).toEqual({hero:'cool-kid',aura:0,art:'ct-hero-cool-kid',tint:0xffe59a,visible:true});
 });
-test('Essence pickup visibly affects Sigma/Rizz/Alpha affinity, new Nerd supports Overclock',async({page})=>{
+test('Nerd uses unique Overclock despite leftover legacy essence pickups',async({page})=>{
  await boot(page);
  await page.locator('[data-menu="play"]').click();
  await page.locator('[data-character="nerd"]').click();
@@ -47,7 +47,8 @@ test('Essence pickup visibly affects Sigma/Rizz/Alpha affinity, new Nerd support
    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
    a.essenceDrops=[{...a.pos,affinity:'rizz'}];a.update(1);
  });
- await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flexVariant)).toBe('rizz');
+ await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.flexVariant)).toBe('sigma');
+  expect(await page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.affinities.rizz)).toBe(0);
  await page.evaluate(()=>{
    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
    a.essenceDrops=[{...a.pos,affinity:'sigma'},{...a.pos,affinity:'sigma'}];
