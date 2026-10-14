@@ -1,8 +1,8 @@
 import { clamp, distance, normalized, type Vec2 } from './math';
 
 /** Author-authored collision contract for the first scrolling battlefield. */
-export type WorldId = 'ruin-alley';
-export interface SolidObstacle { id: string; x: number; y: number; w: number; h: number; kind: 'crate' | 'skip' | 'barrier' }
+export type WorldId = 'ruin-alley' | 'crown-chamber' | 'toxic-rooftop';
+export interface SolidObstacle { id: string; x: number; y: number; w: number; h: number; kind: 'crate' | 'skip' | 'barrier' | 'pillar' | 'vent' | 'pipe' | 'planter' }
 export interface WorldDefinition {
   id: WorldId; name: string; width: number; height: number; start: Vec2;
   obstacles: readonly SolidObstacle[];
@@ -25,6 +25,47 @@ export const RUIN_ALLEY: WorldDefinition = {
     {id:'crates-e',x:1530,y:590,w:105,h:122,kind:'crate'},
   ],
 };
+
+/** Crown Chamber: broad colonnades, asymmetrical cover and a clear central ring. */
+export const CROWN_CHAMBER: WorldDefinition = {
+  id:'crown-chamber', name:'CROWN CHAMBER', width:1800, height:1320,
+  start:{x:900,y:680},
+  obstacles:[
+    {id:'column-nw',x:340,y:270,w:96,h:98,kind:'pillar'},
+    {id:'column-ne',x:1370,y:255,w:96,h:98,kind:'pillar'},
+    {id:'column-sw',x:350,y:950,w:96,h:98,kind:'pillar'},
+    {id:'column-se',x:1370,y:940,w:96,h:98,kind:'pillar'},
+    {id:'balcony-n',x:754,y:207,w:290,h:44,kind:'barrier'},
+    {id:'balcony-s',x:768,y:1110,w:270,h:44,kind:'barrier'},
+    {id:'plant-w',x:170,y:605,w:108,h:170,kind:'planter'},
+    {id:'plant-e',x:1512,y:600,w:108,h:170,kind:'planter'},
+    {id:'column-inner-nw',x:530,y:455,w:70,h:74,kind:'pillar'},
+    {id:'column-inner-se',x:1195,y:840,w:70,h:74,kind:'pillar'},
+  ],
+};
+
+/** Toxic Rooftop: ventilation machinery, piping and danger markings. No hidden traps. */
+export const TOXIC_ROOFTOP: WorldDefinition = {
+  id:'toxic-rooftop', name:'TOXIC ROOFTOP', width:1800, height:1320,
+  start:{x:900,y:680},
+  obstacles:[
+    {id:'fan-nw',x:260,y:230,w:152,h:133,kind:'vent'},
+    {id:'fan-ne',x:1360,y:220,w:152,h:133,kind:'vent'},
+    {id:'fan-sw',x:285,y:955,w:152,h:133,kind:'vent'},
+    {id:'fan-se',x:1340,y:956,w:152,h:133,kind:'vent'},
+    {id:'pipe-n',x:715,y:260,w:342,h:47,kind:'pipe'},
+    {id:'pipe-w',x:270,y:555,w:52,h:225,kind:'pipe'},
+    {id:'pipe-e',x:1500,y:550,w:52,h:225,kind:'pipe'},
+    {id:'skip-s',x:820,y:1060,w:164,h:83,kind:'skip'},
+    {id:'box-east',x:1205,y:765,w:98,h:110,kind:'crate'},
+    {id:'box-west',x:510,y:480,w:110,h:97,kind:'crate'},
+  ],
+};
+
+export const WORLDS: readonly WorldDefinition[] = [RUIN_ALLEY,CROWN_CHAMBER,TOXIC_ROOFTOP];
+export function getWorld(id: WorldId):WorldDefinition {
+  return WORLDS.find(world=>world.id===id) ?? RUIN_ALLEY;
+}
 
 /** Collision checks are independent of Phaser and unit-testable. */
 export function circleHitsObstacle(point:Vec2, radius:number, obstacle:SolidObstacle):boolean {
