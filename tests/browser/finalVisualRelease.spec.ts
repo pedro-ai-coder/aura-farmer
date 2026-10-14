@@ -50,10 +50,10 @@ test('combat and fullscreen show NPC Hater Beta boss and XP without missing text
   const s=window.__game.scene.scenes[0] as ArenaScene;
   const keys=s.children.list.filter(o=>o.type==='Image' && (o as Phaser.GameObjects.Image).visible)
     .map(o=>(o as Phaser.GameObjects.Image).texture.key);
-  // Ruin Alley is authored with Phaser Graphics; XP uses the items atlas
-  // in cartoon mode. The preloaded ct-arena/af-xp textures belong to legacy art.
+  // Ruin Alley is drawn with Phaser Graphics. XP still uses the final-art
+  // atlas in the default skin, with gate/pixel atlas fallback when selected.
   const ruinAlleyDrawn=s.children.list.some(o=>o.type==='Graphics' && (o as Phaser.GameObjects.Graphics).depth===-12);
-  const xpVisible=keys.includes('spr-items') || keys.includes('px-xp');
+  const xpVisible=['af-xp','ga-xp','spr-items','px-xp'].some(key=>keys.includes(key));
   return ['npc','hater','beta','boss'].every(t=>keys.includes('ct-enemy-'+t)) &&
     xpVisible && ruinAlleyDrawn && s.arena.world?.id==='ruin-alley';
  })).toBe(true);
