@@ -34,9 +34,9 @@ test('single FLEX HUD without Focus, legal manual charging and playable new hero
    const scene=window.__game.scene.scenes[0] as ArenaScene;
    const a=scene.arena;
    const hero=scene.children.list.find(o=>o.type==='Image' &&
-     (o as Phaser.GameObjects.Image).texture.key==='ct-hero-cool-kid') as Phaser.GameObjects.Image | undefined;
+     (o as Phaser.GameObjects.Image).texture.key.startsWith('ct-hero-cool-kid')) as Phaser.GameObjects.Image | undefined;
    return {hero:a.characterId,aura:a.aura.value,art:hero?.texture.key,tint:hero?.tintTopLeft,visible:hero?.visible};
- })).toEqual({hero:'cool-kid',aura:0,art:'ct-hero-cool-kid',tint:0xffe59a,visible:true});
+ })).toEqual({hero:'cool-kid',aura:0,art:'ct-hero-cool-kid-flex',tint:0xffe59a,visible:true});
 });
 test('Nerd uses unique Overclock despite leftover legacy essence pickups',async({page})=>{
  await boot(page);
