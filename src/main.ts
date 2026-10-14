@@ -9,6 +9,7 @@ import './styles/flexUltimate.css';
 import './styles/equipment.css';
 import './styles/cartoonV1.css';
 import './styles/cartoonV2.css';
+import './styles/cartoonV3.css';
 import { isFinalArt } from './game/render/finalArt';
 import { isCartoonArt } from './game/render/cartoonArt';
 import { isGateA } from './game/render/gateAArena';
