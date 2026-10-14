@@ -1,0 +1,132 @@
+/* PUBLIC ART V3 — pulp/comic arcade composition, not glassmorphism.
+   Controls remain native, text remains selectable, all layouts keyboard/touch. */
+.cartoon-v1 {
+  --paper:#f7edcd;--ink:#253449;--stamp:#f8c45f;--coral:#e57461;
+  --water:#6eaab0;--cream:#fff8e7;
+}
+.cartoon-v1 body{background:#d9e7e0;color:var(--ink)}
+.cartoon-v1 .masthead{
+  background:#27374b!important;color:#fff3d4!important;
+  border-bottom:4px solid #f0b951!important;letter-spacing:.04em
+}
+.cartoon-v1 .masthead .tag{background:transparent!important;color:#f4ddb0!important;border:0!important}
+.cartoon-v1 .play-layout{background:#bcd8d3!important}
+.cartoon-v1 .play-layout.is-front-menu{
+  background:#d5e0d5 url('/assets/cartoon/v1/ui/ruin-alley-poster.svg') 50% 50%/cover no-repeat!important
+}
+.cartoon-v1 .play-layout.is-front-menu::before{background:#e8f0d630!important;backdrop-filter:none!important}
+.cartoon-v1 .play-layout.is-front-menu .meta-panel{
+  background:#f7efdc!important;max-width:920px!important;
+  outline:5px solid #273a4f!important;outline-offset:3px!important;
+  box-shadow:12px 13px 0 #29495bba!important
+}
+.cartoon-v1 .meta-panel{
+  background:#f7efdc!important;color:#283b4c!important;
+  border:4px solid #30485f!important;border-radius:0!important;
+  box-shadow:7px 8px 0 #617987c9!important
+}
+.cartoon-v1 .meta-panel h1{
+  font-size:clamp(25px,4.4vw,54px)!important;
+  letter-spacing:-.035em!important;line-height:.93!important;
+  max-width:17ch!important;text-wrap:balance
+}
+.cartoon-v1 .meta-panel .af-eyebrow,
+.cartoon-v1 .meta-header small,
+.cartoon-v1 .af-event-tag{font-weight:900!important;letter-spacing:.14em!important;color:#3c6373!important}
+.cartoon-v1 .meta-sub{font-size:clamp(12px,1.2vw,15px)!important;line-height:1.45!important}
+.cartoon-v1 .meta-menu{gap:10px!important}
+.cartoon-v1 .meta-menu .meta-button{
+  border-left:8px solid #d7a557!important;justify-content:flex-start;
+  text-align:left!important;min-height:44px
+}
+.cartoon-v1 .af-home-event{
+  transform:rotate(-.6deg);
+  background:#fbd777!important;border:4px solid #31465b!important;
+  border-left:12px solid #e58063!important;box-shadow:5px 6px 0 #798f88!important
+}
+.cartoon-v1 .af-home-event small{max-width:44ch}
+.cartoon-v1 .meta-header{min-height:49px!important}
+.cartoon-v1 .meta-feature{
+  border:0!important;border-top:3px solid #31495b!important;
+  padding:8px 0!important;background:transparent!important
+}
+.cartoon-v1 .af-home-art .af-hero-art{
+  height:clamp(160px,35vh,350px)!important;max-height:100%!important;
+  object-fit:contain;filter:drop-shadow(8px 11px 0 #294f6380)!important
+}
+.cartoon-v1 .af-home-art{min-height:190px}
+.cartoon-v1 .meta-avatar img{image-rendering:auto!important}
+.cartoon-v1 .meta-character{
+  background:#fffae8!important;border:4px solid #34495f!important;
+  border-top:8px solid var(--avatar,#73b7bc)!important;
+  box-shadow:4px 5px 0 #a7b2a6!important;min-height:146px!important
+}
+.cartoon-v1 .meta-character .meta-avatar{
+  width:56px!important;height:56px!important;border-radius:0!important;
+  background:#e2ede1!important;border:0!important
+}
+.cartoon-v1 .meta-character.selected{background:#ffe4a9!important}
+.cartoon-v1 .meta-character strong{font-family:Impact,'Arial Black',sans-serif;font-size:17px;letter-spacing:.018em}
+.cartoon-v1 .meta-button.primary{background:#ffcf68!important;border:4px solid #27394e!important;
+  box-shadow:5px 6px 0 #b67945!important}
+.cartoon-v1 .meta-button:not(.primary){background:#f0ead9!important}
+.cartoon-v1 .meta-button:focus-visible,.cartoon-v1 .af-map-pick:focus-visible{
+  outline:3px dashed #bf5f43!important;outline-offset:5px
+}
+.cartoon-v1 .af-maps{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+  margin:14px 0 11px;align-items:stretch
+}
+.cartoon-v1 .af-map-pick{
+  display:flex;flex-direction:column;gap:0;min-width:0;padding:0;cursor:pointer;
+  color:#283e51;background:#fff9e7;border:4px solid #344e61;
+  box-shadow:4px 5px 0 #92a09b;text-align:left;border-radius:0
+}
+.cartoon-v1 .af-map-pick.selected{border-color:#b46f42;background:#ffebba}
+.cartoon-v1 .af-map-pick img{
+  display:block;width:100%;height:126px;object-fit:cover;border-bottom:4px solid #344e61
+}
+.cartoon-v1 .af-map-copy{display:flex;flex:1;flex-direction:column;gap:6px;padding:11px}
+.cartoon-v1 .af-map-copy small{font-weight:900;letter-spacing:.04em;font-size:9px;color:#486376}
+.cartoon-v1 .af-map-copy strong{font:900 22px/.95 Impact,'Arial Black',sans-serif;letter-spacing:.035em}
+.cartoon-v1 .af-map-copy span{font-size:12px;line-height:1.3}
+.cartoon-v1 .af-map-copy b{
+  color:#3c5366;font-size:11px;letter-spacing:.05em;margin-top:auto;
+  padding-top:9px;border-top:2px solid #637784
+}
+.cartoon-v1 .af-map-pick:hover:not(:disabled){transform:translate(-1px,-2px)}
+.cartoon-v1 .af-map-pick:active{transform:translate(3px,4px);box-shadow:1px 1px 0 #93a6a7}
+.cartoon-v1 .upgrade-dialog,.cartoon-v1 .wave-dialog{
+  border-width:4px!important;background:#f6efd9!important;
+  border-radius:0!important;box-shadow:7px 8px 0 #456073a8!important
+}
+.cartoon-v1 .upgrade-choice{border-radius:0!important}
+.cartoon-v1 .loadout-hud{filter:none!important}
+.cartoon-v1 .equipment-panel{
+  border:3px solid #30495f!important;border-radius:1px!important;
+  background:#eef0de!important;color:#253e52!important;box-shadow:3px 4px 0 #6e8894!important
+}
+.cartoon-v1 .flex-ultimate-hud{
+  border-radius:0!important;border:3px solid #273d53!important;
+  background:#fff2bf!important;color:#24374b!important;
+  box-shadow:3px 4px 0 #46687e!important
+}
+.cartoon-v1 .flex-ultimate-hud strong{color:#273a4c!important}
+.cartoon-v1 .meta-panel button{touch-action:manipulation}
+@media(max-width:700px){
+ .cartoon-v1 .af-maps{grid-template-columns:1fr;gap:9px}
+ .cartoon-v1 .af-map-pick{flex-direction:row}
+ .cartoon-v1 .af-map-pick img{width:34%;height:auto;min-height:100px;border-bottom:0;border-right:3px solid #344e61}
+ .cartoon-v1 .af-map-copy{gap:4px;padding:9px}
+ .cartoon-v1 .af-map-copy strong{font-size:19px}
+ .cartoon-v1 .af-home-art{min-height:135px}
+ .cartoon-v1 .meta-panel h1{font-size:clamp(24px,6vw,38px)!important}
+}
+@media(max-height:470px){
+ .cartoon-v1 .af-map-pick img{height:75px}
+ .cartoon-v1 .af-map-copy{padding:7px}
+ .cartoon-v1 .af-maps{max-height:44vh;overflow-y:auto}
+}
+@media(prefers-reduced-motion:reduce){
+ .cartoon-v1 .af-map-pick,.cartoon-v1 .meta-button,.cartoon-v1 .meta-character{transition:none!important}
+}
