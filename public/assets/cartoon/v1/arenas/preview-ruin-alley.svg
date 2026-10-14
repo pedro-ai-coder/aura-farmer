@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 260" width="460" height="260">
+ <rect width="460" height="260" fill="#dce5e3"/><defs><pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#c8dad8"/><path d="M0 0H40M0 0V40" stroke="#344d61" stroke-opacity=".17" stroke-width="2"/></pattern></defs><rect x="16" y="16" width="428" height="228" fill="url(#p)" stroke="#344d61" stroke-width="8"/>
+ <rect x="45" y="58" width="84" height="60" rx="8" fill="#5bafb9" stroke="#344d61" stroke-width="7"/><path d="M58 70H115" stroke="#e0f4e3" stroke-width="6"/><rect x="328" y="110" width="90" height="56" rx="4" fill="#f8bc83" stroke="#344d61" stroke-width="7"/><path d="M338 124L402 153M401 123L338 153" stroke="#344d61" stroke-width="5"/>
+ <rect x="155" y="208" width="153" height="36" rx="2" fill="#344d61"/>
+ <text x="231" y="232" fill="#fff2cc" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="17">RUIN ALLEY</text>
+ </svg>
