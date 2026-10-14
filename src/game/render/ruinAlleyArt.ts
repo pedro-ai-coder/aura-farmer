@@ -55,7 +55,8 @@ export function drawRuinAlley(scene:Phaser.Scene,world:WorldDefinition):void {
     barrier:{rim:0x5c5a69,front:0xffd36c,side:0xd08b62},
   };
   const prop=(ob:SolidObstacle)=>{
-    const c=palette[ob.kind],{x,y,w,h}=ob;
+    const kind=ob.kind==='crate'||ob.kind==='skip'?ob.kind:'barrier';
+    const c=palette[kind],{x,y,w,h}=ob;
     // Contact shadow and unambiguous obstacle silhouette.
     g.fillStyle(0x324c57,.25).fillRoundedRect(x+8,y+12,w+6,h+9,8);
     g.fillStyle(c.rim).fillRoundedRect(x,y,w,h,7);
