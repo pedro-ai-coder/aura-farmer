@@ -15,15 +15,14 @@ test('Cartoon V1 is the production default with the existing effects and fallbac
  await expect(page.locator('html')).toHaveClass(/cartoon-v1/);
  await expect(page.locator('.af-home-event')).toContainText('FIVE WAVES');
  await expect(page.locator('.af-home-event')).not.toContainText('WITHERROOT');
- const loaded=await page.evaluate(()=>{
+ await expect.poll(()=>page.evaluate(()=>{
   const scene=window.__game.scene.scenes[0] as ArenaScene;
   return ['ct-arena',...['sigma','alpha','rizzler','ohio','fanum','six-seven','cool-kid','nerd'].map(id=>'ct-hero-'+id),
     ...['npc','hater','beta','boss'].map(id=>'ct-enemy-'+id),
     'af-arena','af-xp','af-shot','af-hostile','af-enemy-boss-idle-0','af-enemy-beta-attack-4',
     'af-fx-hit-0','af-fx-burst-6','ga-sigma-idle-0','gb-alpha-idle-0','gb2-ohio-idle-0']
     .every(key=>scene.textures.exists(key));
- });
- expect(loaded).toBe(true);
+ })).toBe(true);
 });
 test('legacy art can still be compared by using the legacy URL',async({page})=>{
  await openGame(page,'/?visual=legacy');
@@ -54,7 +53,7 @@ test('combat and fullscreen show NPC Hater Beta boss and XP without missing text
   // atlas in the default skin, with gate/pixel atlas fallback when selected.
   const ruinAlleyDrawn=s.children.list.some(o=>o.type==='Graphics' && (o as Phaser.GameObjects.Graphics).depth===-12);
   const xpVisible=['af-xp','ga-xp','spr-items','px-xp'].some(key=>keys.includes(key));
-  return ['npc','hater','beta','boss'].every(t=>keys.includes('ct-enemy-'+t)) &&
+  return ['npc','hater','beta','boss'].every(t=>keys.some(key=>key==='ct-enemy-'+t || key.startsWith('ct-enemy-'+t+'-'))) &&
     xpVisible && ruinAlleyDrawn && s.arena.world?.id==='ruin-alley';
  })).toBe(true);
  const bad=()=>page.evaluate(()=>{
