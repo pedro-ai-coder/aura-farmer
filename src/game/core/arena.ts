@@ -11,7 +11,7 @@ import { availableBuffs, BUFFS, emptyBuffLevels, type BuffDefinition, type BuffI
 import {canEquip,equipment,legalUpgrades} from './equipment';
 import { ENEMIES, type EnemyType } from '../data/enemies';
 import { getCharacter, type CharacterId } from '../data/characters';
-import { RUIN_ALLEY, moveOnMap, chaseOnMap, blocksProjectile, pickSpawnNearPlayer, type WorldDefinition, type WorldId } from './worldMaps';
+import { getWorld, moveOnMap, chaseOnMap, blocksProjectile, pickSpawnNearPlayer, type WorldDefinition, type WorldId } from './worldMaps';
 
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; confirm?: boolean; choice?: number }
@@ -81,7 +81,7 @@ export class Arena {
   private nextId = 0;
 
   constructor(private readonly random: () => number = Math.random, readonly characterId: CharacterId = 'sigma', readonly worldId: WorldId | null = null) {
-    this.world = worldId === 'ruin-alley' ? RUIN_ALLEY : null;
+    this.world = worldId ? getWorld(worldId) : null;
     if (this.world) this.pos = { ...this.world.start };
     const selected = getCharacter(characterId);
     // Every starter carries one real automatic weapon, counted in the loadout.
