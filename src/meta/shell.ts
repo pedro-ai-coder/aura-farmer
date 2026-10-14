@@ -1,5 +1,7 @@
 import {starterPortrait} from '../game/render/newStarters';
 import {isCartoonArt,cartoonHeroSrc} from '../game/render/cartoonArt';
+import { WORLDS } from '../game/core/worldMaps';
+import { validWorldId, selectedWorldFromQuery, withSelectedWorld } from '../game/core/worldSelection';
 import { isFinalArt } from '../game/render/finalArt';
 import { isGateB2, gateB2Portrait } from '../game/render/gateB2Heroes';
 import { isGateB, gateBPortraitUrl } from '../game/render/gateBHeroes';
@@ -9,7 +11,7 @@ import type { ArenaScene } from '../game/scenes/ArenaScene';
 import { CHARACTERS, getCharacter, type CharacterId } from '../game/data/characters';
 import { ACHIEVEMENTS, personalBest, readProfile, recordRun, newProfile, writeProfile, type AchievementId, type ProfileV1, type RunResult } from './profile';
 
-type Screen = 'home'|'characters'|'achievements'|'leaderboards'|'settings'|'pause'|'exit'|'reset'|'results'|null;
+type Screen = 'home'|'maps'|'characters'|'achievements'|'leaderboards'|'settings'|'pause'|'exit'|'reset'|'results'|null;
 export class GameShell {
   private profile: ProfileV1 = readProfile();
   private root = document.querySelector<HTMLElement>('#meta-shell')!;
@@ -80,8 +82,15 @@ export class GameShell {
   }
   private handle(action: string, character?: string): void {
     if (action === 'home') { this.scene.setPaused(false); this.screen='home'; this.render(); return; }
-    if (['characters','achievements','leaderboards','settings'].includes(action)) {
+    if (['characters','maps','achievements','leaderboards','settings'].includes(action)) {
       this.screen=action as Screen; this.render(); return;
+    }
+    if(action==='choose-map' && character && isCartoonArt() && validWorldId(character)) {
+      const href=withSelectedWorld(window.location.href,character);
+      // Map selection is a pre-run operation. Reload resets Phaser scene and
+      // textures atomically; progress/hero unlock data stays in existing storage.
+      window.location.assign(href);
+      return;
     }
     if (action==='fullscreen') { document.querySelector<HTMLButtonElement>('#fullscreen-toggle')?.click();return; }
     if (action==='choose' && character) {
@@ -166,7 +175,7 @@ export class GameShell {
             <div class="meta-cta">${this.button('play','✦ PLAY CLASSIC','primary')}
             ${this.button('fullscreen',document.querySelector('.play-layout')?.classList.contains('is-immersive') ? 'EXIT FULL SCREEN' : '⛶ FULL SCREEN','mobile-meta')}</div>
             <nav class="meta-menu" aria-label="Main menu">
-              ${this.button('characters','♟ HEROES')}${this.button('achievements','★ ACHIEVEMENTS')}
+              ${this.button('characters','♟ HEROES')}${isCartoonArt()?this.button('maps','◈ MAPS'):''}${this.button('achievements','★ ACHIEVEMENTS')}
               ${this.button('leaderboards','♛ RANKINGS')}${this.button('settings','⚙ SETTINGS')}
             </nav>
             <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}">${this.portrait(c.id)}</span>
@@ -184,6 +193,25 @@ export class GameShell {
             <span class="af-event-footer">${isFinalArt() ? '◆ STYLE IS POWER' : isGateA() ? '◆ REVIEW BEFORE MERGE' : '✦ THE FARM NEEDS YOU'}</span>
           </aside>
         </div>`;
+      }
+      case 'maps': {
+        const active=selectedWorldFromQuery(window.location.search);
+        const details:Record<string,{tag:string;description:string}>={
+          'ruin-alley':{tag:'STREETS · OPEN LANES',description:'Crates, skips and tight escapes. Your first underground arena.'},
+          'crown-chamber':{tag:'ROYALTY · CIRCULAR SPACE',description:'Colonnades, cover and a wide central dueling ring.'},
+          'toxic-rooftop':{tag:'INDUSTRIAL · HARD CORNERS',description:'Roof vents and pipe runs. Read each approach.'}
+        };
+        const cards=WORLDS.map((world,index)=>`<button class="af-map-pick ${active===world.id?'selected':''}"
+          type="button" data-menu="choose-map" data-character="${world.id}"
+          aria-pressed="${active===world.id}">
+          <img src="/assets/cartoon/v1/arenas/preview-${world.id}.svg" alt="" loading="lazy">
+          <span class="af-map-copy"><small>0${index+1} / ${details[world.id].tag}</small>
+          <strong>${world.name}</strong><span>${details[world.id].description}</span>
+          <b>${active===world.id?'SELECTED · ENTER ARENA':'CHOOSE MAP →'}</b></span>
+          </button>`).join('');
+        return this.header('CHOOSE YOUR ARENA')+`<p class="meta-sub">Three real collision maps. Each hosts all five waves.</p>
+          <div class="af-maps">${cards}</div>
+          <div class="meta-actions">${this.button('home','BACK')}${this.button('play','SELECT HERO →','primary')}</div>`;
       }
       case 'characters': {
         const selected=this.profile.selectedCharacterId;
