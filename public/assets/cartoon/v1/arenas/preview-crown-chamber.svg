@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 260" width="460" height="260">
+ <rect width="460" height="260" fill="#ecd9ba"/><defs><pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#e2c7a9"/><path d="M0 0H40M0 0V40" stroke="#51425b" stroke-opacity=".17" stroke-width="2"/></pattern></defs><rect x="16" y="16" width="428" height="228" fill="url(#p)" stroke="#51425b" stroke-width="8"/>
+ <circle cx="230" cy="127" r="100" fill="none" stroke="#f9edcb" stroke-width="10"/><circle cx="230" cy="127" r="87" fill="none" stroke="#b08ca4" stroke-width="5"/>
+ <g fill="#f9e2b8" stroke="#51425b" stroke-width="7"><circle cx="66" cy="58" r="27"/><circle cx="390" cy="58" r="27"/><circle cx="70" cy="185" r="27"/><circle cx="390" cy="185" r="27"/></g><path d="M208 131l-13 -30 26 15 12 -36 10 35 29 -19 -9 35Z" fill="#efc46b" stroke="#51425b" stroke-width="6"/>
+ <rect x="155" y="208" width="153" height="36" rx="2" fill="#51425b"/>
+ <text x="231" y="232" fill="#fff2cc" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="17">CROWN CHAMBER</text>
+ </svg>
