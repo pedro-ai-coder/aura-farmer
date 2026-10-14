@@ -74,6 +74,6 @@ test('landscape Android menu and selection fit viewport',async({page})=>{
   expect(panel!.height).toBeLessThanOrEqual(390);
   await page.locator('[data-character="rizzler"]').click();
   await page.locator('[data-menu="start"]').click();
-  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.buffs['rizz-aura'])).toBe(1);
+  await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.buffs['rizz-blast'])).toBe(1);
   await expect(page.locator('#menu-open')).toBeVisible();
 });

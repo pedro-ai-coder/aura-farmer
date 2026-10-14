@@ -18,7 +18,7 @@ async function boot(page:Page,width:number,height:number):Promise<void> {
 }
 
 async function injectLevelUp(page:Page):Promise<void> {
-  await offerCatalogUpgrades(page,['sigma','alpha','speed']);
+  await offerCatalogUpgrades(page,['gym-routine','speed-shoes','quick-hands']);
   await expect(page.locator('#upgrade-overlay')).toBeVisible();
 }
 
@@ -54,10 +54,10 @@ for (const dim of [
     await page.locator('[data-game-action="choice1"]').tap();
     await expect(page.locator('#upgrade-overlay')).toBeHidden();
     await expect(page.locator('[data-game-action="flex"]')).toBeVisible();
-    await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.buffs.alpha)).toBe(1);
+    await expect.poll(()=>page.evaluate(()=>(window.__game.scene.scenes[0] as ArenaScene).arena.buffs['speed-shoes'])).toBe(1);
     expect(await page.evaluate(()=>{
       const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
       return {mode:a.mode,pending:a.pendingUpgrades,weapons:a.loadout.weapons,passives:a.loadout.passives};
-    })).toEqual({mode:'playing',pending:0,weapons:['aura-shot'],passives:['alpha']});
+    })).toEqual({mode:'playing',pending:0,weapons:['aura-shot'],passives:['speed-shoes']});
   });
 }

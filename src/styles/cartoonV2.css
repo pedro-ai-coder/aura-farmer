@@ -206,3 +206,10 @@ html.cartoon-v1{
    max-height:calc(100% - 24px);min-height:0;overflow-y:auto;
  }
 }
+
+/* Full-bleed fallback must not inherit the 4px cartoon frame.
+   The border previously shifted the game canvas from x=0 to x=4 in landscape. */
+.cartoon-v1 .play-layout:fullscreen,
+.cartoon-v1 .play-layout.is-immersive{
+  border:0;box-shadow:none;outline:0;
+}

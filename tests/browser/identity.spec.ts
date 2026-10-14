@@ -37,7 +37,7 @@ test('visual event banners react to real gameplay signal without covering naviga
   await page.keyboard.press('e');
   await expect(spotlight).toBeVisible();
   await expect(spotlight).toContainText('ULTIMATE ACTIVATED');
-  await expect(spotlight).toContainText('SIGMA OVERCLOCK');
+  await expect(spotlight).toContainText('SIGMA LOCK-IN');
   await expect(spotlight).toHaveAttribute('data-variant','aura');
   await expect(spotlight).toHaveCSS('pointer-events','none');
   await page.locator('#menu-open').click();
