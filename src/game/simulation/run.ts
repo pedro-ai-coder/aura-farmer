@@ -154,7 +154,7 @@ export class Run {
         for (const timer of effects[id] ?? []) delete this.timers[timer];
         const stacks: Record<string, string> = {
             'let-him-cook': 'cook', 'homie-check': 'homie',
-            'six-to-seven': 'six', 'so-back': 'healTicks',
+            'six-to-seven': 'six', 'so-back': 'healTicks', 'no-cap-streak': 'directional',
         };
         if (stacks[id]) delete this.counters[stacks[id]];
         delete this.shields[id];
@@ -237,6 +237,19 @@ export class Run {
     hitEnemy(e: Enemy, raw: number, weapon = '', activation = 0, primary = false) {
         if (e.hp <= 0 || e.born > this.time)
             return;
+        if (weapon === 'chad-hands' && primary && !this.procHits.has(activation)) {
+            this.counters.chadHits = (this.counters.chadHits ?? 0) + 1;
+            if (this.counters.chadHits % 3 === 0) {
+                const legendary = this.inventory.weapons.find(i => i.id === weapon)?.rarity === 'legendary';
+                const second = this.areas.find(a => a.activation === activation && a.label === 'CHAD SECOND');
+                if (second) {
+                    if (second.at <= this.time) raw *= (.4 + (legendary ? .2 : 0)) / .22;
+                    second.damage *= (.4 + (legendary ? .2 : 0)) / .22;
+                    second.radius = (legendary ? 140 : 110) * this.areaScale;
+                    second.shape = 'circle';
+                }
+            }
+        }
         let damage = raw;
         if (weapon) {
             damage *= 1 + .06 * this.inventory.level('main-character') + (this.inventory.level('absolute-cinema') ? .25 + (this.activeFlex ? .20 : 0) : 0) + (this.timers.squadUntil > this.time ? .10 : 0);
@@ -271,18 +284,6 @@ export class Run {
         this.effect('hit', e, String(Math.round(damage)));
         if (primary && !this.procHits.has(activation)) {
             this.procHits.add(activation);
-            if (weapon === 'chad-hands') {
-                this.counters.chadHits = (this.counters.chadHits ?? 0) + 1;
-                if (this.counters.chadHits % 3 === 0) {
-                    const legendary = this.inventory.weapons.find(i => i.id === weapon)?.rarity === 'legendary';
-                    const second = this.areas.find(a => a.activation === activation && a.label === 'CHAD SECOND');
-                    if (second) {
-                        second.damage *= (.4 + (legendary ? .2 : 0)) / .22;
-                        second.radius = (legendary ? 140 : 110) * this.areaScale;
-                        second.shape = 'circle';
-                    }
-                }
-            }
             this.primaryHit(e);
         }
         if (e.hp <= 0)

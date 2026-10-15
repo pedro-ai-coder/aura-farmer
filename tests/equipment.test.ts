@@ -200,3 +200,16 @@ describe('available passive effects', () => {
         expect(r.procHits.size).toBe(0); expect(r.damageDealt).toBe(60);
     });
 });
+
+ it('Chad Hands third successful activation also slams when only the second punch connects', () => {
+    const { r, e } = arena('alpha');
+    r.inventory.weapons = [{ id: 'chad-hands', rarity: 'common', level: 1 }];
+    r.counters.chadHits = 2;
+    updateWeapons(r, { x: 0, y: 0 });
+    r.areas = r.areas.filter(a => a.label === 'CHAD SECOND');
+    r.time = .18;
+    const before = e.hp;
+    r.update(1 / 60);
+    expect(before - e.hp).toBeCloseTo(.4 * 90);
+    expect(r.counters.chadHits).toBe(3);
+ });
