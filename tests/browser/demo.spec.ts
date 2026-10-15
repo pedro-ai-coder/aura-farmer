@@ -5,7 +5,15 @@ declare global {
         __app: BrowserApp;
     }
 }
-async function open(page: Page) { await page.route('**/src/main.ts', async (route) => { const response = await route.fetch(); await route.fulfill({ response, body: (await response.text()).replace('new BrowserApp();', 'window.__app = new BrowserApp();') }); }); await page.goto('/'); await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled(); }
+async function open(page: Page) {
+    await page.route('**/src/main.ts', async route => {
+        // Retry only transport resets while loading the test hook, not failed assertions or HTTP errors.
+        const response = await route.fetch({ maxRetries: 2 });
+        await route.fulfill({ response, body: (await response.text()).replace('new BrowserApp();', 'window.__app = new BrowserApp();') });
+    });
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled();
+}
 async function start(page: Page) { await open(page); await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click(); await expect(page.locator('#modal')).toBeHidden(); }
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }, { width: 800, height: 600 }])
     test(`home and run fit ${viewport.width}x${viewport.height}`, async ({ page }) => { await page.setViewportSize(viewport); const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); await open(page); await expect(page.locator('.hero-card')).toHaveCount(3); await expect(page.locator('.hero-card img').first()).toBeVisible(); await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeInViewport(); await page.screenshot({ path: `test-results/home-${viewport.width}.png` }); await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click(); await expect(page.locator('.meter.hp')).toContainText('The Sigma'); await page.waitForTimeout(1200); await page.keyboard.press('Escape'); await expect(page.locator('.pause')).toBeVisible(); expect(errors).toEqual([]); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); });
