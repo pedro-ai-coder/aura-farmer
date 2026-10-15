@@ -28,18 +28,23 @@ describe('strict 3 weapon + 5 passive equipment',()=>{
  });
  it('blocks a sixth passive and never turns a passive upgrade into another slot',()=>{
    const levels=emptyBuffLevels();
-   levels['aura-shot']=1;levels.drip=1;levels.speed=1;levels['thick-skin']=1;levels.mewing=1;levels.alpha=1;
+   levels['aura-shot']=1;
+   for(const id of ['gym-routine','speed-shoes','thick-skin','quick-hands','long-reach'])levels[id]=1;
    expect(equipment(levels).passives).toHaveLength(MAX_PASSIVE_SLOTS);
-   expect(canEquip(levels,byId('sigma'))).toBe(false);
-   expect(canEquip(levels,byId('drip'))).toBe(true);
+   expect(canEquip(levels,byId('magnet-mode'))).toBe(false);
+   expect(canEquip(levels,byId('gym-routine'))).toBe(true);
  });
- it('weapon levels cap at four; passives retain their smaller maximum',()=>{
+ it('weapon levels cap at four; passive caps follow their rarity',()=>{
    for(const id of ['aura-shot','mewing-jaw','ohio-orbiter','six-seven','rizz-blast'] as const){
      const b=byId(id);expect(b.maxStacks).toBe(4);
      const levels=emptyBuffLevels();levels['aura-shot']=1;levels[id]=4;
      expect(canEquip(levels,b)).toBe(false);
    }
-   expect(byId('drip').maxStacks).toBeLessThanOrEqual(3);
+   for(const [id,cap] of [['gym-routine',4],['critical-drip',3],['double-trouble',2],['built-different',1]] as const){
+     const buff=byId(id);expect(buff.maxStacks).toBe(cap);
+     const levels=emptyBuffLevels();levels[id]=cap;
+     expect(canEquip(levels,buff)).toBe(false);
+   }
  });
  it('rejects forged fourth-slot choices inside the simulation',()=>{
    const a=new Arena(()=>.5);a.start();
