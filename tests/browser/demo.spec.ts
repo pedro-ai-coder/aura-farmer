@@ -41,3 +41,47 @@ test('HUD stays inside the map after wide-window resize', async ({ page }) => {
         await page.screenshot({ path: `test-results/hud-${viewport.width}.png` });
     }
 });
+
+test('wave legendary takes priority over XP choices and preserves the 12-minute reminder', async ({ page }) => {
+    await start(page);
+    await page.evaluate(() => { const r = window.__app.run!; r.time = 539.99; r.wave = 3; r.nextSpawn = Infinity; });
+    await expect(page.locator('.legendary-offer')).toBeVisible();
+    const cards = await page.locator('.choice h3').allTextContents();
+    const paused = await page.evaluate(() => window.__app.run!.time);
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.__app.run!.time)).toBe(paused);
+    await page.getByRole('button', { name: 'DECIDE LATER' }).click();
+    await expect(page.locator('.choices .choice')).toHaveCount(3);
+    while (await page.evaluate(() => window.__app.run!.mode === 'upgrade')) {
+        await page.locator('.choice').first().click();
+        await page.getByRole('button', { name: 'CONFIRM CHOICE' }).click();
+    }
+    await page.evaluate(() => { window.__app.run!.time = 719.99; });
+    await expect(page.locator('.legendary-offer')).toBeVisible();
+    expect(await page.locator('.choice h3').allTextContents()).toEqual(cards);
+    await expect(page.locator('#modal > .panel')).toHaveCount(1);
+});
+
+test('deferred legendary expires without automatic equipment', async ({ page }) => {
+    await start(page);
+    await page.evaluate(() => { const r = window.__app.run!; r.time = 894; r.wave = 5; r.openLegendary(); });
+    await page.getByRole('button', { name: 'DECIDE LATER' }).click();
+    await page.evaluate(() => { window.__app.run!.time = 895; });
+    await expect(page.getByRole('button', { name: 'CHOOSE LEGENDARY' })).toHaveCount(0);
+    expect(await page.evaluate(() => window.__app.run!.inventory.legendarySpent)).toBe(false);
+});
+
+test('boss entry collects ground XP and keeps its clock paused for the resulting choices', async ({ page }) => {
+    await start(page);
+    await page.evaluate(() => {
+        const r = window.__app.run!; r.time = 899.99; r.wave = 5; r.nextSpawn = Infinity;
+        r.drops.push({ x: 400, y: 400, id: 50000, xp: 120 });
+    });
+    await expect(page.locator('.boss-meter')).toContainText('BIG HATER');
+    await expect(page.locator('.choices .choice')).toHaveCount(3);
+    const state = await page.evaluate(() => ({ time: window.__app.run!.time, xp: window.__app.run!.xpCollected }));
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.__app.run!.time)).toBe(state.time);
+    expect(state.xp).toBe(120);
+    await expect(page.locator('#modal > .panel')).toHaveCount(1);
+});

@@ -3,6 +3,7 @@ import { angleDelta, clearLine, direction, distance, move, spawnPoint } from './
 import type { Run } from './run';
 export function updateEnemies(r: Run, dt: number) {
     for (const e of [...r.enemies]) {
+        if (r.mode !== 'playing') break;
         if (e.born > r.time || e.hp <= 0)
             continue;
         const d = ENEMIES[e.kind];
@@ -43,8 +44,7 @@ export function updateEnemies(r: Run, dt: number) {
             if (!mainActive)
                 r.hurt(e.damage * (e.kind === 'boss' ? r.bossDamageMultiplier : 1), e, true);
         }
-        if (r.time < e.nextAttack)
-            continue;
+        if (r.mode !== 'playing') break;
         const damage = e.damage * (e.kind === 'boss' ? r.bossDamageMultiplier : 1);
         const area = (delay: number, radius: number, value: number, shape: 'circle' | 'cone' | 'line' | 'ring' = 'circle', duration = .15, point = { x: e.x, y: e.y }, angle = aim, label = d.name) => r.addArea({ ...point, radius, damage: value, shape, width: 60, angle, arc: Math.PI * 2 / 3, at: r.time + delay, end: r.time + delay + duration, nextTick: r.time + delay, hostile: true, source: e.id, label });
         const projectile = (delay: number, value = damage) => {
@@ -64,6 +64,32 @@ export function updateEnemies(r: Run, dt: number) {
             }
             return false;
         };
+        if (r.time >= e.nextAux) {
+            if (e.kind === 'reply-guy') {
+                for (let i = 0; i < 4; i++)
+                    r.spawn('npc');
+                e.nextAux = r.time + 12;
+            }
+            if (e.kind === 'mod-supremo') {
+                area(1, 500, 15, 'line', .2, undefined, aim + .5, 'SILENCE LINE');
+                area(1, 500, 15, 'line', .2, undefined, aim - .5, 'SILENCE LINE');
+                e.nextAux = r.time + 10;
+            }
+            if (e.kind === 'doomscroll-prime' && r.time >= (r.timers.terminalsInterrupt ?? 0)) {
+                for (let i = 0; i < 2; i++) {
+                    const p = i ? spawnPoint(r.pos, r.random) : r.pos;
+                    if (p)
+                        area(1, 100, 12, 'circle', 3, { ...p });
+                }
+                e.nextAux = r.time + 7;
+            }
+        }
+        if (e.kind === 'mod-supremo' && e.hp < e.maxHp * .5 && !r.counters['half' + e.id]) {
+            r.counters['half' + e.id] = 1;
+            r.spawn('hater');
+            r.spawn('hater');
+        }
+        if (r.time < e.nextAttack) continue;
         switch (e.kind) {
             case 'hater':
                 if (clearLine(e, r.pos)) {
@@ -142,12 +168,12 @@ export function updateEnemies(r: Run, dt: number) {
                     area(1, 200, 35 * r.bossDamageMultiplier, 'cone', .12, undefined, aim, 'HATE SLAM');
                 if (slot === 1) {
                     area(1.2, 600, 30 * r.bossDamageMultiplier, 'line', .1, undefined, aim, 'RATIO BEAM');
-                    if (e.hp < e.maxHp * .35)
+                    if (r.counters.bossBeamPhase)
                         area(1.3, 600, 8 * r.bossDamageMultiplier, 'line', 2, undefined, aim, 'RESIDUAL');
                 }
                 if (slot === 2) {
                     area(1, 280, 25 * r.bossDamageMultiplier, 'ring', 1.5, undefined, aim, 'COMMENT RING — GAP');
-                    if (e.hp < e.maxHp * .7)
+                    if (r.counters.bossRingPhase)
                         area(1.8, 280, 25 * r.bossDamageMultiplier, 'ring', 1.5, undefined, aim, 'SECOND RING');
                 }
                 if (slot === 3)
@@ -158,30 +184,6 @@ export function updateEnemies(r: Run, dt: number) {
             }
             default: e.nextAttack = r.time + 1;
         }
-        if (r.time >= e.nextAux) {
-            if (e.kind === 'reply-guy') {
-                for (let i = 0; i < 4; i++)
-                    r.spawn('npc');
-                e.nextAux = r.time + 12;
-            }
-            if (e.kind === 'mod-supremo') {
-                area(1, 500, 15, 'line', .2, undefined, aim + .5, 'SILENCE LINE');
-                area(1, 500, 15, 'line', .2, undefined, aim - .5, 'SILENCE LINE');
-                e.nextAux = r.time + 10;
-            }
-            if (e.kind === 'doomscroll-prime' && r.time >= (r.timers.terminalsInterrupt ?? 0)) {
-                for (let i = 0; i < 2; i++) {
-                    const p = i ? spawnPoint(r.pos, r.random) : r.pos;
-                    if (p)
-                        area(1, 100, 12, 'circle', 3, { ...p });
-                }
-                e.nextAux = r.time + 7;
-            }
-        }
-        if (e.kind === 'mod-supremo' && e.hp < e.maxHp * .5 && !r.counters['half' + e.id]) {
-            r.counters['half' + e.id] = 1;
-            r.spawn('hater');
-            r.spawn('hater');
-        }
+
     }
 }
