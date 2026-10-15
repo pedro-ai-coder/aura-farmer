@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import heroFrames from './hero-frames.json';
+import { heroPose } from './hero-animation';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES, type EnemyKind } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
@@ -36,16 +38,11 @@ export class BrowserScene extends Phaser.Scene {
     create() {
         this.add.image(0, 0, 'ruin').setOrigin(0).setDisplaySize(WORLD.width, WORLD.height).setDepth(-10);
         for (const hero of HEROES) {
-            const texture = this.textures.get(hero.id + '-atlas'), source = texture.getSourceImage() as HTMLImageElement;
-            const rows = hero.id === 'cool-kid' ? 5 : 6;
-            let frame = 0;
-            for (let row = 0; row < rows; row++) {
-                const cols = hero.id === 'sigma' && row === 4 ? 9 : hero.id === 'sigma' && row === 5 ? 7 : 8;
-                for (let col = 0; col < cols; col++) {
-                    const x = Math.round(col * source.width / cols), y = Math.round(row * source.height / rows);
-                    texture.add(frame++, 0, x, y, Math.round((col + 1) * source.width / cols) - x, Math.round((row + 1) * source.height / rows) - y);
-                }
-            }
+            const texture = this.textures.get(hero.id + '-atlas');
+            // Explicit bounds: generated sheets are not uniform grids.
+            heroFrames[hero.id].forEach(([x, y, width, height], frame) => {
+                texture.add(frame, 0, x, y, width, height);
+            });
         }
         const texture = this.textures.get('enemy-atlas'), source = texture.getSourceImage() as HTMLImageElement;
         for (let row = 0; row < 4; row++)
@@ -118,23 +115,12 @@ export class BrowserScene extends Phaser.Scene {
                 g.strokeCircle(e.x, e.y, e.radius + 3);
             }
         }
-        let frame = 32 + Math.floor(r.time * 2) % 2;
-        const cool = r.characterId === 'cool-kid';
-        if (cool)
-            frame = 24 + Math.floor(r.time * 2) % 2;
-        if (r.moving) {
-            const dir = (Math.round(r.facing / (Math.PI / 4)) + 8) % 8;
-            frame = (cool ? Math.min(dir, 5) : dir) * 4 + Math.floor(r.time * 9) % 4;
-        }
-        if (r.timers.attackUntil > r.time)
-            frame = (cool ? 26 : 34) + Math.min(2, Math.floor((.22 - (r.timers.attackUntil - r.time)) / .075));
-        if (r.activeFlex)
-            frame = (cool ? 33 : 41) + Math.min(5, Math.floor((1 - (r.flexUntil - r.time) / r.hero.duration) * 6));
-        if (r.timers.hurtUntil > r.time)
-            frame = cool ? 29 : 37;
-        if (r.mode === 'lost')
-            frame = 40 - (cool ? 8 : 0);
-        this.heroImage.setVisible(true).setTexture(r.characterId + '-atlas', frame).setPosition(r.pos.x, r.pos.y).setDisplaySize(r.characterId === 'alpha' ? 88 : 76, 78).setDepth(r.pos.y).setAlpha(1);
+        const pose = heroPose(r);
+        // A fixed scale preserves body proportions across attacks, hurt and death.
+        const scale = r.characterId === 'cool-kid' ? .40 : r.characterId === 'alpha' ? .50 : .44;
+        this.heroImage.setVisible(true).setTexture(r.characterId + '-atlas', pose.frame)
+            .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(scale)
+            .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1);
         g.fillStyle(0x253449, .23);
         g.fillEllipse(r.pos.x, r.pos.y + 4, 40, 13);
         if (r.shield > 0) {

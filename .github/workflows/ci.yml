@@ -48,8 +48,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
-      - name: Save failed-browser diagnostics (3 days)
-        if: failure()
+      - name: Save browser screenshots and failure diagnostics (3 days)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: browser-test-results

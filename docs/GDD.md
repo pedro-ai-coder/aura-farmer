@@ -13,6 +13,8 @@ Subset oferecido: as dez passivas common; No Cap Streak, W Wi-Fi, Let Him Cook, 
 
 A apresentação usa o mapa e retratos PNG aprovados, com cobertura e limite de circulação explícitos. Os novos atlas em `public/assets/runtime/` acrescentam poses dos três heróis e silhuetas das famílias inimigas. **O acabamento de animação ainda não cumpre integralmente A.5**: direções de Alpha/Cool Kid precisam de revisão e os inimigos usam poses estáticas com avisos de ataque. Ícones funcionais tipográficos ainda não são o catálogo ilustrado final. Não apresentar este passe como aprovação artística final.
 
+Correções de apresentação (15 outubro): HUD acompanha os limites reais do canvas, incluindo janelas largas; atlas dos heróis usa recortes individuais em vez de grelha uniforme, escala proporcional e pose de derrota correta. A animação de deslocação segue o movimento, independentemente da mira automática. Cool Kid reutiliza uma diagonal espelhada; Alpha continua sem poses traseiras dedicadas. Estas correções não completam A.5.
+
 Validação em curso: testes de regras, typecheck e build locais; testes de browser e revisão visual antes de considerar a fatia pronta. O balanço dos níveis-alvo, desempenho em máquina de referência e os detalhes de todos os ataques lendários ainda exigem playtest. Discord, mobile, seis personagens adicionais, restantes passivas, novos mapas, co-op, PvP, ranked e passe não estão implementados nesta entrega.
 
 ## 0. Guia de utilização no refactor

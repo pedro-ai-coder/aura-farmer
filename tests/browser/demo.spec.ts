@@ -14,6 +14,7 @@ test('all three heroes start with their own starter and Flex', async ({ page }) 
     await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
     expect(await page.evaluate(() => window.__app.run!.inventory.weapons.length)).toBe(1);
     expect(await page.evaluate(() => window.__app.run!.characterId)).toBe(id);
+    await page.screenshot({ path: `test-results/hero-${id}.png` });
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'LEAVE RUN', exact: true }).click();
     await page.getByRole('button', { name: 'LEAVE RUN', exact: true }).click();
@@ -25,3 +26,18 @@ test('boss enters berserk, remains killable and saves victory once', async ({ pa
 test('loss and restart reset equipment and aura', async ({ page }) => { await start(page); await page.evaluate(() => window.__app.run!.hurt(1000, undefined)); await expect(page.locator('.results')).toContainText('Run it back.'); await page.getByRole('button', { name: 'ONE MORE RUN' }).click(); expect(await page.evaluate(() => window.__app.run!.inventory.weapons.length)).toBe(1); expect(await page.evaluate(() => window.__app.run!.aura)).toBeLessThan(2); });
 test('legacy profile survives reload', async ({ page }) => { await page.addInitScript(() => { if (!localStorage.getItem('aura-farmer:profile:v1'))
     localStorage.setItem('aura-farmer:profile:v1', JSON.stringify({ schemaVersion: 1, unlockedCharacters: ['fanum', 'six-seven'], lifetime: { runs: 12, wins: 3, xpCollected: 765 }, settings: { reduceMotion: true } })); }); await open(page); await expect(page.locator('.local-progress')).toContainText('12 runs · 3 wins · 765 lifetime XP'); await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click(); expect(await page.evaluate(() => window.__app.save.unlocked)).toContain('fanum'); await page.reload(); await expect(page.locator('.local-progress')).toContainText('12 runs'); expect(await page.evaluate(() => JSON.parse(localStorage.getItem('aura-farmer:profile:v1')!).unlockedCharacters)).toContain('six-seven'); });
+
+test('HUD stays inside the map after wide-window resize', async ({ page }) => {
+    await start(page);
+    for (const viewport of [{ width: 2560, height: 1080 }, { width: 1280, height: 720 }, { width: 800, height: 600 }]) {
+        await page.setViewportSize(viewport);
+        await expect.poll(async () => page.evaluate(() => {
+            const canvas = document.querySelector('canvas')!.getBoundingClientRect();
+            return Array.from(document.querySelectorAll('#hud button, .hud-top')).every(el => {
+                const b = el.getBoundingClientRect();
+                return b.left >= canvas.left - 1 && b.right <= canvas.right + 1 && b.top >= canvas.top - 1 && b.bottom <= canvas.bottom + 1;
+            });
+        })).toBe(true);
+        await page.screenshot({ path: `test-results/hud-${viewport.width}.png` });
+    }
+});

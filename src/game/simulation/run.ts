@@ -20,6 +20,7 @@ export class Run {
     mode: RunMode = 'playing';
     pos: Point = { x: 724, y: 610 };
     facing = 0;
+    movementFacing = 0;
     moving = false;
     hp: number;
     aura = 0;
@@ -392,6 +393,7 @@ export class Run {
             this.activateFlex();
         this.moving = Math.hypot(input.x, input.y) > .05;
         if (this.moving) {
+            this.movementFacing = Math.atan2(input.y, input.x);
             if (!this.movedSince)
                 this.movedSince = this.time;
             this.stoppedSince = 0;

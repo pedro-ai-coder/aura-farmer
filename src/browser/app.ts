@@ -40,8 +40,10 @@ export class BrowserApp {
         this.save = readSave(this.storage);
         this.audio.enabled = this.save.settings.sound;
         this.scene.tick = dt => this.tick(dt);
-        this.scene.onReady = () => { document.querySelector('#loading')?.remove(); this.render(true); };
+        this.scene.onReady = () => { document.querySelector('#loading')?.remove(); this.alignHud(); this.render(true); };
         this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [this.scene] });
+        this.game.scale.on('resize', () => requestAnimationFrame(() => this.alignHud()));
+        new ResizeObserver(() => this.alignHud()).observe(document.querySelector('#game')!);
         document.addEventListener('keydown', e => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement)
                 return;
@@ -90,6 +92,16 @@ export class BrowserApp {
         document.addEventListener('click', e => { const target = (e.target as HTMLElement).closest<HTMLElement>('[data-action]'); if (target)
             this.action(target.dataset.action!, target.dataset.value); });
         this.render(true);
+    }
+    private alignHud() {
+        const canvas = this.game?.canvas;
+        if (!canvas) return;
+        const bounds = canvas.getBoundingClientRect();
+        const stage = document.querySelector('#app')!.getBoundingClientRect();
+        Object.assign(this.hud.style, {
+            left: `${bounds.left - stage.left}px`, top: `${bounds.top - stage.top}px`,
+            width: `${bounds.width}px`, height: `${bounds.height}px`, right: 'auto', bottom: 'auto',
+        });
     }
     start(hero: DemoHero = this.save.selected) {
         this.audio.unlock();
