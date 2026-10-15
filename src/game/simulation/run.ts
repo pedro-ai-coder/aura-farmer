@@ -121,12 +121,15 @@ export class Run {
         if (!offer)
             return false;
         const old = this.maxHp;
+        const previousPassives = this.inventory.passives.map(item => item.id);
         if (offer.kind === 'heal')
             this.heal(this.maxHp * .08);
         else if (offer.kind === 'shield')
             this.addShield('recovery', this.maxHp * .08, 6);
         else if (!this.inventory.apply(offer, replaceId))
             return false;
+        for (const id of previousPassives)
+            if (!this.inventory.level(id)) this.clearPassiveEffects(id);
         this.hp = Math.min(this.maxHp, this.hp + Math.max(0, this.maxHp - old));
         // First periodic activation starts at acquisition; timers survive removal/re-equipping.
         if (offer.item) {
@@ -141,6 +144,20 @@ export class Run {
         this.mode = 'playing';
         this.openPending();
         return true;
+    }
+    private clearPassiveEffects(id: string) {
+        // Remove active effects and stacks, but retain per-ID cooldown deadlines.
+        const effects: Record<string, string[]> = {
+            'w-wifi': ['wifiUntil'], 'aura-viral': ['viralUntil'],
+            'let-him-cook': ['cookUntil'], 'w-squad': ['squadUntil'],
+        };
+        for (const timer of effects[id] ?? []) delete this.timers[timer];
+        const stacks: Record<string, string> = {
+            'let-him-cook': 'cook', 'homie-check': 'homie',
+            'six-to-seven': 'six', 'so-back': 'healTicks', 'no-cap-streak': 'directional',
+        };
+        if (stacks[id]) delete this.counters[stacks[id]];
+        delete this.shields[id];
     }
     deferLegendary() { if (this.mode === 'legendary') {
         this.legendaryDeferred = true;
@@ -185,8 +202,12 @@ export class Run {
         this.counters.flexSlams = 0;
         this.counters.flexBossDamage = 0;
         this.timers.flexStart = this.time;
-        if (this.characterId === 'alpha')
+        if (this.characterId === 'alpha') {
             this.addShield('alpha-hold', this.maxHp * .25, 6);
+            for (const enemy of this.enemies)
+                if (!ENEMIES[enemy.kind].boss && enemy.born <= this.time && distance(this.pos, enemy) <= 180)
+                    this.timers['taunt:' + enemy.id] = this.time + 2;
+        }
         if (this.inventory.level('aura-viral'))
             this.timers.viralUntil = this.time + 5;
         if (this.inventory.level('w-squad'))
@@ -216,6 +237,19 @@ export class Run {
     hitEnemy(e: Enemy, raw: number, weapon = '', activation = 0, primary = false) {
         if (e.hp <= 0 || e.born > this.time)
             return;
+        if (weapon === 'chad-hands' && primary && !this.procHits.has(activation)) {
+            this.counters.chadHits = (this.counters.chadHits ?? 0) + 1;
+            if (this.counters.chadHits % 3 === 0) {
+                const legendary = this.inventory.weapons.find(i => i.id === weapon)?.rarity === 'legendary';
+                const second = this.areas.find(a => a.activation === activation && a.label === 'CHAD SECOND');
+                if (second) {
+                    if (second.at <= this.time) raw *= (.4 + (legendary ? .2 : 0)) / .22;
+                    second.damage *= (.4 + (legendary ? .2 : 0)) / .22;
+                    second.radius = (legendary ? 140 : 110) * this.areaScale;
+                    second.shape = 'circle';
+                }
+            }
+        }
         let damage = raw;
         if (weapon) {
             damage *= 1 + .06 * this.inventory.level('main-character') + (this.inventory.level('absolute-cinema') ? .25 + (this.activeFlex ? .20 : 0) : 0) + (this.timers.squadUntil > this.time ? .10 : 0);
@@ -225,7 +259,7 @@ export class Run {
                 damage *= 1.1;
             if (this.characterId === 'sigma' && this.lockTarget === e.id && this.time - this.lockSince >= 2)
                 damage *= 1.1;
-            if (this.activeFlex && this.characterId === 'sigma' && e.id === this.flexTarget)
+            if (primary && this.activeFlex && this.characterId === 'sigma' && e.id === this.flexTarget)
                 damage *= 1.4;
             if (this.inventory.level('let-him-cook') && this.timers.cookUntil > this.time)
                 damage *= 1 + (2 + this.inventory.level('let-him-cook')) * .01 * (this.counters.cook ?? 0);
@@ -357,7 +391,7 @@ export class Run {
         this.hp = Math.max(0, this.hp - damage);
         this.damageTaken += damage;
         this.timers.hurtUntil = this.time + .18;
-        if (this.characterId === 'alpha' && this.time >= (this.timers.certified ?? 0) && source) {
+        if (this.characterId === 'alpha' && this.time >= (this.timers.certified ?? 0) && source && !hazard) {
             this.counters.certified = 1;
             this.timers.certified = this.time + 4;
         }
@@ -425,8 +459,6 @@ export class Run {
             this.lockTarget = 0;
             this.lockSince = this.time;
         }
-        if (this.activeFlex && this.characterId === 'sigma' && !this.enemies.some(e => e.id === this.flexTarget))
-            this.flexTarget = this.target(600)?.id ?? 0;
         if (!this.activeFlex)
             this.aura = Math.min(100, this.aura + .5 * dt);
         this.timeline();
@@ -553,6 +585,7 @@ export class Run {
     }
     private resolveShots(dt: number) {
         for (const shot of [...this.shots]) {
+            if (shot.at !== undefined && this.time < shot.at) continue;
             const old = { x: shot.x, y: shot.y };
             shot.x += Math.cos(shot.angle) * shot.speed * dt;
             shot.y += Math.sin(shot.angle) * shot.speed * dt;
@@ -612,26 +645,28 @@ export class Run {
                     if (e.born <= this.time && !a.hit.includes(e.id) && this.inside(a, e, e.radius) && clearLine(a, e)) {
                         a.hit.push(e.id);
                         this.hitEnemy(e, a.damage, a.weapon, a.activation, a.primary);
-                        if (a.weapon === 'ban-hammer') {
+                        if (a.primary && a.weapon === 'ban-hammer') {
                             this.stagger(e, 15);
                             if (!ENEMIES[e.kind].boss) {
                                 const dir = direction(this.pos, e);
                                 Object.assign(e, move(e, Math.cos(dir) * 40, Math.sin(dir) * 40, e.radius));
                             }
                         }
-                        if (a.weapon === 'touch-grass') {
+                        if (a.primary && a.weapon === 'touch-grass') {
                             const enhanced = a.label === 'GRASS LEGEND';
                             e.slow = Math.max(e.slowUntil > this.time ? e.slow : 0, enhanced ? .25 : .15);
                             e.slowUntil = this.time + (enhanced ? 2 : 1.5);
                         }
-                        if (a.weapon === 'cope-shield') {
-                            this.addShield('cope-shield', this.maxHp * .04, 2);
+                        if (a.primary && a.weapon === 'cope-shield') {
+                            this.addShield('cope-shield', this.maxHp * .04 * (a.weaponPower ?? 1), 2);
                             if (a.label === 'SHIELD LEGEND')
-                                this.addShield('unbothered', this.maxHp * .05, 3);
+                                this.addShield('unbothered', this.maxHp * .05 * (a.weaponPower ?? 1), 3);
                         }
-                        if (a.weapon === 'personal-space') {
-                            e.weaken = .08;
-                            e.weakenUntil = this.time + 2;
+                        if (a.primary && a.weapon === 'personal-space' && !ENEMIES[e.kind].boss) {
+                            if (e.weakenUntil <= this.time || e.weaken <= .08) {
+                                e.weaken = .08;
+                                e.weakenUntil = this.time + 2;
+                            }
                         }
                     }
         }

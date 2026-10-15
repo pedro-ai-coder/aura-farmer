@@ -14,6 +14,8 @@ export function updateWeapons(r: Run, input: Input) {
             r.timers[w.id] = r.time + .1;
             continue;
         }
+        if (r.activeFlex && r.characterId === 'sigma' && !r.enemies.some(e => e.id === r.flexTarget))
+            r.flexTarget = r.target(600)?.id ?? 0;
         const activation = ++r.activation;
         r.timers[w.id] = r.time + itemInterval(item, r.frequency);
         r.timers.attackUntil = r.time + .22;
@@ -26,14 +28,13 @@ export function updateWeapons(r: Run, input: Input) {
         let damage = w.damage * r.power * itemPower(item) * (streak ? 1.1 : 1) * (empowered ? 1.2 : 1);
         const angle = input.manual && input.aim ? r.facing : direction(r.pos, target);
         const origin = { ...r.pos }, scale = r.areaScale;
-        const area = (delay: number, coefficient = 1, radius = range, shape: 'cone' | 'circle' | 'line' = 'cone', secondary = false, point = origin) => r.addArea({ ...point, radius, shape, angle, arc: (w.angle ?? 360) * Math.PI / 180, damage: damage * coefficient, at: r.time + delay, end: r.time + delay + .12, nextTick: r.time + delay, weapon: secondary ? '' : w.id, activation, primary: !secondary, label: w.name });
-        const shot = (extra = false) => r.shots.push({ ...origin, id: r.nextId++, angle, speed: (w.id === 'no-cap' ? 750 : 650) * (range / w.range), remaining: range, damage: extra ? .1 * r.power * itemPower(item) : damage, radius: w.id === 'no-cap' ? 16 : 6, hostile: false, source: 0, weapon: extra ? '' : w.id, activation, pierce: (w.id === 'no-cap' ? 4 : 1) + (streak ? r.inventory.level('no-cap-streak') : 0) + (r.activeFlex && r.characterId === 'sigma' ? 1 : 0), hit: [], primary: !extra });
+        const area = (delay: number, coefficient = 1, radius = range, shape: 'cone' | 'circle' | 'line' = 'cone', secondary = false, point = origin) => r.addArea({ ...point, radius, shape, angle, arc: (w.angle ?? 360) * Math.PI / 180, damage: damage * coefficient, at: r.time + delay, end: r.time + delay + .12, nextTick: r.time + delay, weapon: w.id, weaponPower: itemPower(item), activation, primary: !secondary, label: w.name });
+        const shot = (extra = false, delay = 0) => r.shots.push({ ...origin, at: r.time + delay, id: r.nextId++, angle, speed: (w.id === 'no-cap' ? 750 : 650) * (range / w.range), remaining: range, damage: extra ? .1 * r.power * itemPower(item) : damage, radius: w.id === 'no-cap' ? 16 : 6, hostile: false, source: 0, weapon: w.id, activation, pierce: extra ? 1 : (w.id === 'no-cap' ? 4 : 1) + (streak ? r.inventory.level('no-cap-streak') : 0) + (r.activeFlex && r.characterId === 'sigma' ? 1 : 0), hit: [], primary: !extra });
         if (w.shape === 'shot' || w.shape === 'line') {
             shot();
             if (legendary && w.id === 'ratio-blaster' && count % 4 === 0) {
-                // Delayed secondary bolts use queued line attacks; no extra proc events.
-                area(.08, .5, range, 'line', true);
-                area(.16, .5, range, 'line', true);
+                shot(true, .08);
+                shot(true, .16);
             }
             if (legendary && w.id === 'no-cap')
                 area(.7, .5, range, 'line', true);
@@ -63,10 +64,8 @@ export function updateWeapons(r: Run, input: Input) {
                     a.label = 'SHIELD LEGEND';
             }
             if (w.second) {
-                if (w.id === 'chad-hands' && count % 3 === 0)
-                    area(w.second, (.4 + (legendary ? .2 : 0)) / .22, (legendary ? 140 : 110) * scale, 'circle');
-                else
-                    area(w.second);
+                const second = area(w.second);
+                if (w.id === 'chad-hands') second.label = 'CHAD SECOND';
             }
             if (legendary) {
                 if (w.id === 'keyboard-warrior' && count % 3 === 0)
@@ -74,7 +73,7 @@ export function updateWeapons(r: Run, input: Input) {
                 if (w.id === 'ban-hammer')
                     area(.8, .30 / .90, 220, 'line', true);
                 if (w.id === 'personal-space' && count % 2 === 0)
-                    r.addShield('my-aura', r.maxHp * .04, 3);
+                    r.addShield('my-aura', r.maxHp * .04 * itemPower(item), 3);
             }
         }
         r.effect('attack', r.pos, undefined, Math.min(55, range));

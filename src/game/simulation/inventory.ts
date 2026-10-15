@@ -18,7 +18,7 @@ export class Inventory {
     level(id: string) { return this.passives.find(i => i.id === id)?.level ?? 0; }
     legal(item: Item): boolean {
         const w = weaponById(item.id), p = passiveById(item.id);
-        if (!w && !p || !Number.isInteger(item.level) || item.level < 1 || item.level > CAPS[item.rarity])
+        if (!(item.rarity in CAPS) || !w && !p || !Number.isInteger(item.level) || item.level < 1 || item.level > CAPS[item.rarity])
             return false;
         if (w && w.role !== this.role || p && (p.role && p.role !== this.role || p.rarity !== item.rarity))
             return false;
@@ -31,6 +31,7 @@ export class Inventory {
         if (!item || !this.legal(item))
             return false;
         const weapon = !!weaponById(item.id), list = weapon ? this.weapons : this.passives, cap = weapon ? 3 : 5;
+        if (choice.kind !== (weapon ? 'weapon' : 'passive')) return false;
         const index = list.findIndex(i => i.id === item.id);
         if (index >= 0) {
             const old = list[index];
