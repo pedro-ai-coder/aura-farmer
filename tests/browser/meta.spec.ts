@@ -17,6 +17,7 @@ async function load(page:Page):Promise<void> {
 }
 test('new home, character selection, run results, local save and leaderboard survive refresh',async({page})=>{
   await load(page);
+  await expect(page.locator('.meta-foot')).toHaveText('LOCAL PROGRESS · NO LOGIN REQUIRED');
   await page.locator('[data-menu="play"]').click();
   await expect(page.locator('[data-menu="choose"]')).toHaveCount(8);
   await expect(page.locator('[data-character="fanum"]')).toBeDisabled();
