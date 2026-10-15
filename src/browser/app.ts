@@ -50,9 +50,16 @@ export class BrowserApp {
             const key = e.key.toLowerCase();
             if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key))
                 e.preventDefault();
-            this.keys.add(key);
+            if (this.run?.mode === 'playing' && !this.notice) this.keys.add(key);
             if (e.repeat)
                 return;
+            if (this.notice) {
+                if (key === 'escape') {
+                    this.notice = '';
+                    this.render(true);
+                }
+                return;
+            }
             if (key === 'escape' && this.run) {
                 if (this.run.mode === 'paused')
                     this.run.resume();
@@ -110,6 +117,7 @@ export class BrowserApp {
         this.run.reduceMotion = this.save.settings.reducedMotion;
         this.runId = crypto.randomUUID();
         this.recorded = false;
+        this.notice = '';
         this.selectedChoice = -1;
         this.keys.clear();
         this.save.selected = hero;
@@ -118,6 +126,7 @@ export class BrowserApp {
     }
     private persist() { this.saveFailed = !writeSave(this.storage, this.save); }
     private action(action: string, value?: string) {
+        if (this.notice && action !== 'cancel-exit' && action !== 'confirm-exit') return;
         if (action === 'hero' && isDemoHero(value)) {
             this.save.selected = value;
             this.persist();
@@ -167,6 +176,7 @@ export class BrowserApp {
             this.render(true);
         }
         if (action === 'exit') {
+            this.run?.pause();
             this.notice = 'exit';
             this.render(true);
         }
@@ -239,6 +249,7 @@ export class BrowserApp {
         }
         if (!force && screen === this.screen)
             return;
+        if (screen !== this.screen) this.keys.clear();
         this.screen = screen;
         this.modal.hidden = screen === 'playing';
         if (screen === 'home')
