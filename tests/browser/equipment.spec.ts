@@ -24,7 +24,7 @@ for(const d of [{name:'desktop',width:1180,height:820},{name:'portrait',width:39
    await page.evaluate(()=>{
      const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
      a.buffs['mewing-jaw']=1;a.buffs['ohio-orbiter']=1;
-     a.buffs.drip=1;a.buffs.speed=1;a.buffs.mewing=1;
+     a.buffs['iron-will']=1;a.buffs['speed-shoes']=1;a.buffs['lucky-charm']=1;
    });
    await expect(hud.locator('[data-loadout-count="weapons"]')).toHaveText('3/3');
    await expect(hud.locator('[data-loadout-count="passives"]')).toHaveText('3/5');
@@ -38,7 +38,7 @@ test('the upgrade dialog clearly separates weapons and passives and refuses a si
  await page.evaluate(()=>{
    const a=(window.__game.scene.scenes[0] as ArenaScene).arena;
    a.buffs['mewing-jaw']=1;a.buffs['ohio-orbiter']=1;
-   a.buffs.drip=1;a.buffs.speed=1;a.buffs.mewing=1;a.buffs.alpha=1;a.buffs['gym-routine']=1;
+   a.buffs['iron-will']=1;a.buffs['speed-shoes']=1;a.buffs['lucky-charm']=1;a.buffs['quick-hands']=1;a.buffs['gym-routine']=1;
    a.enemies=[];a.shots=[];a.mode='playing';
    a.drops=[{...a.pos,xp:20}];
    a.update(1);

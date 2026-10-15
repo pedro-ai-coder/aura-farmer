@@ -1,16 +1,8 @@
 export const GAME = {
   width: 960,
   height: 600,
-  arenaTop: 82,
-  arenaMargin: 24,
   waveDurationMs: 50_000,
   waveCount: 5,
   maxEnemies: 90,
   playerRadius: 19,
-  flexRadius: 145,
-  flexDurationMs: 1_000,
-  flexCooldownMs: 15_000,
-  focusDurationMs: 3_000,
-  focusCooldownMs: 22_000,
-  burstDurationMs: 6_000,
 } as const;

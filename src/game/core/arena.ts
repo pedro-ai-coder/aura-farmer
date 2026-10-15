@@ -1,11 +1,10 @@
 import { AuraSystem } from './aura';
 import { FlexSystem, type FlexVariant } from './flex';
-import {newAffinityCounts,type Affinity,type EssenceDrop} from './affinities';
 import {FLEXES_V2,difficultyV2} from '../combatV2';
 import { Progression } from './progression';
 import { GAME } from './constants';
 import { combatStats } from './combat';
-import { BuffEffects, findBounce, firstHitDamage, rizzPulse, rizzSpeed, type BuffTarget, type BounceState } from './buffEffects';
+import { rizzSpeed, type BuffTarget } from './statusEffects';
 import { clamp, distance, normalized, type Vec2 } from './math';
 import { availableBuffs, BUFFS, emptyBuffLevels, type BuffDefinition, type BuffId } from '../data/buffs';
 import {canEquip,equipment,legalUpgrades} from './equipment';
@@ -16,7 +15,7 @@ import { RUIN_ALLEY, moveOnMap, chaseOnMap, blocksProjectile, pickSpawnNearPlaye
 export type Mode = 'intro' | 'playing' | 'upgrades' | 'between' | 'dead' | 'win';
 export interface Controls { x?: number; y?: number; flex?: boolean; confirm?: boolean; choice?: number }
 export interface Enemy extends BuffTarget { id: number; hp: number; type: EnemyType; nextHit: number; nextShot: number }
-export interface Shot extends Vec2, BounceState { vx: number; vy: number; ttl: number; damage: number; hostile: boolean; piercing?: boolean; splash?: number }
+export interface Shot extends Vec2 { vx: number; vy: number; ttl: number; damage: number; hostile: boolean; piercing?: boolean; splash?: number }
 export interface Drop extends Vec2 { xp: number }
 
 /** Phaser-free simulation. All durations use active simulation time, including cooldowns. */
@@ -29,13 +28,9 @@ export class Arena {
   flex = new FlexSystem();
   xp = new Progression();
   buffs = emptyBuffLevels();
-  effects = new BuffEffects();
   enemies: Enemy[] = [];
   shots: Shot[] = [];
   drops: Drop[] = [];
-  essenceDrops: EssenceDrop[] = [];
-  affinities = newAffinityCounts();
-  lastEssence: Affinity | null = null;
   choices: BuffDefinition[] = [];
   pendingUpgrades = 0;
   clock = 0;
@@ -98,10 +93,9 @@ export class Arena {
   }
 
   get loadout():{weapons:readonly BuffId[];passives:readonly BuffId[]}{return equipment(this.buffs);}
-  get nearby(): number { return this.enemies.filter(e => distance(e, this.pos) <= GAME.flexRadius).length; }
   get stats() {
     const character = getCharacter(this.characterId);
-    const stats = combatStats(this.buffs, this.aura.peak, this.nearby, this.clock - this.lastDamageAt, this.hp, Math.round(100 * character.hp));
+    const stats = combatStats(this.buffs, this.hp, Math.round(100 * character.hp));
     return { ...stats, speed: stats.speed * character.speed, damage: stats.damage * character.damage,
       fireRate: stats.fireRate * character.fireRate, critChance: Math.min(1, stats.critChance + character.crit),
       armor: stats.armor + character.armor };
@@ -124,9 +118,8 @@ export class Arena {
     if (this.mode === 'between') {
       if (input.confirm) {
         this.wave++; this.waveClock = 0; this.spawnClock = 0;
-        this.effects.beginWave();
         this.tookHitThisWave = false;
-        this.enemies = []; this.shots = []; this.drops = []; this.essenceDrops = [];
+        this.enemies = []; this.shots = []; this.drops = [];
         this.hp = Math.min(this.stats.maxHp, this.hp + Math.ceil(this.stats.maxHp*.1)); this.mode = 'playing';
       }
       return;
@@ -265,7 +258,7 @@ export class Arena {
           if (this.mode === 'dead') return;
         }
       } else {
-        const enemy = this.enemies.find(e => (shot.targetId === undefined || e.id === shot.targetId) && distance(e, shot) < ENEMIES[e.type].radius + 6);
+        const enemy = this.enemies.find(e => distance(e, shot) < ENEMIES[e.type].radius + 6);
         if (enemy) {
           this.removeShot(shot);
           this.hit(enemy, shot.damage);
@@ -274,22 +267,14 @@ export class Arena {
           if(this.buffs['chain-reaction']>0&&this.random()<(.05+this.buffs['chain-reaction']*.05))
             for(const other of this.enemies.filter(e=>e!==enemy&&distance(e,enemy)<100).slice(0,1))
               this.hit(other,shot.damage*.4,'flex');
-          // Piercing Sigma FLEX makes one additional bounded strike. Ordinary
-          // Skibidi ricochet remains available and can never loop indefinitely.
-          const target=shot.piercing
-            ? this.enemies.find(e=>e.id!==enemy.id && distance(e,enemy)<120)
-            : this.buffs['skibidi-bounce']?findBounce(shot,enemy,this.enemies):undefined;
-          if(target){
-            if(shot.piercing)this.hit(target,shot.damage*.6,'flex');
-            else{
-              const bounce=this.shoot(enemy,target,shot.damage*.55);
-              bounce.bounced=true;bounce.targetId=target.id;
-            }
+          // One additional bounded hit for the character's piercing Flex.
+          if(shot.piercing){
+            const target=this.enemies.find(e=>e.id!==enemy.id && distance(e,enemy)<120);
+            if(target)this.hit(target,shot.damage*.6,'flex');
           }
         }
       }
     }
-    // Combat V2: old affinity drops are no longer collected.
     for (const drop of [...this.drops]) {
       const d = distance(drop, this.pos);
       if (d < 26) {
@@ -303,7 +288,6 @@ export class Arena {
         drop.x += v.x * step; drop.y += v.y * step;
       }
     }
-    this.hp = this.effects.heal(this.hp, this.stats.maxHp, this.clock, this.lastDamageAt, this.buffs['touch-grass'] > 0);
     this.hp = Math.min(this.stats.maxHp,this.hp+(this.buffs['recovery-snack']??0)*.2*dt/1000);
     this.flex.sync(this.clock,this.aura.value);
     this.maxAura=Math.max(this.maxAura,this.aura.peak);
@@ -419,7 +403,7 @@ export class Arena {
       for(const other of [...this.enemies])if(other!==enemy&&distance(other,enemy)<105)
         this.hit(other,dealt*.35,'flex');
     }
-    enemy.hp-=source==='flex'?dealt:firstHitDamage(enemy,ENEMIES[enemy.type].hp*difficultyV2(this.wave).hp,dealt,this.buffs.mogged);
+    enemy.hp-=dealt;
     if(source==='normal'&&this.buffs['heavy-impact']>0&&enemy.hp>0){
       const dir=normalized(enemy.x-this.pos.x,enemy.y-this.pos.y);
       const push=4+this.buffs['heavy-impact']*3;
@@ -445,18 +429,13 @@ export class Arena {
     if(this.buffs['explosive-finish']>0&&this.random()<this.buffs['explosive-finish']*.04)
       for(const e of [...this.enemies])if(distance(e,enemy)<95)this.hit(e,35+15*(this.buffs['explosive-finish']-1),'flex');
 
-    if (this.buffs['rizz-aura'] && this.kills % 12 === 0) {
-      rizzPulse(this.enemies, this.pos, this.clock);
-      this.effects.rizzPulseUntil = this.clock + 300;
-    }
     if (this.buffs['six-seven'] && this.kills % 67 === 0 && !this.flexActive) {
       this.sixSevenTriggered = true;
       for (let i = 0; i < 7; i++) {
         const angle = i * Math.PI * 2 / 7;
         this.shoot(this.pos, { x: this.pos.x + Math.cos(angle), y: this.pos.y + Math.sin(angle) }, this.damage(18));
       }
-      if (this.buffs['skibidi-bounce'] > 0) this.ultimate67Triggered = true;
-      this.say(this.effects.volleyMessage(this.buffs['skibidi-bounce'] > 0));
+      this.say('SIX SEVEN!');
     }
   }
 
@@ -467,16 +446,11 @@ export class Arena {
       this.effectCooldowns.set('guardian',this.clock+(this.buffs['guardian-angel']===2?45000:60000));
       return;
     }
-    const result = this.effects.receiveDamage(this.hp, damage, this.clock, this.buffs.delulu > 0);
-    if (result.ignored) return;
-    this.hp = result.hp;
+    this.hp = Math.max(0, this.hp - damage);
     this.damageTaken += damage;
     this.tookHitThisWave = true;
-    this.effects.tookDamage(this.clock);
     this.lastDamageAt = this.clock;
     // HP damage does not erase earned FLEX charge: prevents melee death spirals.
-    // Existing Delulu and incoming armor calculations remain unchanged.
-    if (result.saved) this.say('DELULU SAVED YOU!');
     if(this.hp<=0&&this.buffs['built-different']>0&&!this.builtDifferentUsed){
       this.builtDifferentUsed=true;this.hp=Math.ceil(this.stats.maxHp*.25);this.say('BUILT DIFFERENT!');
     }

@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "direction": "A — Cartoon Arcade",
+  "assets": [
+    {
+      "path": "characters/cool-kid.png",
+      "width": 1374,
+      "height": 1145,
+      "bytes": 1087875,
+      "sha256": "a7ee0005158ade0a3974c3b5d1f93bf79b5adbd553d46d6a5de58f4b04e7d29a",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        0,
+        13,
+        1354,
+        1145
+      ]
+    },
+    {
+      "path": "characters/alpha.png",
+      "width": 1374,
+      "height": 1145,
+      "bytes": 1454663,
+      "sha256": "9311103aebc272e5e165d71132d2509859bc7fa720c7e217bf716e904c2177a9",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        0,
+        17,
+        1339,
+        1129
+      ]
+    },
+    {
+      "path": "characters/sigma.png",
+      "width": 1374,
+      "height": 1145,
+      "bytes": 923902,
+      "sha256": "fe2ebf07353fbc9a016ef60b8ceaeb20b27e4c8cb1add0a613e6720723e92e2f",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        0,
+        21,
+        1358,
+        1104
+      ]
+    },
+    {
+      "path": "enemies/phone-guy.png",
+      "width": 1289,
+      "height": 1220,
+      "bytes": 784261,
+      "sha256": "b16e0c85366d8dcf6729f1cea38356805e158fb2b3ba8d5ca086e4db51615e0d",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        33,
+        32,
+        1227,
+        1179
+      ]
+    },
+    {
+      "path": "enemies/hater.png",
+      "width": 1374,
+      "height": 1145,
+      "bytes": 947651,
+      "sha256": "3efbabe21c1abff9024bbd3ce7e86fabb665b62e7b23e6bc879fa79a80b0f80b",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        0,
+        23,
+        1356,
+        1145
+      ]
+    },
+    {
+      "path": "enemies/big-hater.png",
+      "width": 1374,
+      "height": 1145,
+      "bytes": 1136254,
+      "sha256": "76e1e512ff2f5a975a74e555797d1d49f11d7137d61ae3742df0424da93fe454",
+      "transparent": true,
+      "status": "static-art-not-integrated",
+      "alpha_bbox": [
+        0,
+        41,
+        1348,
+        1145
+      ]
+    },
+    {
+      "path": "maps/ruin-alley.png",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 3259712,
+      "sha256": "cc08e19cfc3a88dc9da81adc4b4e6f4e50394ff0660605eb868ae8cb4a616f50",
+      "transparent": false,
+      "status": "static-art-not-integrated"
+    },
+    {
+      "path": "maps/crown-court.png",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 3378467,
+      "sha256": "6681d83f1b952b9d86671b30bc71e49f6c296c4bc22b919e5f83b01a690cac7d",
+      "transparent": false,
+      "status": "static-art-not-integrated"
+    },
+    {
+      "path": "maps/toxic-garden.png",
+      "width": 1448,
+      "height": 1086,
+      "bytes": 3447650,
+      "sha256": "a6c8a04e3b54b54191fdcdff506746b80cf5aad69889d40c5a68922d4f97d631",
+      "transparent": false,
+      "status": "static-art-not-integrated"
+    },
+    {
+      "path": "ui/main-menu.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3002230,
+      "sha256": "3d6bfc02020a762a097708d500c2978a5039c060f046397f78039bc44bbcf7fb",
+      "transparent": false,
+      "status": "static-art-not-integrated"
+    }
+  ]
+}

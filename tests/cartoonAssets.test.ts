@@ -18,15 +18,13 @@ describe('cartoon v1 static art pack', () => {
     }
   });
 
-  it('covers every existing enemy family and a single arena skin', () => {
+  it('covers every existing enemy family used in gameplay', () => {
     expect([...CARTOON_ENEMY_IDS].sort()).toEqual(['beta', 'boss', 'hater', 'npc']);
     for (const id of CARTOON_ENEMY_IDS) {
       const svg = asset(`enemies/${id}.svg`);
       expect(svg).toContain('<svg');
       expect(svg).toContain('</svg>');
     }
-    const floor = asset('arenas/aura-court.svg');
-    expect(floor).toContain('viewBox="0 0 960 600"');
-    expect(floor).not.toContain('<script');
+
   });
 });

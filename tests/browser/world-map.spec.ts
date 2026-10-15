@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test('Ruin Alley selected in cartoon mode, classic remains intact', async ({ page }) => {
-  await page.goto('/?visual=cartoon');
+test('Ruin Alley is the default and retired URL switches cannot change the map', async ({ page }) => {
+  await page.goto('/');
   await expect(page.locator('.play-layout')).toHaveAttribute('data-map','ruin-alley');
-  await expect(page.locator('html')).toHaveClass(/cartoon-v1/);
+  await expect(page.locator('html')).toHaveClass(/cartoon-ui/);
   await expect(page.locator('button[data-menu="play"]')).toBeVisible();
 
   await page.goto('/?visual=arena');
-  await expect(page.locator('.play-layout')).toHaveAttribute('data-map','classic');
+  await expect(page.locator('.play-layout')).toHaveAttribute('data-map','ruin-alley');
 });
 
 test('new world keeps game controls accessible during movement', async ({ page }) => {
