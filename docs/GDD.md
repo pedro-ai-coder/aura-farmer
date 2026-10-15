@@ -29,6 +29,14 @@ Base: merge do PR #52, `f90f2a7`. Mantém IDs, saves, três personagens, nove ar
 
 Esta iteração não conclui as animações nem valida mobile ou o equilíbrio de uma partida inteira. Waves, XP e fluxo completo são objeto da iteração 2; persistência e validação integrada da fase são objeto da iteração 3. Os testes existentes desses fluxos continuam obrigatórios para detetar regressões.
 
+### Fase 1 · Iteração 2 — Partida e progressão
+
+Base: PR #53 integrado, `e06522b`. Corrige a cura de subida de nível para apenas 2 HP, a seleção de categoria antes da raridade nas ofertas normais e a pausa imediata das escolhas geradas nas transições. Mantém os valores de XP, aura, waves e a oferta lendária única, incluindo adiamento sem reroll e expiração às 14:55.
+
+Temporizadores auxiliares dos eventos passam a ser independentes dos ataques principais: adds de Reply Guy a cada 12 s, linhas de Mod Supremo a cada 10 s e zonas de Doomscroll Prime a cada 7 s. Reforços de Mod Supremo reagem à vida sem esperar pelo próximo ataque. Limiares de Big Hater ficam desbloqueados após serem atingidos, mesmo que a regeneração aumente a vida. Vitória/derrota interrompem a resolução de combate e impedem XP ou dano posteriores ao resultado.
+
+Cobertura desta iteração: fronteiras de XP/nível25, quatro transições e quatro eventos, prioridade/fila/expiração da lendária, recolha dos orbes e retirada de ameaças aos 15:00, adds sem XP, berserk recuperável e fim da run. São testes determinísticos e fluxos de browser com estado controlado; não comprovam o balanceamento de uma partida normal nem desempenho mobile. Validação integrada/persistência continua na iteração 3; animações, mobile e afinação aprofundada continuam nas fases seguintes. Merge deste PR depende de aprovação explícita.
+
 ## 0. Guia de utilização no refactor
 
 Este GDD consolida o design acordado, os números iniciais aprovados e a arte da opção A. Deve orientar o refactor de `pedro-ai-coder/aura-farmer`; não implica reescrever todo o jogo ou criar outro repositório. Decisões posteriores do criador prevalecem e devem ser registadas aqui.

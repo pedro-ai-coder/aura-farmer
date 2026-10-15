@@ -86,8 +86,11 @@ export class Inventory {
             const legal = candidates.filter(c => !result.some(o => o.item?.id === c.item?.id));
             if (!legal.length)
                 break;
-            // Redistribute rarity weights over legal categories, not over the number of items.
-            const present = ranks.slice(0, 3).filter(r => legal.some(c => c.item?.rarity === r));
+            // Select a legal category first, then redistribute rarity weights within it (§10).
+            const categories = [...new Set(legal.map(c => c.action === 'replace' ? 'new' : c.action))];
+            const category = categories[Math.floor(random() * categories.length)];
+            const categoryPool = legal.filter(c => (c.action === 'replace' ? 'new' : c.action) === category);
+            const present = ranks.slice(0, 3).filter(r => categoryPool.some(c => c.item?.rarity === r));
             const total = present.reduce((n, r) => n + WAVES[wave - 1].weights[ranks.indexOf(r)], 0);
             let roll = random() * total, rarity = present[0];
             for (const r of present) {
@@ -97,7 +100,7 @@ export class Inventory {
                     break;
                 }
             }
-            const pool = legal.filter(c => c.item?.rarity === rarity);
+            const pool = categoryPool.filter(c => c.item?.rarity === rarity);
             result.push(pool[Math.floor(random() * pool.length)]);
         }
         while (result.length < 3)

@@ -95,17 +95,16 @@ export class Run {
     heal(amount: number) { const value = Math.min(this.maxHp - this.hp, amount * this.support); this.hp += value; this.healing += value; if (value > 0)
         this.effect('heal', this.pos, '+' + Math.round(value)); }
     gainXp(amount: number) {
-        if (amount <= 0)
+        if (!Number.isFinite(amount) || amount <= 0 || this.mode === 'won' || this.mode === 'lost')
             return;
         this.xp += amount;
         this.xpCollected += amount;
         while (this.xp >= xpRequired(this.level)) {
             this.xp -= xpRequired(this.level);
             if (this.level < 25) {
-                const old = this.maxHp;
                 this.level++;
                 this.pending++;
-                this.hp += this.maxHp - old;
+                this.hp = Math.min(this.maxHp, this.hp + 2);
                 this.effect('level', this.pos, 'LEVEL ' + this.level, 50);
             }
             else if (this.time >= this.maxLevelHealAt) {
@@ -221,7 +220,7 @@ export class Run {
         if (!p)
             return;
         const d = ENEMIES[kind], scale = d.boss || kind === 'terminal' ? 1 : WAVES[this.wave - 1].hp * (elite ? 2.5 : 1);
-        const e: Enemy = { ...p, id: this.nextId++, kind, hp: d.hp * scale, maxHp: d.hp * scale, damage: d.damage * (d.boss ? 1 : WAVES[this.wave - 1].damage) * (elite ? 1.3 : 1), radius: d.radius * (elite ? 1.2 : 1), elite, born: this.time + .8, nextAttack: this.time + 2, nextAux: this.time + 8, contactAt: 0, angle: direction(p, this.pos), slow: 0, slowUntil: 0, weaken: 0, weakenUntil: 0, shield: 0, shieldUntil: 0, phase: 0, stagger: 0, staggerUntil: 0, staggerLocked: 0, staggerWindow: 0, staggerAdded: 0, regenAt: BOSS_START + BERSERK_AFTER + 1, chargeUntil: 0, chargeAngle: 0 };
+        const e: Enemy = { ...p, id: this.nextId++, kind, hp: d.hp * scale, maxHp: d.hp * scale, damage: d.damage * (d.boss ? 1 : WAVES[this.wave - 1].damage) * (elite ? 1.3 : 1), radius: d.radius * (elite ? 1.2 : 1), elite, born: this.time + .8, nextAttack: this.time + 2, nextAux: this.time + (kind === 'reply-guy' ? 12 : kind === 'mod-supremo' ? 10 : kind === 'doomscroll-prime' ? 7 : 8), contactAt: 0, angle: direction(p, this.pos), slow: 0, slowUntil: 0, weaken: 0, weakenUntil: 0, shield: 0, shieldUntil: 0, phase: 0, stagger: 0, staggerUntil: 0, staggerLocked: 0, staggerWindow: 0, staggerAdded: 0, regenAt: BOSS_START + BERSERK_AFTER + 1, chargeUntil: 0, chargeAngle: 0 };
         if (add)
             this.counters['add:' + e.id] = 1;
         if (elite)
@@ -235,7 +234,7 @@ export class Run {
         return area;
     }
     hitEnemy(e: Enemy, raw: number, weapon = '', activation = 0, primary = false) {
-        if (e.hp <= 0 || e.born > this.time)
+        if (this.mode !== 'playing' || e.hp <= 0 || e.born > this.time)
             return;
         if (weapon === 'chad-hands' && primary && !this.procHits.has(activation)) {
             this.counters.chadHits = (this.counters.chadHits ?? 0) + 1;
@@ -280,6 +279,10 @@ export class Run {
             damage -= block;
         }
         e.hp -= damage;
+        if (e.kind === 'boss') {
+            if (e.hp <= e.maxHp * .7) this.counters.bossRingPhase = 1;
+            if (e.hp <= e.maxHp * .35) this.counters.bossBeamPhase = 1;
+        }
         this.damageDealt += damage;
         this.effect('hit', e, String(Math.round(damage)));
         if (primary && !this.procHits.has(activation)) {
@@ -462,14 +465,20 @@ export class Run {
         if (!this.activeFlex)
             this.aura = Math.min(100, this.aura + .5 * dt);
         this.timeline();
+        this.openPending();
         if (this.mode !== 'playing')
             return;
         this.periodic();
         this.flexDamage();
+        if (this.mode !== 'playing') return;
         updateWeapons(this, input);
+        if (this.mode !== 'playing') return;
         updateEnemies(this, dt);
+        if (this.mode !== 'playing') return;
         this.resolveShots(dt);
+        if (this.mode !== 'playing') return;
         this.resolveAreas();
+        if (this.mode !== 'playing') return;
         for (const drop of [...this.drops])
             if (distance(drop, this.pos) < 38) {
                 this.drops = this.drops.filter(d => d.id !== drop.id);
@@ -585,6 +594,7 @@ export class Run {
     }
     private resolveShots(dt: number) {
         for (const shot of [...this.shots]) {
+            if (this.mode !== 'playing') break;
             if (shot.at !== undefined && this.time < shot.at) continue;
             const old = { x: shot.x, y: shot.y };
             shot.x += Math.cos(shot.angle) * shot.speed * dt;
@@ -628,6 +638,7 @@ export class Run {
     }
     private resolveAreas() {
         for (const a of [...this.areas]) {
+            if (this.mode !== 'playing') break;
             if (this.time < a.at || this.time < a.nextTick)
                 continue;
             if (a.hostile) {
