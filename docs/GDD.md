@@ -3,6 +3,18 @@
 **Revisão:** 14 outubro 2026. **Estado:** base de design consolidada para o refactor do repositório existente. Direção visual A e primeiro lote de assets aprovados pelo criador; implementação e validação em runtime ainda pendentes. As decisões expressas pelo criador são requisitos. Em 14 outubro 2026, o criador aprovou todas as alterações propostas no ponto 20 da V1.1: catálogo final, nomenclatura, kits, valores iniciais, pausa co-op, revive, XP e oferta lendária operacional. Os valores ficam aprovados para implementação e sujeitos a balanceamento, ainda sem validação em jogo. Este documento não declara funcionalidades implementadas nem lançamento aprovado.
 
 
+## Estado da implementação browser — 15 outubro 2026
+
+Esta secção atualiza o estado técnico; as notas de entrega documental e arte estática mais abaixo descrevem a revisão de 14 outubro, não o runtime atual. A autorização posterior do criador permite avançar com alterações, PRs, merge e publicação depois da validação, sem nova aprovação. Mantêm-se a proibição de custos adicionais e de anúncio/publicidade.
+
+A fatia solo da secção 17 está implementada no branch de integração: Ruin Alley, Sigma/Cool Kid/Alpha, nove armas por tipo, 3 slots de armas e 5 de passivas, escolhas com confirmação/substituição, progressão por XP, aura e Flex individuais, cinco waves de 180 s, eventos e Big Hater com berserk aos 180 s do encontro. Save v2 preserva IDs, desbloqueios e uma cópia dos dados v1, sem modificar a chave antiga.
+
+Subset oferecido: as dez passivas common; No Cap Streak, W Wi-Fi, Let Him Cook, Homie Check e Big Chad Energy; It's So Over, Aura Goes Viral, We Are So Back e Six → Seven; e as quatro lendárias. Get Ratio'd, Ego Check, Uno Reverse, Brainrot Rain e Take the L ficam fora desta fatia. Não são oferecidos itens incompatíveis nem funcionalidades de equipa fictícias.
+
+A apresentação usa o mapa e retratos PNG aprovados, com cobertura e limite de circulação explícitos. Os novos atlas em `public/assets/runtime/` acrescentam poses dos três heróis e silhuetas das famílias inimigas. **O acabamento de animação ainda não cumpre integralmente A.5**: direções de Alpha/Cool Kid precisam de revisão e os inimigos usam poses estáticas com avisos de ataque. Ícones funcionais tipográficos ainda não são o catálogo ilustrado final. Não apresentar este passe como aprovação artística final.
+
+Validação em curso: testes de regras, typecheck e build locais; testes de browser e revisão visual antes de considerar a fatia pronta. O balanço dos níveis-alvo, desempenho em máquina de referência e os detalhes de todos os ataques lendários ainda exigem playtest. Discord, mobile, seis personagens adicionais, restantes passivas, novos mapas, co-op, PvP, ranked e passe não estão implementados nesta entrega.
+
 ## 0. Guia de utilização no refactor
 
 Este GDD consolida o design acordado, os números iniciais aprovados e a arte da opção A. Deve orientar o refactor de `pedro-ai-coder/aura-farmer`; não implica reescrever todo o jogo ou criar outro repositório. Decisões posteriores do criador prevalecem e devem ser registadas aqui.

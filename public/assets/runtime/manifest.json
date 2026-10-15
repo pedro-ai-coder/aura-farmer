@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "origin": "Generated from the approved option A reference with the built-in image tool, 15 October 2026.",
+  "status": "First animation pass. Alpha and Cool Kid directional consistency and enemy animation remain incomplete; see GDD A.5.",
+  "pivot": [
+    0.5,
+    0.9
+  ],
+  "assets": [
+    {
+      "file": "alpha-atlas.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "f94e8f66dbdd4a19936272ebe960728239a41e09db4cbe4e4c2ae2e85377af96",
+      "rows": 6,
+      "columnsByRow": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "file": "cool-kid-atlas.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "a440d8a79fffec41e153a0edcf8db52a5d29769a04a1418376b26067cce05f0a",
+      "rows": 5,
+      "columnsByRow": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "file": "enemies.png",
+      "width": 1374,
+      "height": 1145,
+      "sha256": "8b3f015c27e236ad1440d0374fb4c34cbf12f01d97aad1c3929fbf9fd2405e34",
+      "rows": 4,
+      "columnsByRow": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "file": "sigma-atlas.png",
+      "width": 1448,
+      "height": 1086,
+      "sha256": "fd254c145df532232524b4db27987c22bc2f78566675d01b83c93af06e5aaafb",
+      "rows": 6,
+      "columnsByRow": [
+        8,
+        8,
+        8,
+        8,
+        9,
+        7
+      ]
+    }
+  ]
+}
