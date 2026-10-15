@@ -41,8 +41,9 @@ test('real keyboard, rendering, natural auto-combat, pickup and upgrade choice',
   const x = await read(page, a => a.pos.x);
   await press(page, 'ArrowRight');
   expect(await read(page, a => a.pos.x)).toBeGreaterThan(x);
+  const y = await read(page, a => a.pos.y);
   await press(page, 'w');
-  expect(await read(page, a => a.pos.y)).toBeLessThan(330);
+  expect(await read(page, a => a.pos.y)).toBeLessThan(y);
   await press(page,'e');
   expect(await read(page,a=>a.flex.state)).toBe('farming');
   await page.evaluate(()=>{const a=(window.__game.scene.scenes[0] as ArenaScene).arena;a.aura.change(100,a.clock);});
