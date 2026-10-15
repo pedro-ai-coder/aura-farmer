@@ -30,6 +30,7 @@ export interface Enemy extends Point {
     chargeAngle: number;
 }
 export interface Projectile extends Point {
+    at?: number;
     id: number;
     angle: number;
     speed: number;
@@ -65,6 +66,7 @@ export interface Area extends Point {
     start: number;
     gap?: number;
     maxHits?: number;
+    weaponPower?: number;
 }
 export interface Drop extends Point {
     id: number;

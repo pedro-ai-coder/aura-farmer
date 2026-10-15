@@ -71,7 +71,7 @@ export const PASSIVES: readonly Passive[] = [
     { id: 'hands-on-sight', name: 'Hands On Sight', rarity: 'common', role: 'melee', icon: '✊', description: '+7% damage per level to targets within 150U.' },
     { id: 'cope-harder', name: 'Cope Harder', rarity: 'common', role: 'tank', icon: '⬟', description: '+8% shields granted per level.' },
     { id: 'certified-w', name: 'Certified W', rarity: 'common', icon: 'W', description: '+6% healing and shields granted per level.' },
-    { id: 'no-cap-streak', name: 'No Cap Streak', rarity: 'rare', role: 'ranged', icon: 'Ⅴ', description: 'Every fifth weapon activation: +10% damage and +1 piercing per level.' },
+    { id: 'no-cap-streak', name: 'No Cap Streak', rarity: 'rare', role: 'ranged', icon: 'Ⅴ', description: 'Every fifth weapon activation: +10% damage and +1 piercing per level (damage does not scale with level).' },
     { id: 'w-wifi', name: 'W Wi-Fi', rarity: 'rare', role: 'ranged', icon: '≋', description: 'Every 12s: fixed 160U zone for 4s, +8/12/16% frequency.' },
     { id: 'let-him-cook', name: 'Let Him Cook', rarity: 'rare', role: 'melee', icon: '♨', description: 'Primary hits grant +3/4/5% damage, up to 5 stacks. Expires after 3s.' },
     { id: 'homie-check', name: 'Homie Check', rarity: 'rare', role: 'melee', icon: '♡', description: 'Every 8 primary hits: heal 3/4/5% HP. Minimum 6s between pulses.' },

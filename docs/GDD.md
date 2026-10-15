@@ -5,9 +5,9 @@
 
 ## Estado da implementação browser — 15 outubro 2026
 
-Esta secção atualiza o estado técnico; as notas de entrega documental e arte estática mais abaixo descrevem a revisão de 14 outubro, não o runtime atual. A autorização posterior do criador permite avançar com alterações, PRs, merge e publicação depois da validação, sem nova aprovação. Mantêm-se a proibição de custos adicionais e de anúncio/publicidade.
+Esta secção atualiza o estado técnico; as notas de entrega documental e arte estática mais abaixo descrevem a revisão de 14 outubro, não o runtime atual. A decisão mais recente do criador (15 outubro) exige um PR identificado por fase/iteração e aprovação explícita desse PR antes de merge; substitui a autorização anterior de integração autónoma. Mantêm-se a proibição de custos adicionais e de anúncio/publicidade.
 
-A fatia solo da secção 17 está implementada no branch de integração: Ruin Alley, Sigma/Cool Kid/Alpha, nove armas por tipo, 3 slots de armas e 5 de passivas, escolhas com confirmação/substituição, progressão por XP, aura e Flex individuais, cinco waves de 180 s, eventos e Big Hater com berserk aos 180 s do encontro. Save v2 preserva IDs, desbloqueios e uma cópia dos dados v1, sem modificar a chave antiga.
+A base solo da secção 17 foi integrada em `main` pelo PR #52: Ruin Alley, Sigma/Cool Kid/Alpha, nove armas no total, três por tipo, 3 slots de armas e 5 de passivas, escolhas com confirmação/substituição, progressão por XP, aura e Flex individuais, cinco waves de 180 s, eventos e Big Hater com berserk aos 180 s do encontro. Save v2 preserva IDs, desbloqueios e uma cópia dos dados v1, sem modificar a chave antiga.
 
 Subset oferecido: as dez passivas common; No Cap Streak, W Wi-Fi, Let Him Cook, Homie Check e Big Chad Energy; It's So Over, Aura Goes Viral, We Are So Back e Six → Seven; e as quatro lendárias. Get Ratio'd, Ego Check, Uno Reverse, Brainrot Rain e Take the L ficam fora desta fatia. Não são oferecidos itens incompatíveis nem funcionalidades de equipa fictícias.
 
@@ -16,6 +16,18 @@ A apresentação usa o mapa e retratos PNG aprovados, com cobertura e limite de 
 Correções de apresentação (15 outubro): HUD acompanha os limites reais do canvas, incluindo janelas largas; atlas dos heróis usa recortes individuais em vez de grelha uniforme, escala proporcional e pose de derrota correta. A animação de deslocação segue o movimento, independentemente da mira automática. Cool Kid reutiliza uma diagonal espelhada; Alpha continua sem poses traseiras dedicadas. Estas correções não completam A.5.
 
 Validação em curso: testes de regras, typecheck e build locais; testes de browser e revisão visual antes de considerar a fatia pronta. O balanço dos níveis-alvo, desempenho em máquina de referência e os detalhes de todos os ataques lendários ainda exigem playtest. Discord, mobile, seis personagens adicionais, restantes passivas, novos mapas, co-op, PvP, ranked e passe não estão implementados nesta entrega.
+
+## Plano da primeira versão de testes web — decisão de 15 outubro
+
+Mesmo jogo no browser de computador e telemóvel, sem aplicação nativa. Apenas Sigma, Cool Kid e Alpha Chad, nove armas e o subset explícito de 23 passivas acima. Discord, multiplayer, PvP, backend, contas e monetização ficam fora desta primeira versão de testes.
+
+Fases: 1 — regras; 2 — sprites/animações; 3 — interface e controlos desktop/mobile; 4 — combate/dificuldade; 5 — estabilidade/desempenho; 6 — publicação e organização. A fase 1 tem três iterações, cada uma com PR próprio: (1) personagens/equipamento; (2) partida/progressão; (3) validação e fecho. Todos os merges dependem da aprovação explícita do criador.
+
+### Fase 1 · Iteração 1 — Personagens e equipamento
+
+Base: merge do PR #52, `f90f2a7`. Mantém IDs, saves, três personagens, nove armas e 23 passivas. Corrige escudos de armas por raridade/nível, efeitos e stacks ao substituir passivas (preservando cooldowns), ataques secundários lendários com bónus de arma sem procs, projéteis atrasados de Ratio, contagem de acertos de Chad Hands, dano direto no traço de Alpha e taunt solo. Regressões verificam compatibilidade, caps, promoções e efeitos do catálogo ativo.
+
+Esta iteração não conclui as animações nem valida mobile ou o equilíbrio de uma partida inteira. Waves, XP e fluxo completo são objeto da iteração 2; persistência e validação integrada da fase são objeto da iteração 3. Os testes existentes desses fluxos continuam obrigatórios para detetar regressões.
 
 ## 0. Guia de utilização no refactor
 

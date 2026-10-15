@@ -18,7 +18,7 @@ export function updateEnemies(r: Run, dt: number) {
         const aim = direction(e, r.pos), delta = angleDelta(aim, e.angle);
         e.angle += Math.max(-Math.PI / 2 * dt, Math.min(Math.PI / 2 * dt, delta));
         const slow = e.slowUntil > r.time ? 1 - e.slow * (d.boss ? .5 : 1) : 1;
-        const range = e.kind === 'hater' ? 260 : e.kind === 'ping-sniper' ? 400 : 0;
+        const range = r.timers['taunt:' + e.id] > r.time ? 0 : e.kind === 'hater' ? 260 : e.kind === 'ping-sniper' ? 400 : 0;
         let speed = d.speed * slow;
         let moveAngle = aim;
         if (range && distance(e, r.pos) < range - 20)
