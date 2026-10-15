@@ -198,7 +198,7 @@ export class GameShell {
             </nav>
             <div class="meta-feature"><span class="meta-avatar" style="--avatar:${c.cssColor}">${this.portrait(c.id)}</span>
               <div><strong>${c.name}</strong><small>${c.role} · ${this.profile.runHistory.length} runs</small></div></div>
-            <p class="meta-foot">${'VISUAL TEST · RUNS NOT SAVED · NO LOGIN'}</p>
+            <p class="meta-foot">LOCAL PROGRESS · NO LOGIN REQUIRED</p>
           </div>
           <div class="af-home-art" aria-hidden="true">
             <span class="af-sun-glow"></span><img class="af-hero-art" src="${heroSrc}" ${heroStrip ? 'data-preview-strip="6"' : ''} alt="">
