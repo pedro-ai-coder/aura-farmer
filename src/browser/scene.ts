@@ -156,9 +156,9 @@ export class BrowserScene extends Phaser.Scene {
         for (const a of r.areas)
             this.drawArea(a, r, g);
         for (const s of r.shots) {
-            f.lineStyle(s.weapon === 'no-cap' ? 12 : s.hostile ? 5 : 4, s.hostile ? 0xe57461 : 0xf8c45f, 1);
+            f.lineStyle(s.weapon === 'no-cap' ? 12 : s.hostile ? 7 : 5, s.hostile ? 0xd83e4b : 0xf8c45f, 1);
             f.lineBetween(s.x - Math.cos(s.angle) * 16, s.y - Math.sin(s.angle) * 16, s.x, s.y);
-            f.fillStyle(s.hostile ? 0xfff0e8 : 0xfff7cf);
+            f.fillStyle(s.hostile ? 0xff7280 : 0xfff7cf);
             f.fillCircle(s.x, s.y, s.hostile ? 5 : 3);
         }
         for (const label of this.labels)
