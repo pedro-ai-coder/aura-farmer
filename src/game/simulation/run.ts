@@ -492,7 +492,7 @@ export class Run {
         this.resolveAreas();
         if (this.mode !== 'playing') return;
         for (const drop of [...this.drops]) {
-            if (distance(drop, this.pos) >= 38) continue;
+            if (!this.drops.some(d => d.id === drop.id) || distance(drop, this.pos) >= 38) continue;
             this.drops = this.drops.filter(d => d.id !== drop.id);
             if (drop.kind === 'snack') {
                 this.heal(this.maxHp * .18);
