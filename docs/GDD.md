@@ -62,6 +62,14 @@ Reprodução: corrida avança pela distância percorrida, ficando parada contra 
 
 Evidência: testes unitários de oito direções, ciclos, pausa/colisão, derrota/reinício e sincronização dos golpes; testes Chromium dos três personagens geram pranchas dos frames realmente carregados pelo Phaser e capturas de deslocação para norte. Resultados finais e commit ficam no PR desta iteração. Isto não valida balanceamento nem uma partida humana completa; inimigos/boss e efeitos são as iterações 2.2/2.3. A adaptação mobile continua na fase 3. Merge só após aprovação explícita.
 
+### Fase 2 · Iteração 2 — Inimigos e boss
+
+Base: PR #56 integrado (`669a1a5`). Integra quatro atlas transparentes já gerados, com 17 sequências de oito desenhos: todas as 16 famílias móveis da demo e uma variante própria de Big Hater em FULL HATER MODE. Cada sequência tem quatro poses de deslocação, preparação, impacto, dano/queda e morte no chão. São vistas laterais com orientação simétrica; não oito vistas desenhadas separadamente. Terminal continua estático, com desaparecimento gradual após destruição. Detalhes e proveniência em `docs/art/phase-2-2.md`.
+
+Recortes e pivôs explícitos; escala fixa por família. Deslocação acompanha distância real. Preparação/impacto/recuperação usam deadlines e direção fixada dos ataques reais, sem alterar dano, cadências, hitboxes ou RNG. Pausa congela poses. Inimigos mortos deixam imediatamente a simulação e mantêm apenas uma queda visual limitada a 0,85 s; retirada aos 15:00 não cria mortes falsas. Boss pode concluir a queda depois da vitória sem avançar combate. Berserk usa desenhos próprios e um aviso sonoro distinto que respeita mute.
+
+A evidência inclui regressões de temporização e lifecycle, quatro pranchas dos frames carregados pelo Phaser e capturas de preparação/impacto do boss. Resultados finais ficam no PR. Não declara validação de partida humana, balanceamento ou desempenho mobile. Efeitos específicos de armas/perigos continuam na fase 2.3, controlos mobile na fase 3 e otimização dos atlas na fase 5. Merge só após aprovação explícita deste PR.
+
 ## 0. Guia de utilização no refactor
 
 Este GDD consolida o design acordado, os números iniciais aprovados e a arte da opção A. Deve orientar o refactor de `pedro-ai-coder/aura-farmer`; não implica reescrever todo o jogo ou criar outro repositório. Decisões posteriores do criador prevalecem e devem ser registadas aqui.

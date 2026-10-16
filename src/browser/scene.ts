@@ -2,14 +2,15 @@ import Phaser from 'phaser';
 import heroFrames from './hero-frames.json';
 import flexFrames from './hero-flex-frames.json';
 import rearFrames from './hero-rear-frames.json';
+import enemyAnimationFrames from './enemy-frames.json';
+import { EnemyAnimator } from './enemy-animation';
 import { HeroAnimator } from './hero-animation';
 import { HEROES } from '../game/catalog/content';
-import { ENEMIES, type EnemyKind } from '../game/catalog/enemies';
+import { ENEMIES } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
 import type { Run } from '../game/simulation/run';
 import type { Area } from '../game/simulation/types';
 const ROOT = '/assets/cartoon/option-a-v1/';
-const enemyFrames: Partial<Record<EnemyKind, number>> = { 'reply-goblin': 0, beta: 1, 'ratio-ram': 2, doomscroller: 3, 'hype-bot': 4, 'fanum-leech': 5, 'ping-sniper': 6, 'copium-puffer': 7, 'comment-mod': 8, 'reply-guy': 9, 'mod-supremo': 10, 'ohio-express': 11, 'doomscroll-prime': 12, terminal: 13 };
 /** Rendering consumes state only; visual animation never advances gameplay or RNG. */
 export class BrowserScene extends Phaser.Scene {
     run?: Run;
@@ -17,6 +18,7 @@ export class BrowserScene extends Phaser.Scene {
     onReady?: () => void;
     private actors = new Map<number, Phaser.GameObjects.Image>();
     private heroAnimator = new HeroAnimator();
+    private enemyAnimator = new EnemyAnimator();
     private heroImage!: Phaser.GameObjects.Image;
     private ground!: Phaser.GameObjects.Graphics;
     private fx!: Phaser.GameObjects.Graphics;
@@ -35,6 +37,8 @@ export class BrowserScene extends Phaser.Scene {
         this.load.image('hater', ROOT + 'enemies/hater.png');
         this.load.image('boss', ROOT + 'enemies/big-hater.png');
         this.load.image('enemy-atlas', '/assets/runtime/enemies.png');
+        for (const sheet of new Set(Object.values(enemyAnimationFrames).map(d => d.sheet)))
+            this.load.image(sheet, `/assets/runtime/${sheet}.png`);
         this.load.on('progress', (p: number) => { const el = document.querySelector<HTMLProgressElement>('#loading-progress'); if (el)
             el.value = p; });
         this.load.on('loaderror', () => { const el = document.querySelector('#loading-text'); if (el)
@@ -58,6 +62,8 @@ export class BrowserScene extends Phaser.Scene {
         for (let row = 0; row < 4; row++)
             for (let col = 0; col < 4; col++)
                 texture.add(row * 4 + col, 0, Math.round(col * source.width / 4), Math.round(row * source.height / 4), Math.floor(source.width / 4), Math.floor(source.height / 4));
+        for (const [kind, data] of Object.entries(enemyAnimationFrames))
+            data.frames.forEach(([x, y, w, h], i) => this.textures.get(data.sheet).add(`${kind}:${i}`, 0, x, y, w, h));
         for (const cover of COVER)
             this.add.image(cover.x, cover.y, 'enemy-atlas', 14).setDisplaySize(80, 80).setOrigin(.5, .85).setDepth(cover.y);
         this.ground = this.add.graphics().setDepth(0);
@@ -77,6 +83,7 @@ export class BrowserScene extends Phaser.Scene {
         for (const image of this.actors.values())
             image.destroy();
         this.actors.clear();
+        this.enemyAnimator.reset();
         for (const label of this.labels)
             label.setVisible(false);
     } }
@@ -84,46 +91,34 @@ export class BrowserScene extends Phaser.Scene {
         const g = this.ground, f = this.fx;
         g.clear();
         f.clear();
-        const alive = new Set(r.enemies.map(e => e.id));
-        for (const [id, image] of this.actors)
-            if (!alive.has(id)) {
-                image.destroy();
-                this.actors.delete(id);
-            }
-        for (const e of r.enemies) {
-            if (e.born > r.time) {
-                g.lineStyle(3, 0xe57461, .9);
-                g.strokeCircle(e.x, e.y, 26);
-                g.strokeLineShape(new Phaser.Geom.Line(e.x - 12, e.y - 12, e.x + 12, e.y + 12));
-                continue;
-            }
+        const enemyPoses = this.enemyAnimator.sample(r, delta);
+        const visible = new Set(enemyPoses.map(p => p.enemy.id));
+        for (const [id, image] of this.actors) if (!visible.has(id)) {
+            image.destroy(); this.actors.delete(id);
+        }
+        for (const e of r.enemies) if (e.born > r.time) {
+            g.lineStyle(3, 0xe57461, .9); g.strokeCircle(e.x, e.y, 26);
+            g.strokeLineShape(new Phaser.Geom.Line(e.x - 12, e.y - 12, e.x + 12, e.y + 12));
+        }
+        for (const p of enemyPoses) {
+            const e = p.enemy;
             let image = this.actors.get(e.id);
             if (!image) {
-                image = this.add.image(e.x, e.y, enemyFrames[e.kind] !== undefined ? 'enemy-atlas' : e.kind, enemyFrames[e.kind]);
+                image = this.add.image(e.x, e.y, p.sheet, p.frame).setName(`enemy-${e.id}`);
                 this.actors.set(e.id, image);
             }
+            image.setTexture(p.sheet, p.frame).setPosition(e.x, e.y).setOrigin(p.originX, p.originY)
+                .setScale(e.kind === 'terminal' ? e.radius * 3.1 / image.frame.height : p.scale).setFlipX(p.flip).setDepth(e.y).setAlpha(p.alpha).setData('pose', p.state);
+            image.clearTint();
+            if (p.state === 'death') continue;
+            g.fillStyle(0x253449, .2); g.fillEllipse(e.x, e.y + 3, e.radius * 2.1, e.radius * .65);
+            if (e.elite) { g.lineStyle(3, 0xf8c45f, 1); g.strokeCircle(e.x, e.y, e.radius + 6); }
             const size = ENEMIES[e.kind].boss ? e.radius * 2.6 : e.radius * 3.1;
-            image.setPosition(e.x, e.y).setOrigin(.5, .88).setDisplaySize(size, size).setDepth(e.y).setAlpha(1);
-            if (e.kind === 'boss' && r.berserk)
-                image.setTint(0xffb6a3);
-            else
-                image.clearTint();
-            g.fillStyle(0x253449, .2);
-            g.fillEllipse(e.x, e.y + 3, e.radius * 2.1, e.radius * .65);
-            if (e.elite) {
-                g.lineStyle(3, 0xf8c45f, 1);
-                g.strokeCircle(e.x, e.y, e.radius + 6);
-            }
             if (e.hp < e.maxHp) {
-                f.fillStyle(0x253449, .9);
-                f.fillRect(e.x - 22, e.y - size * .9 - 7, 44, 5);
-                f.fillStyle(0xe57461);
-                f.fillRect(e.x - 22, e.y - size * .9 - 7, 44 * Math.max(0, e.hp / e.maxHp), 5);
+                f.fillStyle(0x253449, .9); f.fillRect(e.x - 22, e.y - size - 7, 44, 5);
+                f.fillStyle(0xe57461); f.fillRect(e.x - 22, e.y - size - 7, 44 * Math.max(0, e.hp / e.maxHp), 5);
             }
-            if (e.shield > 0 && e.shieldUntil > r.time) {
-                g.lineStyle(2, 0x6eaab0, .8);
-                g.strokeCircle(e.x, e.y, e.radius + 3);
-            }
+            if (e.shield > 0 && e.shieldUntil > r.time) { g.lineStyle(2, 0x6eaab0, .8); g.strokeCircle(e.x, e.y, e.radius + 3); }
         }
         const pose = this.heroAnimator.sample(r, delta);
         // A fixed scale preserves body proportions across attacks, hurt and death.
