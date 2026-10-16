@@ -43,7 +43,7 @@ export class BrowserApp {
         this.audio.enabled = this.save.settings.sound;
         this.scene.tick = dt => this.tick(dt);
         this.scene.onReady = () => { document.querySelector('#loading')?.remove(); this.alignHud(); this.render(true); };
-        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [this.scene] });
+        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.NO_CENTER }, scene: [this.scene] });
         this.game.scale.on('resize', () => requestAnimationFrame(() => this.alignHud()));
         new ResizeObserver(() => this.alignHud()).observe(document.querySelector('#game')!);
         document.addEventListener('keydown', e => {
@@ -96,7 +96,8 @@ export class BrowserApp {
             if (!canvas)
                 return;
             const b = canvas.getBoundingClientRect();
-            this.aim = { x: (e.clientX - b.x) / b.width * WORLD.width, y: (e.clientY - b.y) / b.height * WORLD.height };
+            const camera = this.scene.cameras.main;
+            this.aim = camera.getWorldPoint((e.clientX - b.left) / b.width * canvas.width, (e.clientY - b.top) / b.height * canvas.height);
         });
         document.addEventListener('click', e => { const target = (e.target as HTMLElement).closest<HTMLElement>('[data-action]'); if (target)
             this.action(target.dataset.action!, target.dataset.value); });
@@ -170,6 +171,15 @@ export class BrowserApp {
             left: `${bounds.left - stage.left}px`, top: `${bounds.top - stage.top}px`,
             width: `${bounds.width}px`, height: `${bounds.height}px`, right: 'auto', bottom: 'auto',
         });
+        if (!this.scene.ready) return;
+        const camera = this.scene.cameras.main;
+        const mobileLandscape = matchMedia('(pointer: coarse) and (orientation: landscape)').matches;
+        const zoom = mobileLandscape
+            ? Math.max(bounds.width / WORLD.width, bounds.height / WORLD.height)
+            : Math.min(bounds.width / WORLD.width, bounds.height / WORLD.height);
+        camera.setZoom(Math.max(.01, zoom));
+        camera.setBounds(0, 0, WORLD.width, WORLD.height);
+        camera.centerOn(this.run?.pos.x ?? WORLD.width / 2, this.run?.pos.y ?? WORLD.height / 2);
     }
     start(hero: DemoHero = this.save.selected) {
         this.audio.unlock();
@@ -287,6 +297,8 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
+            if (this.scene.ready && matchMedia('(pointer: coarse) and (orientation: landscape)').matches)
+                this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
             if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
