@@ -364,8 +364,15 @@ export class Run {
                 this.aura = Math.min(100, this.aura + 10);
             this.announce(ENEMIES[e.kind].name + ' defeated');
         }
-        if (!this.counters['add:' + e.id])
+        if (!this.counters['add:' + e.id]) {
             this.drops.push({ x: e.x, y: e.y, id: this.nextId++, xp: e.elite ? 60 : ENEMIES[e.kind].xp });
+            // Seeded, bounded special drops; elite rivals offer a higher reward chance.
+            const roll = this.random();
+            const special = roll < (e.elite ? .12 : .018) ? 'snack'
+                : roll < (e.elite ? .145 : .021) ? 'magnet' : undefined;
+            if (special && this.drops.filter(d => d.kind === special).length < 2)
+                this.drops.push({ x: e.x + 18, y: e.y - 12, id: this.nextId++, xp: 0, kind: special });
+        }
         if (e.kind === 'hype-bot' && this.boss)
             this.timers.bossExposed = this.time + 3;
         if (e.kind === 'copium-puffer')
@@ -484,11 +491,24 @@ export class Run {
         if (this.mode !== 'playing') return;
         this.resolveAreas();
         if (this.mode !== 'playing') return;
-        for (const drop of [...this.drops])
-            if (distance(drop, this.pos) < 38) {
-                this.drops = this.drops.filter(d => d.id !== drop.id);
+        for (const drop of [...this.drops]) {
+            if (!this.drops.some(d => d.id === drop.id) || distance(drop, this.pos) >= 38) continue;
+            this.drops = this.drops.filter(d => d.id !== drop.id);
+            if (drop.kind === 'snack') {
+                this.heal(this.maxHp * .18);
+                this.announce('SNACK DE RUA · HP RESTORED');
+            } else if (drop.kind === 'magnet') {
+                // Consume existing crystals exactly once, preserving their XP values.
+                const xp = this.drops.reduce((sum, d) => sum + (d.kind ? 0 : d.xp), 0);
+                this.drops = this.drops.filter(d => d.kind);
+                this.gainXp(xp);
+                this.announce('AURA MAGNET · ALL XP COLLECTED');
+                this.effect('level', this.pos, 'MAGNET!', 75);
+            } else {
                 this.gainXp(drop.xp);
             }
+            if (this.mode !== 'playing') break;
+        }
         this.effects = this.effects.filter(e => e.until > this.time);
         this.openPending();
     }

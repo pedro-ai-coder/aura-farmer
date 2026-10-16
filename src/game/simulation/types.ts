@@ -73,6 +73,8 @@ export interface Area extends Point {
 export interface Drop extends Point {
     id: number;
     xp: number;
+    /** Omitted for standard Aura/XP crystals. */
+    kind?: 'snack' | 'magnet';
 }
 export interface Shield {
     amount: number;
