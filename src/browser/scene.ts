@@ -91,6 +91,33 @@ export class BrowserScene extends Phaser.Scene {
         const g = this.ground, f = this.fx;
         g.clear();
         f.clear();
+        // Healing station indicator is a world-space object, not a HUD overlay.
+        const station = r.safeSpot;
+        const cooldown = Math.max(0, r.safeSpotReadyAt - r.time);
+        const ready = cooldown <= 0;
+        g.fillStyle(ready ? 0x3fe2ad : 0x465b73, .19);
+        g.fillCircle(station.x, station.y, station.radius);
+        g.lineStyle(4, ready ? 0x5cf0b4 : 0x8394aa, .9);
+        g.strokeCircle(station.x, station.y, station.radius);
+        g.fillStyle(0x24364a, .95);
+        g.fillRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
+        g.lineStyle(3, ready ? 0x5cf0b4 : 0x8394aa, 1);
+        g.strokeRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
+        g.fillStyle(ready ? 0x5cf0b4 : 0x9ba9b7);
+        g.fillRect(station.x - 5, station.y - 16, 10, 32);
+        g.fillRect(station.x - 16, station.y - 5, 32, 10);
+        if (ready && r.safeSpotCharge > 0) {
+            g.lineStyle(5, 0xffd06e, 1);
+            g.beginPath();
+            g.arc(station.x, station.y, 52, -Math.PI / 2, -Math.PI / 2 + Math.PI * r.safeSpotCharge);
+            g.strokePath();
+        }
+        if (!ready) {
+            g.lineStyle(5, 0xffd06e, .95);
+            g.beginPath();
+            g.arc(station.x, station.y, 52, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * (1 - cooldown / 90));
+            g.strokePath();
+        }
         const enemyPoses = this.enemyAnimator.sample(r, delta);
         const visible = new Set(enemyPoses.map(p => p.enemy.id));
         for (const [id, image] of this.actors) if (!visible.has(id)) {
