@@ -36,6 +36,20 @@ export interface StorageLike {
 }
 const defaults = (): Save => ({ version: 2, selected: 'sigma', unlocked: ['sigma', 'cool-kid', 'alpha'], results: [], xp: 0, wins: 0, runs: 0, settings: { reducedMotion: false, sound: true } });
 const finite = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0;
+/** Keep usable historical results, repairing optional statistics before aggregation. */
+function readResult(value: unknown): Result | undefined {
+    if (!value || typeof value !== 'object') return;
+    const r = value as Record<string, unknown>;
+    if (typeof r.id !== 'string' || !r.id || !isDemoHero(r.hero) || typeof r.won !== 'boolean'
+        || typeof r.time !== 'number' || !Number.isFinite(r.time) || r.time < 0) return;
+    return {
+        id: r.id, hero: r.hero, won: r.won, time: r.time,
+        wave: Math.max(1, Math.min(5, Math.floor(finite(r.wave)))),
+        level: Math.max(1, Math.min(25, Math.floor(finite(r.level)))),
+        kills: Math.floor(finite(r.kills)), xp: finite(r.xp), flexes: Math.floor(finite(r.flexes)),
+        damage: finite(r.damage), healing: finite(r.healing), protection: finite(r.protection),
+    };
+}
 export function readSave(storage: StorageLike): Save {
     const next = defaults();
     try {
@@ -44,7 +58,9 @@ export function readSave(storage: StorageLike): Save {
         if (parsed?.version === 2) {
             next.selected = isDemoHero(parsed.selected) ? parsed.selected : 'sigma';
             next.unlocked = [...new Set([...next.unlocked, ...(Array.isArray(parsed.unlocked) ? parsed.unlocked.filter((id: CharacterId) => CHARACTER_IDS.includes(id)) : [])])];
-            next.results = Array.isArray(parsed.results) ? parsed.results.filter((r: Result) => r && typeof r.id === 'string' && isDemoHero(r.hero) && Number.isFinite(r.time) && typeof r.won === 'boolean').slice(-40) : [];
+            const results: Result[] = Array.isArray(parsed.results)
+                ? parsed.results.map(readResult).filter((r: Result | undefined): r is Result => r !== undefined) : [];
+            next.results = [...new Map(results.map(r => [r.id, r])).values()].slice(-40);
             next.xp = finite(parsed.xp);
             next.wins = finite(parsed.wins);
             next.runs = finite(parsed.runs);
@@ -79,7 +95,7 @@ catch {
     return false;
 } }
 export function recordResult(save: Save, run: Run, id: string): Save {
-    if (save.results.some(r => r.id === id))
+    if (!id || (run.mode !== 'won' && run.mode !== 'lost') || save.results.some(r => r.id === id))
         return save;
     const result: Result = { id, hero: run.characterId, won: run.mode === 'won', time: run.time, wave: run.wave, level: run.level, kills: run.kills, xp: run.xpCollected, flexes: run.flexCount, damage: run.damageDealt, healing: run.healing, protection: run.protection };
     const unlocked = new Set(save.unlocked);

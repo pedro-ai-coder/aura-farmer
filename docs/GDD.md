@@ -15,7 +15,7 @@ A apresentação usa o mapa e retratos PNG aprovados, com cobertura e limite de 
 
 Correções de apresentação (15 outubro): HUD acompanha os limites reais do canvas, incluindo janelas largas; atlas dos heróis usa recortes individuais em vez de grelha uniforme, escala proporcional e pose de derrota correta. A animação de deslocação segue o movimento, independentemente da mira automática. Cool Kid reutiliza uma diagonal espelhada; Alpha continua sem poses traseiras dedicadas. Estas correções não completam A.5.
 
-Validação em curso: testes de regras, typecheck e build locais; testes de browser e revisão visual antes de considerar a fatia pronta. O balanço dos níveis-alvo, desempenho em máquina de referência e os detalhes de todos os ataques lendários ainda exigem playtest. Discord, mobile, seis personagens adicionais, restantes passivas, novos mapas, co-op, PvP, ranked e passe não estão implementados nesta entrega.
+Validação organizada por iteração: os PRs #53 e #54 foram aprovados e integrados. A iteração 3 fecha a cobertura integrada de regras, resultados e saves; os resultados dos gates de cada commit ficam na descrição do respetivo PR. A revisão artística e a aceitação da primeira versão completa continuam nas fases 2–6. O balanço dos níveis-alvo, desempenho em máquina de referência e os detalhes de todos os ataques lendários ainda exigem playtest. Discord, mobile, seis personagens adicionais, restantes passivas, novos mapas, co-op, PvP, ranked e passe não estão implementados nesta entrega.
 
 ## Plano da primeira versão de testes web — decisão de 15 outubro
 
@@ -36,6 +36,23 @@ Base: PR #53 integrado, `e06522b`. Corrige a cura de subida de nível para apena
 Temporizadores auxiliares dos eventos passam a ser independentes dos ataques principais: adds de Reply Guy a cada 12 s, linhas de Mod Supremo a cada 10 s e zonas de Doomscroll Prime a cada 7 s. Reforços de Mod Supremo reagem à vida sem esperar pelo próximo ataque. Limiares de Big Hater ficam desbloqueados após serem atingidos, mesmo que a regeneração aumente a vida. Vitória/derrota interrompem a resolução de combate e impedem XP ou dano posteriores ao resultado.
 
 Cobertura desta iteração: fronteiras de XP/nível25, quatro transições e quatro eventos, prioridade/fila/expiração da lendária, recolha dos orbes e retirada de ameaças aos 15:00, adds sem XP, berserk recuperável e fim da run. São testes determinísticos e fluxos de browser com estado controlado; não comprovam o balanceamento de uma partida normal nem desempenho mobile. Validação integrada/persistência continua na iteração 3; animações, mobile e afinação aprofundada continuam nas fases seguintes. Merge deste PR depende de aprovação explícita.
+
+### Fase 1 · Iteração 3 — Validação e fecho
+
+Base: PR #54 integrado, `e694477`. Não expande o catálogo nem altera os valores de balanceamento. Resultados só podem ser registados depois de vitória/derrota; runs em curso ou abandonadas não aumentam contadores nem desbloqueios. Leitura do save v2 normaliza estatísticas incompletas/corrompidas e elimina IDs de resultado duplicados, mantendo os totais acumulados, IDs desbloqueados, preferências e snapshot v1. Mantém o esquema/chave v2; não há migração destrutiva nem gravação de equipamento permanente.
+
+Escape na confirmação de saída cancela a confirmação e volta à pausa, sem retomar combate por trás da modal. Teclas de movimento premidas durante modais não ficam memorizadas para a retoma. Reinício limpa equipamento, aura, nível, escolhas, timers e estado de resultado; as preferências e o progresso de perfil persistem.
+
+| Contrato da fase 1 | Evidência automatizada |
+|---|---|
+| Três personagens, nove armas, 23 passivas, slots e caps | `gdd.test.ts`, `equipment.test.ts` |
+| XP/aura, waves, lendária, eventos e berserk | `progression.test.ts`, fluxos Chromium |
+| Relógio contínuo desde o início pelas cinco waves com cada personagem | `run-lifecycle.test.ts`: seed 451, movimento/armas/drops/ofertas reais; proteção contra dano para isolar progressão; golpe final explícito se boss sobreviver |
+| Vitória/derrota, resultados únicos e reinício sem poder herdado | `persistence.test.ts`, fluxos Chromium dos três personagens |
+| Leitura v2, fallback v1 intacto, preferências e armazenamento indisponível | `persistence.test.ts`, fluxos Chromium |
+| Uma modal, pausa e isolamento de inputs | Fluxo de confirmação de saída/Escape/retoma em Chromium |
+
+**Limites de aceitação:** estes testes de regressão fecham a cobertura técnica prevista para a fase 1 quando os gates do PR passarem; não são uma partida humana sem assistência nem prova de diversão, equilíbrio ou qualidade visual. A fase 4 exige partidas normais e ajuste de dificuldade/viabilidade das builds; a fase 5 exige estabilidade e desempenho nos dispositivos reais identificados. Ainda faltam animações (fase 2), interface/controlos mobile (fase 3) e publicação final (fase 6). Só três personagens permanecem selecionáveis, embora desbloqueios históricos dos restantes sejam preservados. A primeira versão web desktop/mobile ainda não está concluída. Merge desta iteração apenas após aprovação explícita do criador.
 
 ## 0. Guia de utilização no refactor
 

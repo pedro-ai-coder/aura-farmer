@@ -5,7 +5,15 @@ declare global {
         __app: BrowserApp;
     }
 }
-async function open(page: Page) { await page.route('**/src/main.ts', async (route) => { const response = await route.fetch(); await route.fulfill({ response, body: (await response.text()).replace('new BrowserApp();', 'window.__app = new BrowserApp();') }); }); await page.goto('/'); await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled(); }
+async function open(page: Page) {
+    await page.route('**/src/main.ts', async route => {
+        // Retry only transport resets while loading the test hook, not failed assertions or HTTP errors.
+        const response = await route.fetch({ maxRetries: 2 });
+        await route.fulfill({ response, body: (await response.text()).replace('new BrowserApp();', 'window.__app = new BrowserApp();') });
+    });
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled();
+}
 async function start(page: Page) { await open(page); await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click(); await expect(page.locator('#modal')).toBeHidden(); }
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }, { width: 800, height: 600 }])
     test(`home and run fit ${viewport.width}x${viewport.height}`, async ({ page }) => { await page.setViewportSize(viewport); const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); await open(page); await expect(page.locator('.hero-card')).toHaveCount(3); await expect(page.locator('.hero-card img').first()).toBeVisible(); await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeInViewport(); await page.screenshot({ path: `test-results/home-${viewport.width}.png` }); await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click(); await expect(page.locator('.meter.hp')).toContainText('The Sigma'); await page.waitForTimeout(1200); await page.keyboard.press('Escape'); await expect(page.locator('.pause')).toBeVisible(); expect(errors).toEqual([]); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); });
@@ -84,4 +92,73 @@ test('boss entry collects ground XP and keeps its clock paused for the resulting
     expect(await page.evaluate(() => window.__app.run!.time)).toBe(state.time);
     expect(state.xp).toBe(120);
     await expect(page.locator('#modal > .panel')).toHaveCount(1);
+});
+
+test('Escape cancels leave confirmation without running combat behind the modal', async ({ page }) => {
+    await start(page);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'LEAVE RUN', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Your build stays here.' })).toBeVisible();
+    const time = await page.evaluate(() => window.__app.run!.time);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.pause')).toBeVisible();
+    await page.keyboard.down('w');
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.__app.run!.time)).toBe(time);
+    const pos = await page.evaluate(() => ({ ...window.__app.run!.pos }));
+    await page.getByRole('button', { name: 'BACK TO THE FARM' }).click();
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => window.__app.run!.pos)).toEqual(pos);
+    await page.keyboard.up('w');
+    expect(await page.evaluate(() => window.__app.save.runs)).toBe(0);
+});
+
+for (const hero of ['sigma', 'cool-kid', 'alpha'])
+    test(`${hero} result persists once and restart clears the whole run build`, async ({ page }) => {
+        await open(page);
+        await page.locator(`[data-action=hero][data-value="${hero}"]`).click();
+        await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
+        await page.evaluate(() => {
+            const r = window.__app.run!;
+            r.level = 10; r.aura = 99; r.xpCollected = 915;
+            r.inventory.weapons[0].rarity = 'legendary'; r.inventory.legendarySpent = true;
+            r.inventory.passives = [{ id: 'built-different', rarity: 'common', level: 4 }];
+            r.hurt(1e6, undefined);
+        });
+        await expect(page.locator('.results')).toBeVisible();
+        await page.waitForTimeout(150);
+        expect(await page.evaluate(() => window.__app.save.runs)).toBe(1);
+        await page.getByRole('button', { name: 'ONE MORE RUN' }).click();
+        const fresh = await page.evaluate(() => {
+            const r = window.__app.run!;
+            return { hero: r.characterId, level: r.level, aura: r.aura, weapons: r.inventory.weapons, passives: r.inventory.passives, spent: r.inventory.legendarySpent, pending: r.pending };
+        });
+        expect(fresh.hero).toBe(hero); expect(fresh.level).toBe(1); expect(fresh.aura).toBeLessThan(2);
+        expect(fresh.weapons).toHaveLength(1); expect(fresh.weapons[0].rarity).toBe('common');
+        expect(fresh.passives).toHaveLength(0); expect(fresh.spent).toBe(false); expect(fresh.pending).toBe(0);
+        await page.reload();
+        await expect(page.locator('.local-progress')).toContainText('1 runs · 0 wins · 915 lifetime XP');
+        await expect(page.locator(`[data-value="${hero}"]`)).toHaveAttribute('aria-pressed', 'true');
+    });
+
+test('settings survive reload and apply to the next run', async ({ page }) => {
+    await open(page);
+    await page.getByRole('button', { name: 'Sound ON', exact: true }).click();
+    await page.getByRole('button', { name: 'Effects FULL', exact: true }).click();
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Sound OFF', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Effects LOW', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
+    expect(await page.evaluate(() => window.__app.run!.reduceMotion)).toBe(true);
+    expect(await page.evaluate(() => window.__app.audio.enabled)).toBe(false);
+});
+
+test('storage write failure reports temporary progress and still allows restart', async ({ page }) => {
+    await page.addInitScript(() => { Storage.prototype.setItem = () => { throw new DOMException('Storage unavailable', 'QuotaExceededError'); }; });
+    await start(page);
+    await page.evaluate(() => window.__app.run!.hurt(1e6, undefined));
+    await expect(page.locator('.save-note')).toContainText('Saving unavailable');
+    await page.getByRole('button', { name: 'ONE MORE RUN' }).click();
+    await expect(page.locator('#modal')).toBeHidden();
+    expect(await page.evaluate(() => window.__app.run!.level)).toBe(1);
 });
