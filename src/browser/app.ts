@@ -43,7 +43,7 @@ export class BrowserApp {
         this.audio.enabled = this.save.settings.sound;
         this.scene.tick = dt => this.tick(dt);
         this.scene.onReady = () => { document.querySelector('#loading')?.remove(); this.alignHud(); this.render(true); };
-        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: [this.scene] });
+        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.NO_CENTER }, scene: [this.scene] });
         this.game.scale.on('resize', () => requestAnimationFrame(() => this.alignHud()));
         new ResizeObserver(() => this.alignHud()).observe(document.querySelector('#game')!);
         document.addEventListener('keydown', e => {
@@ -96,44 +96,70 @@ export class BrowserApp {
             if (!canvas)
                 return;
             const b = canvas.getBoundingClientRect();
-            this.aim = { x: (e.clientX - b.x) / b.width * WORLD.width, y: (e.clientY - b.y) / b.height * WORLD.height };
+            const camera = this.scene.cameras.main;
+            this.aim = camera.getWorldPoint((e.clientX - b.left) / b.width * canvas.width, (e.clientY - b.top) / b.height * canvas.height);
         });
         document.addEventListener('click', e => { const target = (e.target as HTMLElement).closest<HTMLElement>('[data-action]'); if (target)
             this.action(target.dataset.action!, target.dataset.value); });
-        const joystick = document.createElement('div');
-        joystick.id = 'touch-joystick';
-        joystick.setAttribute('aria-label', 'Touch movement joystick');
-        joystick.innerHTML = '<div class="touch-joystick-knob"></div>';
-        document.querySelector('#app')!.append(joystick);
-        const updateTouch = (event: PointerEvent) => {
-            const rect = joystick.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
-            const radius = Math.max(1, rect.width * .35);
-            const dx = event.clientX - centerX, dy = event.clientY - centerY;
-            const distance = Math.hypot(dx, dy), scale = Math.min(1, radius / (distance || 1));
-            this.touchDirection = { x: dx * scale / radius, y: dy * scale / radius };
-            const knob = joystick.firstElementChild as HTMLElement;
-            knob.style.transform = `translate(${dx * scale}px, ${dy * scale}px)`;
-        };
-        const resetTouch = (event: PointerEvent) => {
-            if (event.pointerId !== this.touchPointer) return;
+        const zone = document.createElement('div');
+        zone.id = 'touch-zone';
+        zone.setAttribute('aria-label', 'Touch movement area');
+        zone.innerHTML = '<div id="touch-joystick"><div class="touch-joystick-knob"></div></div>';
+        document.querySelector('#app')!.append(zone);
+        const joystick = zone.firstElementChild as HTMLElement;
+        const knob = joystick.firstElementChild as HTMLElement;
+        let origin = { x: 0, y: 0 };
+        const resetTouch = () => {
             this.touchPointer = null;
             this.touchDirection = { x: 0, y: 0 };
-            (joystick.firstElementChild as HTMLElement).style.transform = '';
+            joystick.style.display = 'none';
+            knob.style.transform = '';
         };
-        joystick.addEventListener('pointerdown', event => {
+        const updateTouch = (event: PointerEvent) => {
+            const radius = 44;
+            const dx = event.clientX - origin.x, dy = event.clientY - origin.y;
+            const distance = Math.hypot(dx, dy);
+            const scale = Math.min(1, radius / (distance || 1));
+            this.touchDirection = { x: dx * scale / radius, y: dy * scale / radius };
+            knob.style.transform = `translate(${dx * scale}px, ${dy * scale}px)`;
+        };
+        zone.addEventListener('pointerdown', event => {
             if (this.touchPointer !== null || this.run?.mode !== 'playing') return;
             this.touchPointer = event.pointerId;
-            joystick.setPointerCapture(event.pointerId);
+            origin = { x: event.clientX, y: event.clientY };
+            const bounds = zone.getBoundingClientRect();
+            joystick.style.left = `${event.clientX - bounds.left}px`;
+            joystick.style.top = `${event.clientY - bounds.top}px`;
+            joystick.style.display = 'flex';
+            zone.setPointerCapture(event.pointerId);
             updateTouch(event);
             event.preventDefault();
         });
-        joystick.addEventListener('pointermove', event => {
+        zone.addEventListener('pointermove', event => {
             if (event.pointerId === this.touchPointer) updateTouch(event);
         });
-        joystick.addEventListener('pointerup', resetTouch);
-        joystick.addEventListener('pointercancel', resetTouch);
-        joystick.addEventListener('lostpointercapture', resetTouch);
+        const release = (event: PointerEvent) => {
+            if (event.pointerId === this.touchPointer) resetTouch();
+        };
+        zone.addEventListener('pointerup', release);
+        zone.addEventListener('pointercancel', release);
+        zone.addEventListener('lostpointercapture', release);
+        window.addEventListener('blur', resetTouch);
+        document.addEventListener('visibilitychange', () => { if (document.hidden) resetTouch(); });
+        const orientationHint = document.createElement('div');
+        orientationHint.id = 'orientation-hint';
+        orientationHint.setAttribute('role', 'status');
+        orientationHint.innerHTML = '<p>Rotate your phone for a better game view.</p><button type="button" data-action="fullscreen">TRY FULLSCREEN</button>';
+        document.querySelector('#app')!.append(orientationHint);
+        const updateOrientation = () => {
+            const mobile = matchMedia('(pointer: coarse)').matches;
+            const portrait = innerHeight > innerWidth;
+            const spacious = innerWidth >= 850 && innerHeight >= 650;
+            document.querySelector('#app')!.classList.toggle('needs-landscape', mobile && portrait && !spacious);
+        };
+        window.addEventListener('resize', updateOrientation);
+        window.addEventListener('orientationchange', updateOrientation);
+        updateOrientation();
         this.render(true);
     }
     private alignHud() {
@@ -145,6 +171,15 @@ export class BrowserApp {
             left: `${bounds.left - stage.left}px`, top: `${bounds.top - stage.top}px`,
             width: `${bounds.width}px`, height: `${bounds.height}px`, right: 'auto', bottom: 'auto',
         });
+        if (!this.scene.ready) return;
+        const camera = this.scene.cameras.main;
+        const mobileLandscape = matchMedia('(pointer: coarse) and (orientation: landscape)').matches;
+        const zoom = mobileLandscape
+            ? Math.max(bounds.width / WORLD.width, bounds.height / WORLD.height)
+            : Math.min(bounds.width / WORLD.width, bounds.height / WORLD.height);
+        camera.setZoom(Math.max(.01, zoom));
+        camera.setBounds(0, 0, WORLD.width, WORLD.height);
+        camera.centerOn(this.run?.pos.x ?? WORLD.width / 2, this.run?.pos.y ?? WORLD.height / 2);
     }
     start(hero: DemoHero = this.save.selected) {
         this.audio.unlock();
@@ -168,8 +203,10 @@ export class BrowserApp {
             this.persist();
             this.render(true);
         }
-        if (action === 'start' && this.scene.ready)
+        if (action === 'start' && this.scene.ready) {
             this.start();
+            if (matchMedia('(pointer: coarse)').matches && !document.fullscreenElement) this.action('fullscreen');
+        }
         if (action === 'resume') {
             this.run?.resume();
             this.render(true);
@@ -242,10 +279,16 @@ export class BrowserApp {
         }
         if (action === 'fullscreen') {
             const stage = document.querySelector<HTMLElement>('#app')!;
-            if (document.fullscreenElement)
+            if (document.fullscreenElement) {
                 void document.exitFullscreen();
-            else
-                void stage.requestFullscreen().catch(() => { });
+            } else {
+                void stage.requestFullscreen().then(async () => {
+                    try {
+                        const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: string) => Promise<void> };
+                        await orientation.lock?.('landscape');
+                    } catch { /* Unsupported or denied: rotation hint remains available. */ }
+                }).catch(() => { /* Fullscreen requires browser permission. */ });
+            }
         }
     }
     private selectChoice(index: number) { if (this.run && this.run.choices[index]) {
@@ -254,6 +297,8 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
+            if (this.scene.ready && matchMedia('(pointer: coarse) and (orientation: landscape)').matches)
+                this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
             if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
@@ -287,7 +332,7 @@ export class BrowserApp {
         }
         if (!force && screen === this.screen)
             return;
-        if (screen !== this.screen) { this.keys.clear(); this.touchDirection = { x: 0, y: 0 }; this.touchPointer = null; const knob = document.querySelector<HTMLElement>('.touch-joystick-knob'); if (knob) knob.style.transform = ''; }
+        if (screen !== this.screen) { this.keys.clear(); this.touchDirection = { x: 0, y: 0 }; this.touchPointer = null; const knob = document.querySelector<HTMLElement>('.touch-joystick-knob'); if (knob) knob.style.transform = ''; const joystick = document.querySelector<HTMLElement>('#touch-joystick'); if (joystick) joystick.style.display = 'none'; }
         this.screen = screen;
         this.modal.hidden = screen === 'playing';
         if (screen === 'home')

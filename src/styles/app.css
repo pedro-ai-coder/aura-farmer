@@ -110,3 +110,26 @@
  #hud .flex strong{overflow-wrap:anywhere}
 }
 @media(prefers-reduced-motion:reduce){button,.flex{transition:none!important;animation:none!important}}
+
+/* Floating joystick: touch begins anywhere in the safe left play area. */
+#touch-zone{display:none;position:absolute;z-index:4;left:0;top:12%;width:46%;height:73%;touch-action:none;pointer-events:auto}
+#touch-zone #touch-joystick{display:none;position:absolute;left:0;top:0;bottom:auto;width:116px;height:116px;transform:translate(-50%,-50%);pointer-events:none;align-items:center;justify-content:center}
+#touch-zone .touch-joystick-knob{pointer-events:none}
+@media(pointer:coarse){#app[data-screen=playing] #touch-zone{display:block}#app[data-screen=playing] #touch-joystick{display:none}}
+#orientation-hint{display:none;position:absolute;z-index:7;inset:auto 12px max(16px,env(safe-area-inset-bottom));padding:14px;border:2px solid #f8c45f;border-radius:14px;background:#253449f2;color:#fff6df;text-align:center;box-shadow:0 5px 18px #0006}
+#orientation-hint p{margin:0 0 10px;font-weight:700}
+#orientation-hint button{min-height:44px}
+#app.needs-landscape #orientation-hint{display:block}
+@media(pointer:coarse) and (max-height:550px){#app{min-height:0}#hud{--hud-edge:6px}#hud .hud-top{padding:5px}#hud .hud-bottom{bottom:5px}#hud .flex{min-height:58px}}
+
+/* PR67 corrective: don't suppress the active floating joystick. */
+@media(pointer:coarse){
+ #app[data-screen=playing] #touch-zone #touch-joystick[style*="display: flex"]{display:flex!important}
+ #app[data-screen=playing] #touch-zone{top:8%;height:70%;width:42%}
+}
+/* Short landscape viewports must not inherit the 600px minimum height. */
+@media(pointer:coarse) and (orientation:landscape){
+ html,body{width:100%;height:100%;overflow:hidden}
+ #app{height:100dvh;min-height:0}
+ #game{width:100%;height:100%}
+}
