@@ -12,14 +12,23 @@ const fixture = (kind: EnemyKind = 'hater') => {
 };
 describe('enemy animation presentation', () => {
     for (const [kind, data] of Object.entries(frames)) it(`${kind} has eight distinct valid source rectangles and stable pivots`, () => {
-        const png = readFileSync(`public/assets/runtime/${data.sheet}.png`);
+        const png = readFileSync(`public/assets/runtime/${data.source}.png`);
         expect(data.frames).toHaveLength(8);
         expect(new Set(data.frames.map(f => f.slice(0, 4).join(','))).size).toBe(8);
+        data.sourceFrames.forEach(([x,y,w,h], i) => {
+            expect(x + w).toBeLessThanOrEqual(png.readUInt32BE(16));
+            expect(y + h).toBeLessThanOrEqual(png.readUInt32BE(20));
+            expect(data.masks[i].length).toBeGreaterThan(0);
+            for (const [mx,my,mw,mh] of data.masks[i]) {
+                expect(mx).toBeGreaterThanOrEqual(0); expect(my).toBeGreaterThanOrEqual(0);
+                expect(mx + mw).toBeLessThanOrEqual(w); expect(my + mh).toBeLessThanOrEqual(h);
+            }
+        });
         for (const [x, y, w, h, px, py] of data.frames) {
             expect(x).toBeGreaterThanOrEqual(0); expect(y).toBeGreaterThanOrEqual(0);
             expect(w).toBeGreaterThan(0); expect(h).toBeGreaterThan(0);
-            expect(x + w).toBeLessThanOrEqual(png.readUInt32BE(16));
-            expect(y + h).toBeLessThanOrEqual(png.readUInt32BE(20));
+            expect(x + w).toBeLessThanOrEqual(data.width);
+            expect(y + h).toBeLessThanOrEqual(data.textureHeight);
             expect(px).toBeGreaterThan(0); expect(px).toBeLessThanOrEqual(w); expect(py).toBeLessThanOrEqual(h);
         }
     });

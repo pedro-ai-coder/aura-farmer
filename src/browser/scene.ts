@@ -4,6 +4,7 @@ import flexFrames from './hero-flex-frames.json';
 import rearFrames from './hero-rear-frames.json';
 import enemyAnimationFrames from './enemy-frames.json';
 import { EnemyAnimator } from './enemy-animation';
+import { installEnemyTextures } from './enemy-textures';
 import { HeroAnimator } from './hero-animation';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES } from '../game/catalog/enemies';
@@ -37,7 +38,7 @@ export class BrowserScene extends Phaser.Scene {
         this.load.image('hater', ROOT + 'enemies/hater.png');
         this.load.image('boss', ROOT + 'enemies/big-hater.png');
         this.load.image('enemy-atlas', '/assets/runtime/enemies.png');
-        for (const sheet of new Set(Object.values(enemyAnimationFrames).map(d => d.sheet)))
+        for (const sheet of new Set(Object.values(enemyAnimationFrames).map(d => d.source)))
             this.load.image(sheet, `/assets/runtime/${sheet}.png`);
         this.load.on('progress', (p: number) => { const el = document.querySelector<HTMLProgressElement>('#loading-progress'); if (el)
             el.value = p; });
@@ -62,8 +63,7 @@ export class BrowserScene extends Phaser.Scene {
         for (let row = 0; row < 4; row++)
             for (let col = 0; col < 4; col++)
                 texture.add(row * 4 + col, 0, Math.round(col * source.width / 4), Math.round(row * source.height / 4), Math.floor(source.width / 4), Math.floor(source.height / 4));
-        for (const [kind, data] of Object.entries(enemyAnimationFrames))
-            data.frames.forEach(([x, y, w, h], i) => this.textures.get(data.sheet).add(`${kind}:${i}`, 0, x, y, w, h));
+        installEnemyTextures(this.textures);
         for (const cover of COVER)
             this.add.image(cover.x, cover.y, 'enemy-atlas', 14).setDisplaySize(80, 80).setOrigin(.5, .85).setDepth(cover.y);
         this.ground = this.add.graphics().setDepth(0);
