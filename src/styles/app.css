@@ -78,3 +78,35 @@
 .equipment-slot.epic{border-left-color:#9167a4}
 .equipment-slot.legendary{border-left-color:#bc8328}
 @media(max-width:700px){.build{grid-template-columns:minmax(0,1fr);gap:14px}.panel.pause{padding:18px}.equipment-slot{min-height:48px}}
+
+/* Phase 3.4 — interface polish and accessibility safeguards. */
+#modal{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.panel{min-width:0;scrollbar-gutter:stable}
+.panel button,.panel select{max-width:100%}
+.choice:focus-visible,.hero-card:focus-visible{outline:4px solid #168798;outline-offset:3px}
+.choice:disabled{opacity:.65}
+.announcement:empty{display:none}
+#hud .flex.ready:not(:disabled){cursor:pointer}
+#hud .flex:disabled{cursor:default}
+@media(max-width:740px){
+ .panel{padding:clamp(12px,3vw,24px);border-radius:16px}
+ .choices{grid-template-columns:minmax(0,1fr);gap:10px}
+ .choice{min-height:0;padding:12px}
+ .stats{flex-wrap:wrap;gap:12px}
+ .actions,.settings{flex-wrap:wrap}
+ .actions button{flex:1 1 150px}
+ .home{grid-template-columns:minmax(0,1fr)}
+ .home footer{flex-wrap:wrap}
+ .heroes{gap:6px}
+ .hero-card img{height:clamp(70px,19vw,130px)}
+}
+@media(max-width:420px){
+ #hud .hud-top{gap:4px;padding:6px}
+ #hud .meter{font-size:9px}
+ #hud .meter>span{display:block}
+ #hud .meter b{display:block}
+ #hud .hud-bottom{gap:4px}
+ #hud .flex{padding:7px}
+ #hud .flex strong{overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce){button,.flex{transition:none!important;animation:none!important}}
