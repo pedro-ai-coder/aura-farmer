@@ -62,3 +62,19 @@
  #app[data-screen=playing] #hud .hud-right{margin-left:126px}
  #app[data-screen=playing] #hud .flex{grid-column:2;grid-row:1 / 3}
 }
+
+/* Phase 3.3: equipment slots and menu clarity, using existing palette. */
+.equipment-group{min-width:0}
+.equipment-group h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.equipment-group h3 span{font-size:11px;color:#596875;white-space:nowrap}
+.equipment-slots{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.equipment-slot{display:flex;align-items:center;gap:12px;min-height:55px;padding:9px 12px;background:#f6efdc;border:2px solid #a8ada5;border-left-width:6px;border-radius:10px}
+.equipment-slot .slot-number{display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:6px;background:#253449;color:#fff6df;font-size:12px;font-weight:900}
+.equipment-slot strong,.equipment-slot small{display:block;overflow-wrap:anywhere}
+.equipment-slot strong{font-size:13px}
+.equipment-slot small{font-size:10px;margin-top:4px;color:#52616a}
+.equipment-slot.empty{border-style:dashed;opacity:.8}
+.equipment-slot.rare{border-left-color:#448d9d}
+.equipment-slot.epic{border-left-color:#9167a4}
+.equipment-slot.legendary{border-left-color:#bc8328}
+@media(max-width:700px){.build{grid-template-columns:minmax(0,1fr);gap:14px}.panel.pause{padding:18px}.equipment-slot{min-height:48px}}
