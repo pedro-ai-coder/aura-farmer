@@ -877,3 +877,33 @@ Aceitação funcional inclui: três armas e cinco passivas; caps por raridade; F
 Continuam por fechar antes das fases respetivas: fórmulas finais de matchmaking e recompensas Normal/Ranked; arquitetura/fornecedor de rede dentro do orçamento; presets, duração e condições de vitória da arena; economia e battle pass; equipamento pré-run; plataformas dedicadas e cross-save. Desbloqueios propostos na secção7.1 precisam de validação de ritmo. Wild é apenas nice to have.
 
 O R0 e a fatia solo podem avançar com as decisões já aprovadas. Esta compilação não declara que o refactor começou ou que funcionalidades já passaram os testes.
+
+## C. Revisão mobile e mecânicas de drops — pedidos de 16 outubro 2026
+
+**Estado:** requisitos de experiência mobile aprovados para futura implementação; mecânicas novas abaixo são **propostas sujeitas a aprovação**, não funcionalidades existentes. Este aditamento não substitui as regras de armas, cinco slots passivos, Aura única e Flex por personagem.
+
+### C.1 Correções de UX mobile (requisitos)
+
+1. **Joystick flutuante:** área de ativação no lado esquerdo do ecrã; centro criado na posição inicial do polegar, dentro de margens seguras; deslocamento calculado relativamente a esse centro; pointer capture, cancelamento e perda de foco terminam movimento; impedir stuck movement e scroll acidental; evitar colisão com HUD. Não fixar sempre o centro num ponto do ecrã.
+2. **Orientação:** em dispositivos móveis privilegiar paisagem (horizontal); solicitar fullscreen e orientation lock na primeira interação elegível. A plataforma pode recusar ambas as APIs, sobretudo no iOS; apresentar indicação não bloqueante para rodar o dispositivo e modo fallback funcional. Não prometer rotação automática garantida. Retrato permitido quando o viewport efetivo tem espaço suficiente para jogo, HUD e ações, aferido por dimensões úteis e testes, não apenas user agent.
+3. **Legibilidade dos pickups:** cristais de Aura distinguíveis do pavimento e de projéteis por silhueta, contorno, brilho controlado, escala e movimento de atração. A indicação de Aura ganha deve ser breve e legível. Identidade visual separada para XP, Aura e futuros drops especiais; validar contraste sobre o mapa Ruin Alley e em movimento.
+4. **Armas/habilidades:** diferenciação clara de projéteis, impactos, zonas perigosas e efeitos de Flex; comunicar origem, direção e duração dos ataques, sem efeitos que escondam inimigos. Redução de movimento e limites de partículas em mobile.
+5. **HUD e modais:** não cortar título de evolução, cartas ou botão confirmar; respeitar safe areas, scroll dentro da modal, tamanhos mínimos de toque e layout em paisagem; manter joystick e botões fora da área crítica de jogo; não perder a seleção ao mudar de orientação. Testar ecrãs de evolução, pausa, resultados e partida completa.
+6. **Aceitação:** testes em browser mobile real quando disponível e emulação de múltiplos viewports, teclado desktop intacto, joystick sem movimento preso após pointercancel/blur/pause, orientação bloqueada e não bloqueada, fullscreen permitido e negado. TypeScript, Vitest, build e Playwright obrigatórios.
+
+### C.2 Referência Swarm — drops e estrutura de recuperação
+
+Referência de design: League of Legends *Swarm* tem objetos destrutíveis com drops de cura, recolha em massa de XP/recursos (vacuum) e explosões; a zona de cura de Warehouse District exige ativação e entra em recarga prolongada. Estes são **padrões de mecânica**, não autorização para copiar nomes, arte, mapas, efeitos ou valores exatos. Fontes de referência: https://leagueoflegends.fandom.com/wiki/Swarm_%28League_of_Legends%29 e https://mobalytics.gg/lol/guides/swarm-how-to-survive .
+
+**Propostas para Aura Farmer — aguardam aprovação individual:**
+
+- **P1 — Drop de recuperação, «Snack de Rua»:** pequena cura percentual, recolha por proximidade, queda rara de caixas e inimigos especiais. Não substituir a importância de esquiva e de passivas defensivas; definir frequência e cura em playtest.
+- **P2 — Íman de Aura, «Aura Magnet»:** recolher temporariamente toda a Aura e XP soltos no mapa, com animação de atração e limite de entidades processadas por frame; não gerar recursos adicionais nem alterar o valor total. Esclarecer no HUD o que foi recolhido.
+- **P3 — Zona de cura, «Safe Spot»:** local fixo e legível no mapa, ativado ao permanecer na zona por breve período; cura limitada e cooldown longo visível no mundo e no HUD; posição/colisões devem respeitar Ruin Alley. Avaliar se é utilizável uma ou várias vezes por partida.
+- **P4 — Caixas de rua destrutíveis:** pontos de risco/recompensa que podem conter os drops anteriores, uma onda de inimigos ou Aura extra; telegráficos claros e orçamento limitado de spawns.
+- **P5 — Pulso de limpeza, «Viral Burst»:** drop raro que elimina ou afasta inimigos comuns próximos, sem trivializar elites/bosses; duração e dano dependem do balanceamento.
+- **P6 — Desafios temporários, «Trend Challenges»:** objetivos opcionais de curta duração (defender área, sobreviver sem dano, derrotar alvo), com recompensa proporcional ao risco e sem travar a progressão principal.
+- **P7 — Evoluções condicionais de armas:** caminhos de evolução após combinação de arma e passiva, sem exceder três armas/cinco passivas nem contornar caps por raridade; verificar compatibilidade com as regras V2 antes de aprovar.
+- **P8 — Eventos de mapa exclusivos:** interações próprias de cada mapa (ex.: armadilha urbana carregável), com cooldown e contrajogo, inspiradas na ideia de objetivos únicos de Swarm mas com identidade original.
+
+**Ordem sugerida, caso aprovadas:** C.1 primeiro; depois P1–P3 num PR funcional isolado, P4–P5 noutro, P6–P8 apenas após balanceamento. Todas as propostas precisam de valores, telemetria local/testes, aprovação antes de implementação e revisão de originalidade visual/narrativa.
