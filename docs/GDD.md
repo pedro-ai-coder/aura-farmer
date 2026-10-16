@@ -54,6 +54,14 @@ Escape na confirmação de saída cancela a confirmação e volta à pausa, sem 
 
 **Limites de aceitação:** estes testes de regressão fecham a cobertura técnica prevista para a fase 1 quando os gates do PR passarem; não são uma partida humana sem assistência nem prova de diversão, equilíbrio ou qualidade visual. A fase 4 exige partidas normais e ajuste de dificuldade/viabilidade das builds; a fase 5 exige estabilidade e desempenho nos dispositivos reais identificados. Ainda faltam animações (fase 2), interface/controlos mobile (fase 3) e publicação final (fase 6). Só três personagens permanecem selecionáveis, embora desbloqueios históricos dos restantes sejam preservados. A primeira versão web desktop/mobile ainda não está concluída. Merge desta iteração apenas após aprovação explícita do criador.
 
+### Fase 2 · Iteração 1 — Personagens
+
+Base: PR #55 integrado (`c067678`). Esta iteração mantém catálogo, regras, hitboxes e saves. Acrescenta 12 desenhos traseiros de Alpha (NE/N/NW, quatro por direção) e quatro de Cool Kid (N), preservando os PNG anteriores. Os oito sentidos usam quatro frames; Sigma NW e deslocação lateral esquerda usam poses simétricas sem texto invertido. Novos atlas têm recortes explícitos e uma escala fixa por folha para cerca de 64 U de altura; não se estica individualmente cada desenho. Fontes e prompts: `docs/art/phase-2-1.md`.
+
+Reprodução: corrida avança pela distância percorrida, ficando parada contra obstáculos; ataque e hurt seguem os temporizadores existentes. A derrota reproduz quatro poses e mantém a última sem avançar a simulação; nova run reinicia o relógio visual. Flex tem entrada, execução e recuperação; Alpha mostra os três impactos reais aos 0/2/4 s, sem inventar slams adicionais. Pausa e escolhas congelam as animações de combate. A morte usa um relógio visual separado apenas para concluir a queda.
+
+Evidência: testes unitários de oito direções, ciclos, pausa/colisão, derrota/reinício e sincronização dos golpes; testes Chromium dos três personagens geram pranchas dos frames realmente carregados pelo Phaser e capturas de deslocação para norte. Resultados finais e commit ficam no PR desta iteração. Isto não valida balanceamento nem uma partida humana completa; inimigos/boss e efeitos são as iterações 2.2/2.3. A adaptação mobile continua na fase 3. Merge só após aprovação explícita.
+
 ## 0. Guia de utilização no refactor
 
 Este GDD consolida o design acordado, os números iniciais aprovados e a arte da opção A. Deve orientar o refactor de `pedro-ai-coder/aura-farmer`; não implica reescrever todo o jogo ou criar outro repositório. Decisões posteriores do criador prevalecem e devem ser registadas aqui.
