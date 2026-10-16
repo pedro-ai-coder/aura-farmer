@@ -16,10 +16,16 @@ const checks = [
 const results = [];
 for (const [name, args] of checks) {
   const started = Date.now();
-  const run = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 15 * 60 * 1000 });
+  // On Windows npm.cmd is a batch script: spawnSync without a shell fails with EINVAL.
+  // Use the command shell only on Windows; pass a fixed, internal command list.
+  const command = process.platform === 'win32' ? process.env.ComSpec || 'cmd.exe' : 'npm';
+  const commandArgs = process.platform === 'win32'
+    ? ['/d', '/s', '/c', ['npm', ...args].join(' ')]
+    : args;
+  const run = spawnSync(command, commandArgs, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 15 * 60 * 1000 });
   const output = [run.stdout ?? '', run.stderr ?? '', run.error ? String(run.error) : ''].filter(Boolean).join('\n');
   writeFileSync(join(dir, `${name}.log`), output);
-  results.push({ name, passed: run.status === 0, exitCode: run.status, signal: run.signal, durationSeconds: Math.round((Date.now() - started) / 1000), log: `reports/validation/${name}.log` });
+  results.push({ name, passed: run.status === 0, exitCode: run.status, signal: run.signal, spawnError: run.error ? String(run.error) : null, durationSeconds: Math.round((Date.now() - started) / 1000), log: `reports/validation/${name}.log` });
   console.log(`${name}: ${run.status === 0 ? 'PASS' : 'FAIL'}`);
 }
 const report = { commit, generatedAt: new Date().toISOString(), passed: results.every(r => r.passed), checks: results };
