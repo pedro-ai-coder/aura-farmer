@@ -11,6 +11,11 @@ export class Run {
     readonly inventory;
     readonly random;
     time = 0;
+    /** Ruin Alley healing station, in world coordinates. */
+    readonly safeSpot = { x: 1100, y: 565, radius: 68 };
+    safeSpotCharge = 0;
+    safeSpotReadyAt = 0;
+    safeSpotUses = 0;
     wave = 1;
     level = 1;
     xp = 0;
@@ -438,6 +443,19 @@ export class Run {
     }
     private step(dt: number, input: Input) {
         this.time += dt;
+        // Safe Spot: stand inside for 2s, heal 25% max HP, then 90s active-time cooldown.
+        // Charging resets on leaving, and the station cannot activate at full health.
+        const nearStation = distance(this.pos, this.safeSpot) <= this.safeSpot.radius;
+        if (nearStation && this.time >= this.safeSpotReadyAt && this.hp < this.maxHp) {
+            this.safeSpotCharge = Math.min(2, this.safeSpotCharge + dt);
+            if (this.safeSpotCharge >= 2) {
+                this.heal(this.maxHp * .25);
+                this.safeSpotUses++;
+                this.safeSpotReadyAt = this.time + 90;
+                this.safeSpotCharge = 0;
+                this.announce('SAFE SPOT · HEALED · RECHARGING');
+            }
+        } else this.safeSpotCharge = 0;
         if (input.flex)
             this.activateFlex();
         this.moving = Math.hypot(input.x, input.y) > .05;
