@@ -133,3 +133,26 @@
  #app{height:100dvh;min-height:0}
  #game{width:100%;height:100%}
 }
+
+/* Phase 4.2: fit the full pause/upgrade flow into short landscape viewports. */
+@media(pointer:coarse) and (orientation:landscape) and (max-height:800px){
+ #modal{align-items:flex-start;justify-content:center;overflow-y:auto;overscroll-behavior:contain;padding:8px max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ #modal .panel{flex:0 0 auto;max-height:calc(100dvh - 20px);overflow-y:auto;overscroll-behavior:contain;padding:14px 20px 20px;border-radius:18px;scrollbar-gutter:stable}
+ #modal .panel h2{font-size:clamp(19px,4.5vh,29px);line-height:1.15;margin:3px 0 8px}
+ #modal .panel .eyebrow{font-size:10px}
+ #modal .build{gap:12px}
+ #modal .equipment-slots{gap:5px}
+ #modal .equipment-slot{min-height:40px;padding:5px 8px}
+ #modal .equipment-group h3{font-size:14px;margin-bottom:5px}
+ #modal .settings,#modal .actions{gap:8px;margin-top:10px}
+ #modal .settings button,#modal .actions button{padding:8px 12px;min-height:42px}
+ #modal .choices{gap:8px}
+ #modal .choice{padding:10px;min-height:0}
+ #modal .choice h3{font-size:clamp(14px,3.2vh,20px)}
+ #modal .choice p{font-size:clamp(11px,2.4vh,14px)}
+}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:430px){
+ #modal .panel{padding:9px 14px;max-height:calc(100dvh - 12px)}
+ #modal .equipment-slot{min-height:34px;padding:3px 7px}
+ #modal .equipment-slot small{margin-top:1px}
+}
