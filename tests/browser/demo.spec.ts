@@ -162,3 +162,65 @@ test('storage write failure reports temporary progress and still allows restart'
     await expect(page.locator('#modal')).toBeHidden();
     expect(await page.evaluate(() => window.__app.run!.level)).toBe(1);
 });
+
+for (const hero of ['sigma', 'cool-kid', 'alpha'] as const)
+    test(`${hero} directional animation, Flex and defeat render from real atlas frames`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on('pageerror', e => errors.push(e.message));
+        await open(page);
+        await page.locator(`[data-action=hero][data-value="${hero}"]`).click();
+        await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
+        await page.keyboard.down('w');
+        await page.waitForTimeout(350);
+        await page.screenshot({ path: `test-results/north-run-${hero}.png` });
+        await page.keyboard.up('w');
+        const result = await page.evaluate(() => {
+            const app = window.__app, r = app.run!, scene = app.scene;
+            scene.tick = () => {}; // Presentation fixture: no combat or random damage during captures.
+            const image = scene.children.getByName('hero') as import('phaser').GameObjects.Image;
+            const canvas = document.createElement('canvas');
+            canvas.id = 'animation-proof'; canvas.width = 960; canvas.height = 1100;
+            canvas.style.cssText = 'position:fixed;inset:0;z-index:99999;width:960px;height:1100px';
+            document.body.append(canvas);
+            const ctx = canvas.getContext('2d')!;
+            ctx.fillStyle = '#eee5ce'; ctx.fillRect(0, 0, 960, 1100);
+            ctx.fillStyle = '#253449'; ctx.font = 'bold 20px Arial';
+            ctx.fillText(`${r.hero.name} — runtime poses / 1.5× game scale`, 20, 28);
+            const labels = ['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'];
+            const seen: string[] = [];
+            const capture = (col: number, row: number, label: string) => {
+                scene.update(0, 100);
+                const frame = image.frame, p = image.getData('pose');
+                seen.push(`${p.sheet}:${p.frame}`);
+                const x = 25 + col * 116, y = 60 + row * 165;
+                ctx.fillStyle = '#253449'; ctx.font = '12px Arial'; ctx.fillText(label, x, y);
+                ctx.save(); ctx.translate(x + 46, y + 140);
+                ctx.scale(image.scaleX * 1.5 * (image.flipX ? -1 : 1), image.scaleY * 1.5);
+                ctx.drawImage(frame.source.image as HTMLImageElement, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight,
+                    -frame.width / 2, -frame.height, frame.width, frame.height);
+                ctx.restore();
+            };
+            r.time = 10; r.moving = true; r.facing = 0;
+            for (let dir = 0; dir < 8; dir++) {
+                r.movementFacing = dir * Math.PI / 4;
+                for (let step = 0; step < 4; step++) {
+                    r.pos.x += r.hero.speed / 9 + .01;
+                    capture(dir, step, `${labels[dir]} · ${step + 1}`);
+                }
+            }
+            r.moving = true; r.flexUntil = 20 + r.hero.duration;
+            for (let step = 0; step < 8; step++) {
+                r.time = step === 7 ? r.flexUntil - .05 : 20 + [0, .15, .3, .45, 1.8, 1.95, 2][step];
+                r.pos.x += r.hero.speed / 11.25 + .01;
+                capture(step, 4, `Flex ${Math.round((r.time - 20) * 100) / 100}s`);
+            }
+            r.flexUntil = 0; r.mode = 'lost';
+            for (let step = 0; step < 8; step++) capture(step, 5, `Defeat ${step}`);
+            return { final: image.getData('pose'), frames: seen };
+        });
+        if (hero === 'cool-kid') expect(result.frames.some(f => f.startsWith('flex-v2:'))).toBe(true);
+        expect(result.final.frame).toBe(hero === 'cool-kid' ? 32 : 40);
+        if (hero !== 'sigma') expect(result.frames.some(f => f.startsWith('rear-v2:'))).toBe(true);
+        await page.locator('#animation-proof').screenshot({ path: `test-results/animation-${hero}.png` });
+        expect(errors).toEqual([]);
+    });

@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import heroFrames from './hero-frames.json';
-import { heroPose } from './hero-animation';
+import flexFrames from './hero-flex-frames.json';
+import rearFrames from './hero-rear-frames.json';
+import { HeroAnimator } from './hero-animation';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES, type EnemyKind } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
@@ -14,6 +16,7 @@ export class BrowserScene extends Phaser.Scene {
     tick?: (dt: number) => void;
     onReady?: () => void;
     private actors = new Map<number, Phaser.GameObjects.Image>();
+    private heroAnimator = new HeroAnimator();
     private heroImage!: Phaser.GameObjects.Image;
     private ground!: Phaser.GameObjects.Graphics;
     private fx!: Phaser.GameObjects.Graphics;
@@ -25,7 +28,9 @@ export class BrowserScene extends Phaser.Scene {
         for (const hero of HEROES) {
             this.load.image(hero.id, ROOT + `characters/${hero.id}.png`);
             this.load.image(hero.id + '-atlas', `/assets/runtime/${hero.id}-atlas.png`);
+            if (hero.id !== 'sigma') this.load.image(hero.id + '-rear-v2', `/assets/runtime/${hero.id}-rear-v2.png`);
         }
+        this.load.image('cool-kid-flex-v2', '/assets/runtime/cool-kid-flex-v2.png');
         this.load.image('npc', ROOT + 'enemies/phone-guy.png');
         this.load.image('hater', ROOT + 'enemies/hater.png');
         this.load.image('boss', ROOT + 'enemies/big-hater.png');
@@ -44,6 +49,11 @@ export class BrowserScene extends Phaser.Scene {
                 texture.add(frame, 0, x, y, width, height);
             });
         }
+        for (const id of ['alpha', 'cool-kid'] as const) {
+            const texture = this.textures.get(id + '-rear-v2');
+            rearFrames[id].forEach(([x, y, w, h], i) => texture.add(i, 0, x, y, w, h));
+        }
+        flexFrames.forEach(([x, y, w, h], i) => this.textures.get('cool-kid-flex-v2').add(i, 0, x, y, w, h));
         const texture = this.textures.get('enemy-atlas'), source = texture.getSourceImage() as HTMLImageElement;
         for (let row = 0; row < 4; row++)
             for (let col = 0; col < 4; col++)
@@ -52,14 +62,14 @@ export class BrowserScene extends Phaser.Scene {
             this.add.image(cover.x, cover.y, 'enemy-atlas', 14).setDisplaySize(80, 80).setOrigin(.5, .85).setDepth(cover.y);
         this.ground = this.add.graphics().setDepth(0);
         this.fx = this.add.graphics().setDepth(2000);
-        this.heroImage = this.add.image(724, 610, 'sigma').setOrigin(.5, .9).setDisplaySize(90, 75);
+        this.heroImage = this.add.image(724, 610, 'sigma').setName('hero').setOrigin(.5, .9).setDisplaySize(90, 75);
         for (let i = 0; i < 24; i++)
             this.labels.push(this.add.text(0, 0, '', { fontFamily: 'Arial', fontSize: '18px', fontStyle: 'bold', color: '#fff7da', stroke: '#253449', strokeThickness: 4 }).setDepth(2200).setOrigin(.5));
         this.ready = true;
         this.onReady?.();
     }
     update(_time: number, delta: number) { this.tick?.(Math.min(delta / 1000, .1)); if (this.run)
-        this.draw(this.run);
+        this.draw(this.run, delta / 1000);
     else {
         this.heroImage?.setVisible(false);
         this.ground?.clear();
@@ -70,7 +80,7 @@ export class BrowserScene extends Phaser.Scene {
         for (const label of this.labels)
             label.setVisible(false);
     } }
-    private draw(r: Run) {
+    private draw(r: Run, delta: number) {
         const g = this.ground, f = this.fx;
         g.clear();
         f.clear();
@@ -115,12 +125,11 @@ export class BrowserScene extends Phaser.Scene {
                 g.strokeCircle(e.x, e.y, e.radius + 3);
             }
         }
-        const pose = heroPose(r);
+        const pose = this.heroAnimator.sample(r, delta);
         // A fixed scale preserves body proportions across attacks, hurt and death.
-        const scale = r.characterId === 'cool-kid' ? .40 : r.characterId === 'alpha' ? .50 : .44;
-        this.heroImage.setVisible(true).setTexture(r.characterId + '-atlas', pose.frame)
-            .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(scale)
-            .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1);
+        this.heroImage.setVisible(true).setTexture(r.characterId + '-' + pose.sheet, pose.frame)
+            .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(pose.scale)
+            .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
         g.fillStyle(0x253449, .23);
         g.fillEllipse(r.pos.x, r.pos.y + 4, 40, 13);
         if (r.shield > 0) {
