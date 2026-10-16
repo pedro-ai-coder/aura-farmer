@@ -310,7 +310,18 @@ export class BrowserApp {
             this.hud.innerHTML = markup;
         }
     }
-    private build(r: Run) { return `<div class="build"><div><h3>WEAPONS ${r.inventory.weapons.length}/3</h3>${r.inventory.weapons.map(i => `<p class="item ${i.rarity}"><b>${itemName(i)}</b><span>${i.rarity} · LV ${i.level}/${CAPS[i.rarity]} · ${itemInterval(i, r.frequency).toFixed(2)}s</span></p>`).join('')}</div><div><h3>PASSIVES ${r.inventory.passives.length}/5</h3>${r.inventory.passives.length ? r.inventory.passives.map(i => `<p class="item ${i.rarity}"><b>${itemName(i)}</b><span>${i.rarity} · LV ${i.level}/${CAPS[i.rarity]}</span></p>`).join('') : '<p>Choose your build as you level up.</p>'}</div></div>`; }
+    private build(r: Run) {
+        const equipment = (items: Item[], kind: 'weapon' | 'passive', limit: number) => {
+            const slots = Array.from({ length: limit }, (_, slot) => {
+                const item = items[slot];
+                return item
+                    ? `<li class="equipment-slot ${item.rarity}"><span class="slot-number">${slot + 1}</span><div><strong>${itemName(item)}</strong><small>${item.rarity.toUpperCase()} · LV ${item.level}/${CAPS[item.rarity]}${kind === 'weapon' ? ' · ' + itemInterval(item, r.frequency).toFixed(2) + 's' : ''}</small></div></li>`
+                    : `<li class="equipment-slot empty"><span class="slot-number">${slot + 1}</span><div><strong>Empty slot</strong><small>Choose a ${kind} on level up</small></div></li>`;
+            }).join('');
+            return `<section class="equipment-group" aria-label="${kind === 'weapon' ? 'Equipped weapons' : 'Equipped passives'}"><h3>${kind === 'weapon' ? 'WEAPONS' : 'PASSIVES'} <span>${items.length}/${limit} SLOTS</span></h3><ol class="equipment-slots">${slots}</ol></section>`;
+        };
+        return `<div class="build">${equipment(r.inventory.weapons, 'weapon', 3)}${equipment(r.inventory.passives, 'passive', 5)}</div>`;
+    }
     private card(offer: Choice, index: number) {
         const item = offer.item, def = item ? (weaponById(item.id) ?? passiveById(item.id)) : undefined;
         const old = item ? (this.run!.inventory.weapons.find(i => i.id === item.id) ?? this.run!.inventory.passives.find(i => i.id === item.id)) : undefined;
