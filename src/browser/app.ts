@@ -273,7 +273,10 @@ export class BrowserApp {
                 void document.exitFullscreen();
             } else {
                 void stage.requestFullscreen().then(async () => {
-                    try { await screen.orientation.lock('landscape'); } catch { /* Unsupported or denied: rotation hint remains available. */ }
+                    try {
+                        const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: string) => Promise<void> };
+                        await orientation.lock?.('landscape');
+                    } catch { /* Unsupported or denied: rotation hint remains available. */ }
                 }).catch(() => { /* Fullscreen requires browser permission. */ });
             }
         }
