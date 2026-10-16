@@ -46,3 +46,19 @@
   #hud .announcement{font-size:clamp(12px,2.5vw,18px)}
 }
 @media (prefers-reduced-motion:reduce){#hud .flex.ready{animation:none}}
+
+/* Phase 3.2: touch movement without new image assets. */
+#touch-joystick{display:none;position:absolute;left:max(16px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));width:116px;height:116px;border:3px solid #fff6dfaa;border-radius:50%;background:#253449a8;z-index:4;touch-action:none;pointer-events:auto;align-items:center;justify-content:center;box-shadow:0 2px 12px #14263388}
+.touch-joystick-knob{width:46px;height:46px;border:3px solid #253449;border-radius:50%;background:#f8c45f;box-shadow:0 3px 0 #142633;pointer-events:none}
+@media (pointer:coarse){
+ #app[data-screen=playing] #touch-joystick{display:flex}
+ #app[data-screen=playing] #hud .hud-bottom{bottom:max(16px,env(safe-area-inset-bottom))}
+ #app[data-screen=playing] #hud .build-chip{margin-left:126px}
+ #app[data-screen=playing] #hud .flex{min-height:76px}
+}
+@media (pointer:coarse) and (max-width:740px){
+ #app[data-screen=playing] #hud .hud-bottom{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ #app[data-screen=playing] #hud .build-chip{display:none}
+ #app[data-screen=playing] #hud .hud-right{margin-left:126px}
+ #app[data-screen=playing] #hud .flex{grid-column:2;grid-row:1 / 3}
+}

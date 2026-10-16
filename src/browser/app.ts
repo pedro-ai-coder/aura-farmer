@@ -17,6 +17,8 @@ export class BrowserApp {
     readonly audio = new AudioCues();
     readonly game: Phaser.Game;
     private keys = new Set<string>();
+    private touchDirection = { x: 0, y: 0 };
+    private touchPointer: number | null = null;
     private aim = { x: 724, y: 500 };
     private manual = false;
     private selectedChoice = -1;
@@ -98,6 +100,40 @@ export class BrowserApp {
         });
         document.addEventListener('click', e => { const target = (e.target as HTMLElement).closest<HTMLElement>('[data-action]'); if (target)
             this.action(target.dataset.action!, target.dataset.value); });
+        const joystick = document.createElement('div');
+        joystick.id = 'touch-joystick';
+        joystick.setAttribute('aria-label', 'Touch movement joystick');
+        joystick.innerHTML = '<div class="touch-joystick-knob"></div>';
+        document.querySelector('#app')!.append(joystick);
+        const updateTouch = (event: PointerEvent) => {
+            const rect = joystick.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
+            const radius = Math.max(1, rect.width * .35);
+            const dx = event.clientX - centerX, dy = event.clientY - centerY;
+            const distance = Math.hypot(dx, dy), scale = Math.min(1, radius / (distance || 1));
+            this.touchDirection = { x: dx * scale / radius, y: dy * scale / radius };
+            const knob = joystick.firstElementChild as HTMLElement;
+            knob.style.transform = `translate(${dx * scale}px, ${dy * scale}px)`;
+        };
+        const resetTouch = (event: PointerEvent) => {
+            if (event.pointerId !== this.touchPointer) return;
+            this.touchPointer = null;
+            this.touchDirection = { x: 0, y: 0 };
+            (joystick.firstElementChild as HTMLElement).style.transform = '';
+        };
+        joystick.addEventListener('pointerdown', event => {
+            if (this.touchPointer !== null || this.run?.mode !== 'playing') return;
+            this.touchPointer = event.pointerId;
+            joystick.setPointerCapture(event.pointerId);
+            updateTouch(event);
+            event.preventDefault();
+        });
+        joystick.addEventListener('pointermove', event => {
+            if (event.pointerId === this.touchPointer) updateTouch(event);
+        });
+        joystick.addEventListener('pointerup', resetTouch);
+        joystick.addEventListener('pointercancel', resetTouch);
+        joystick.addEventListener('lostpointercapture', resetTouch);
         this.render(true);
     }
     private alignHud() {
@@ -217,7 +253,7 @@ export class BrowserApp {
     private tick(dt: number) {
         if (this.run) {
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
-            this.run.update(dt, { x: Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')), y: Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')), aim: this.aim, manual: this.manual });
+            this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
             if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
             else if (this.run.message !== previousMessage) this.audio.play('warning');
             if (this.run.mode !== before) {
@@ -249,7 +285,7 @@ export class BrowserApp {
         }
         if (!force && screen === this.screen)
             return;
-        if (screen !== this.screen) this.keys.clear();
+        if (screen !== this.screen) { this.keys.clear(); this.touchDirection = { x: 0, y: 0 }; this.touchPointer = null; const knob = document.querySelector<HTMLElement>('.touch-joystick-knob'); if (knob) knob.style.transform = ''; }
         this.screen = screen;
         this.modal.hidden = screen === 'playing';
         if (screen === 'home')
