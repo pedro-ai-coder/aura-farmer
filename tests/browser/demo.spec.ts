@@ -224,3 +224,76 @@ for (const hero of ['sigma', 'cool-kid', 'alpha'] as const)
         await page.locator('#animation-proof').screenshot({ path: `test-results/animation-${hero}.png` });
         expect(errors).toEqual([]);
     });
+
+for (const [group, kinds] of Object.entries({
+    familiesA: ['reply-goblin', 'beta', 'ratio-ram', 'doomscroller'],
+    familiesB: ['hype-bot', 'fanum-leech', 'ping-sniper', 'copium-puffer'],
+    events: ['comment-mod', 'reply-guy', 'mod-supremo', 'ohio-express', 'doomscroll-prime'],
+    haters: ['npc', 'hater', 'boss', 'boss-berserk'],
+})) test(`enemy animation atlas review: ${group}`, async ({ page }) => {
+    await start(page);
+    const result = await page.evaluate(async (kinds) => {
+        const modulePath = '/src/browser/enemy-animation.ts';
+        const { enemyPose } = await import(/* @vite-ignore */ modulePath) as typeof import('../../src/browser/enemy-animation');
+        const app = window.__app, r = app.run!, scene = app.scene;
+        scene.tick = () => {}; r.enemies = []; r.time = 100;
+        const canvas = document.createElement('canvas'); canvas.id = 'enemy-proof';
+        canvas.width = 1200; canvas.height = kinds.length * 190 + 50;
+        canvas.style.cssText = `position:fixed;top:0;left:0;z-index:99999;width:1200px;height:${canvas.height}px`;
+        document.body.append(canvas); const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = '#eee5ce'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const seen: string[] = [];
+        kinds.forEach((kind, row) => {
+            const e = r.spawn((kind === 'boss-berserk' ? 'boss' : kind) as import('../../src/game/catalog/enemies').EnemyKind, { x: 600, y: 600 })!;
+            e.born = 0;
+            for (let col = 0; col < 8; col++) {
+                e.attackPose = col === 4 || col === 5 ? { start: 99, impact: col === 4 ? 101 : 100, end: 102, angle: 0 } : undefined;
+                e.hurtAt = col === 6 ? 100 : -Infinity;
+                const p = enemyPose(e, 100, col, col < 4, kind === 'boss-berserk', col === 7 ? .3 : undefined);
+                const frame = scene.textures.get(p.sheet).get(p.frame);
+                seen.push(`${kind}:${p.state}`);
+                const x = 75 + col * 150, y = 210 + row * 190;
+                ctx.fillStyle = '#253449'; ctx.font = '11px Arial'; ctx.fillText(`${kind} / ${p.state}`, x - 70, y - 157);
+                ctx.save(); ctx.translate(x, y);
+                const scale = Math.min(p.scale * 1.5, 125 / frame.width, 140 / frame.height);
+                ctx.scale(scale, scale);
+                ctx.drawImage(frame.source.image as HTMLImageElement, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight,
+                    -frame.width * p.originX, -frame.height * p.originY, frame.width, frame.height);
+                ctx.restore();
+            }
+        });
+        return seen;
+    }, kinds);
+    expect(result).toHaveLength(kinds.length * 8);
+    for (const kind of kinds) for (const state of ['windup','impact','hurt','death']) expect(result).toContain(`${kind}:${state}`);
+    await page.locator('#enemy-proof').screenshot({ path: `test-results/enemy-atlas-${group}.png` });
+});
+
+test('enemy attack, pause, death and boss berserk render in the arena', async ({ page }) => {
+    const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+    await start(page);
+    const id = await page.evaluate(() => {
+        const app = window.__app, r = app.run!; app.scene.tick = () => {};
+        r.enemies = []; r.time = 1081; r.wave = 5;
+        const boss = r.spawn('boss', { x: 724, y: 510 })!; boss.born = 0;
+        boss.attackPose = { start: 1081, impact: 1082, end: 1082.4, angle: Math.PI };
+        r.addArea({ x: boss.x, y: boss.y, radius: 200, damage: 35, hostile: true, shape: 'cone', angle: Math.PI, at: 1082, end: 1082.15, source: boss.id });
+        app.scene.update(0, 16); return boss.id;
+    });
+    const pose = () => page.evaluate(id => {
+        const image = window.__app.scene.children.getByName(`enemy-${id}`) as import('phaser').GameObjects.Image;
+        return image ? { state: image.getData('pose'), frame: image.frame.name, flip: image.flipX } : null;
+    }, id);
+    expect(await pose()).toMatchObject({ state: 'windup', frame: 'boss-berserk:4', flip: true });
+    await page.screenshot({ path: 'test-results/boss-berserk-windup.png' });
+    await page.evaluate(() => { window.__app.run!.mode = 'paused'; });
+    await page.waitForTimeout(200); expect((await pose())!.state).toBe('windup');
+    await page.evaluate(() => { const r = window.__app.run!; r.mode = 'playing'; r.time = 1082; });
+    await expect.poll(async () => (await pose())!.state).toBe('impact');
+    await page.screenshot({ path: 'test-results/boss-berserk-impact.png' });
+    await page.evaluate(() => { const r = window.__app.run!; r.kill(r.boss!); window.__app.scene.update(0, 10); });
+    expect((await pose())!.state).toBe('death');
+    expect(await page.evaluate(() => window.__app.run!.enemies.length)).toBe(0);
+    await expect.poll(pose).toBe(null);
+    expect(errors).toEqual([]);
+});

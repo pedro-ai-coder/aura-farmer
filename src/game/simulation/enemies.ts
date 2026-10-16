@@ -1,6 +1,12 @@
 import { ENEMIES } from '../catalog/enemies';
 import { angleDelta, clearLine, direction, distance, move, spawnPoint } from './world';
 import type { Run } from './run';
+import type { Enemy } from './types';
+/** Presentation cue only: deadlines are taken from the actual attack, never drive damage. */
+export function cueEnemyAttack(e: Enemy, now: number, impact: number, angle: number, duration = .18) {
+    if (e.attackPose && e.attackPose.impact > now && e.attackPose.impact < impact) return;
+    e.attackPose = { start: now, impact, end: impact + duration + .22, angle };
+}
 export function updateEnemies(r: Run, dt: number) {
     for (const e of [...r.enemies]) {
         if (r.mode !== 'playing') break;
@@ -41,12 +47,17 @@ export function updateEnemies(r: Run, dt: number) {
         if (distance(e, r.pos) < e.radius + 16 && r.time >= e.contactAt) {
             e.contactAt = r.time + (d.boss ? 1 : .75);
             const mainActive = r.areas.some(a => a.source === e.id && a.hostile && Math.abs(a.at - r.time) < .05);
-            if (!mainActive)
+            if (!mainActive) {
+                if (!e.attackPose || e.attackPose.end <= r.time) cueEnemyAttack(e, r.time, r.time, aim);
                 r.hurt(e.damage * (e.kind === 'boss' ? r.bossDamageMultiplier : 1), e, true);
+            }
         }
         if (r.mode !== 'playing') break;
         const damage = e.damage * (e.kind === 'boss' ? r.bossDamageMultiplier : 1);
-        const area = (delay: number, radius: number, value: number, shape: 'circle' | 'cone' | 'line' | 'ring' = 'circle', duration = .15, point = { x: e.x, y: e.y }, angle = aim, label = d.name) => r.addArea({ ...point, radius, damage: value, shape, width: 60, angle, arc: Math.PI * 2 / 3, at: r.time + delay, end: r.time + delay + duration, nextTick: r.time + delay, hostile: true, source: e.id, label });
+        const area = (delay: number, radius: number, value: number, shape: 'circle' | 'cone' | 'line' | 'ring' = 'circle', duration = .15, point = { x: e.x, y: e.y }, angle = aim, label = d.name) => {
+            cueEnemyAttack(e, r.time, r.time + delay, angle);
+            return r.addArea({ ...point, radius, damage: value, shape, width: 60, angle, arc: Math.PI * 2 / 3, at: r.time + delay, end: r.time + delay + duration, nextTick: r.time + delay, hostile: true, source: e.id, label });
+        };
         const projectile = (delay: number, value = damage) => {
             // A visible locked aim telegraph resolves into a projectile at the exact deadline.
             const key = 'shot' + e.id;
@@ -58,6 +69,7 @@ export function updateEnemies(r: Run, dt: number) {
                 return false;
             }
             if (r.time >= r.timers[key]) {
+                cueEnemyAttack(e, r.time, r.time, r.timers[key + 'angle']);
                 r.shots.push({ x: e.x, y: e.y, id: r.nextId++, angle: r.timers[key + 'angle'], speed: e.kind === 'ping-sniper' ? 450 : 180, remaining: 800, damage: value, radius: 7, hostile: true, source: e.id, weapon: '', activation: 0, pierce: 1, hit: [], primary: false });
                 delete r.timers[key];
                 return true;
@@ -115,6 +127,7 @@ export function updateEnemies(r: Run, dt: number) {
                 else {
                     delete r.timers[key];
                     e.chargeUntil = r.time + 280 / 320;
+                    cueEnemyAttack(e, r.time, r.time, e.chargeAngle, 280 / 320);
                     e.nextAttack = r.time + (e.kind === 'ratio-ram' ? 5 : ((e.phase++ % 3) < 2 ? 1.7 : 5.6));
                 }
                 break;
@@ -124,6 +137,7 @@ export function updateEnemies(r: Run, dt: number) {
                 e.nextAttack = r.time + 6;
                 break;
             case 'hype-bot': {
+                cueEnemyAttack(e, r.time, r.time, aim);
                 for (const ally of r.enemies.filter(a => a.id !== e.id && !ENEMIES[a.kind].boss && distance(e, a) < 160).slice(0, 3)) {
                     ally.shield = ally.maxHp * .15;
                     ally.shieldUntil = r.time + 4;
@@ -132,6 +146,7 @@ export function updateEnemies(r: Run, dt: number) {
                 break;
             }
             case 'comment-mod':
+                cueEnemyAttack(e, r.time, r.time, aim);
                 for (const ally of r.enemies.filter(a => !ENEMIES[a.kind].boss && a.kind !== 'comment-mod' && distance(e, a) < 180).slice(0, 3))
                     ally.hp = Math.min(ally.maxHp, ally.hp + ally.maxHp * .08);
                 e.nextAttack = r.time + 8;
@@ -176,10 +191,12 @@ export function updateEnemies(r: Run, dt: number) {
                     if (r.counters.bossRingPhase)
                         area(1.8, 280, 25 * r.bossDamageMultiplier, 'ring', 1.5, undefined, aim, 'SECOND RING');
                 }
-                if (slot === 3)
+                if (slot === 3) {
+                    cueEnemyAttack(e, r.time, r.time, aim);
                     for (const kind of ['npc', 'npc', 'npc', 'npc', 'hype-bot'] as const)
                         if (r.enemies.filter(a => r.counters['add:' + a.id]).length < 8)
                             r.spawn(kind, undefined, false, true);
+                }
                 break;
             }
             default: e.nextAttack = r.time + 1;

@@ -29,6 +29,8 @@ export class Run {
     flexTarget = 0;
     flexCount = 0;
     enemies: Enemy[] = [];
+    /** Bounded presentation snapshots; never targetable and never persisted. */
+    defeatedEnemies: { enemy: Enemy; at: number; berserk: boolean }[] = [];
     shots: Projectile[] = [];
     areas: Area[] = [];
     drops: Drop[] = [];
@@ -220,7 +222,7 @@ export class Run {
         if (!p)
             return;
         const d = ENEMIES[kind], scale = d.boss || kind === 'terminal' ? 1 : WAVES[this.wave - 1].hp * (elite ? 2.5 : 1);
-        const e: Enemy = { ...p, id: this.nextId++, kind, hp: d.hp * scale, maxHp: d.hp * scale, damage: d.damage * (d.boss ? 1 : WAVES[this.wave - 1].damage) * (elite ? 1.3 : 1), radius: d.radius * (elite ? 1.2 : 1), elite, born: this.time + .8, nextAttack: this.time + 2, nextAux: this.time + (kind === 'reply-guy' ? 12 : kind === 'mod-supremo' ? 10 : kind === 'doomscroll-prime' ? 7 : 8), contactAt: 0, angle: direction(p, this.pos), slow: 0, slowUntil: 0, weaken: 0, weakenUntil: 0, shield: 0, shieldUntil: 0, phase: 0, stagger: 0, staggerUntil: 0, staggerLocked: 0, staggerWindow: 0, staggerAdded: 0, regenAt: BOSS_START + BERSERK_AFTER + 1, chargeUntil: 0, chargeAngle: 0 };
+        const e: Enemy = { ...p, id: this.nextId++, kind, hurtAt: -Infinity, hp: d.hp * scale, maxHp: d.hp * scale, damage: d.damage * (d.boss ? 1 : WAVES[this.wave - 1].damage) * (elite ? 1.3 : 1), radius: d.radius * (elite ? 1.2 : 1), elite, born: this.time + .8, nextAttack: this.time + 2, nextAux: this.time + (kind === 'reply-guy' ? 12 : kind === 'mod-supremo' ? 10 : kind === 'doomscroll-prime' ? 7 : 8), contactAt: 0, angle: direction(p, this.pos), slow: 0, slowUntil: 0, weaken: 0, weakenUntil: 0, shield: 0, shieldUntil: 0, phase: 0, stagger: 0, staggerUntil: 0, staggerLocked: 0, staggerWindow: 0, staggerAdded: 0, regenAt: BOSS_START + BERSERK_AFTER + 1, chargeUntil: 0, chargeAngle: 0 };
         if (add)
             this.counters['add:' + e.id] = 1;
         if (elite)
@@ -279,6 +281,7 @@ export class Run {
             damage -= block;
         }
         e.hp -= damage;
+        if (raw > 0) e.hurtAt = this.time;
         if (e.kind === 'boss') {
             if (e.hp <= e.maxHp * .7) this.counters.bossRingPhase = 1;
             if (e.hp <= e.maxHp * .35) this.counters.bossBeamPhase = 1;
@@ -340,6 +343,8 @@ export class Run {
     kill(e: Enemy) {
         if (!this.enemies.includes(e))
             return;
+        this.defeatedEnemies.push({ enemy: { ...e }, at: this.time, berserk: e.kind === 'boss' && this.berserk });
+        this.defeatedEnemies = this.defeatedEnemies.filter(d => this.time - d.at < 1).slice(-64);
         this.enemies = this.enemies.filter(x => x.id !== e.id);
         this.kills++;
         if (e.kind === 'boss') {

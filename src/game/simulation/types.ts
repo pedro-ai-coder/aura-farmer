@@ -3,6 +3,8 @@ import type { Point } from './world';
 export interface Enemy extends Point {
     id: number;
     kind: EnemyKind;
+    hurtAt: number;
+    attackPose?: { start: number; impact: number; end: number; angle: number };
     hp: number;
     maxHp: number;
     damage: number;

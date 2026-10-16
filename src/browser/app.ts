@@ -216,10 +216,10 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
-            const before = this.run.mode, previousMessage = this.run.message;
+            const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')), y: Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')), aim: this.aim, manual: this.manual });
-            if (this.run.message !== previousMessage)
-                this.audio.play('warning');
+            if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
+            else if (this.run.message !== previousMessage) this.audio.play('warning');
             if (this.run.mode !== before) {
                 this.keys.clear();
                 this.selectedChoice = -1;
