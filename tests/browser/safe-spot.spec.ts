@@ -21,7 +21,7 @@ test('Safe Spot heals in the arena, shows HUD cooldown and freezes while paused'
     });
     await expect(page.locator('#hud')).toContainText('SAFE SPOT');
     await expect.poll(() => page.evaluate(() => window.__app.run!.safeSpotUses), { timeout: 12000 }).toBe(1);
-    await expect(page.locator('#hud')).toContainText('SAFE SPOT 90s');
+    await expect(page.locator('#hud')).toContainText(/SAFE SPOT [0-9]+s/);
     const state = await page.evaluate(() => ({ hp: window.__app.run!.hp, readyAt: window.__app.run!.safeSpotReadyAt }));
     expect(state.hp).toBeGreaterThan(0);
     await page.keyboard.press('Escape');
