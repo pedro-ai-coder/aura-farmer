@@ -142,10 +142,16 @@ export class BrowserScene extends Phaser.Scene {
             g.strokeCircle(r.timers.wifiX, r.timers.wifiY, 160);
         }
         for (const d of r.drops) {
-            g.fillStyle(0x253449);
-            g.fillCircle(d.x, d.y, 7);
-            g.fillStyle(0x63d4c4);
-            g.fillTriangle(d.x, d.y - 6, d.x - 5, d.y + 4, d.x + 5, d.y + 4);
+            // Bright diamond silhouette and dark halo remain legible on sandy ground.
+            g.fillStyle(0x253449, .9);
+            g.fillCircle(d.x, d.y, 11);
+            g.lineStyle(2, 0xfff6df, .95);
+            g.strokeCircle(d.x, d.y, 10);
+            g.fillStyle(0x3ee6d2);
+            g.fillTriangle(d.x, d.y - 9, d.x - 8, d.y, d.x + 8, d.y);
+            g.fillTriangle(d.x - 8, d.y, d.x + 8, d.y, d.x, d.y + 10);
+            g.fillStyle(0xffffff, .95);
+            g.fillCircle(d.x - 2, d.y - 3, 2);
         }
         for (const a of r.areas)
             this.drawArea(a, r, g);
