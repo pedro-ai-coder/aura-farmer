@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview --host 0.0.0.0",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "assets:inventory": "node scripts/asset-inventory.mjs",
+    "validate:local": "node scripts/validate-local.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0"
