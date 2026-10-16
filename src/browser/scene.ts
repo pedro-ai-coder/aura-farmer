@@ -142,17 +142,23 @@ export class BrowserScene extends Phaser.Scene {
             g.strokeCircle(r.timers.wifiX, r.timers.wifiY, 160);
         }
         for (const d of r.drops) {
-            g.fillStyle(0x253449);
-            g.fillCircle(d.x, d.y, 7);
-            g.fillStyle(0x63d4c4);
-            g.fillTriangle(d.x, d.y - 6, d.x - 5, d.y + 4, d.x + 5, d.y + 4);
+            // Bright diamond silhouette and dark halo remain legible on sandy ground.
+            g.fillStyle(0x253449, .9);
+            g.fillCircle(d.x, d.y, 11);
+            g.lineStyle(2, 0xfff6df, .95);
+            g.strokeCircle(d.x, d.y, 10);
+            g.fillStyle(0x3ee6d2);
+            g.fillTriangle(d.x, d.y - 9, d.x - 8, d.y, d.x + 8, d.y);
+            g.fillTriangle(d.x - 8, d.y, d.x + 8, d.y, d.x, d.y + 10);
+            g.fillStyle(0xffffff, .95);
+            g.fillCircle(d.x - 2, d.y - 3, 2);
         }
         for (const a of r.areas)
             this.drawArea(a, r, g);
         for (const s of r.shots) {
-            f.lineStyle(s.weapon === 'no-cap' ? 12 : s.hostile ? 5 : 4, s.hostile ? 0xe57461 : 0xf8c45f, 1);
+            f.lineStyle(s.weapon === 'no-cap' ? 12 : s.hostile ? 7 : 5, s.hostile ? 0xd83e4b : 0xf8c45f, 1);
             f.lineBetween(s.x - Math.cos(s.angle) * 16, s.y - Math.sin(s.angle) * 16, s.x, s.y);
-            f.fillStyle(s.hostile ? 0xfff0e8 : 0xfff7cf);
+            f.fillStyle(s.hostile ? 0xff7280 : 0xfff7cf);
             f.fillCircle(s.x, s.y, s.hostile ? 5 : 3);
         }
         for (const label of this.labels)
