@@ -142,6 +142,28 @@ export class BrowserScene extends Phaser.Scene {
             g.strokeCircle(r.timers.wifiX, r.timers.wifiY, 160);
         }
         for (const d of r.drops) {
+            if (d.kind === 'snack' || d.kind === 'magnet') {
+                const magnet = d.kind === 'magnet';
+                const color = magnet ? 0x9c79fa : 0x79e4a3;
+                g.fillStyle(0x253449, .95);
+                g.fillCircle(d.x, d.y, 17);
+                g.lineStyle(3, color, 1);
+                g.strokeCircle(d.x, d.y, 15);
+                if (magnet) {
+                    g.lineStyle(5, 0xffe4a4, 1);
+                    g.beginPath();
+                    g.arc(d.x, d.y, 9, 0, Math.PI, false);
+                    g.strokePath();
+                    g.fillStyle(0xffe4a4);
+                    g.fillRect(d.x - 11, d.y - 1, 5, 6);
+                    g.fillRect(d.x + 6, d.y - 1, 5, 6);
+                } else {
+                    g.fillStyle(color);
+                    g.fillRect(d.x - 3, d.y - 10, 6, 20);
+                    g.fillRect(d.x - 10, d.y - 3, 20, 6);
+                }
+                continue;
+            }
             // Bright diamond silhouette and dark halo remain legible on sandy ground.
             g.fillStyle(0x253449, .9);
             g.fillCircle(d.x, d.y, 11);
