@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { HeroAnimator, heroPose } from '../src/browser/hero-animation';
 import frames from '../src/browser/hero-frames.json';
+import flexFrames from '../src/browser/hero-flex-frames.json';
 import rear from '../src/browser/hero-rear-frames.json';
 import { Run } from '../src/game/simulation/run';
 const heroes = ['sigma', 'cool-kid', 'alpha'] as const;
@@ -34,13 +35,13 @@ describe('authored hero pose playback', () => {
             }
         });
         it(`${id}: Flex has entry, sustained playback and recovery without a frozen final pose`, () => {
-            const r = new Run(id); r.flexUntil = r.hero.duration;
+            const r = new Run(id); r.flexUntil = r.hero.duration; r.moving = true;
             r.time = 0; expect(heroPose(r).state).toBe('flex-in');
             const seen = new Set<number>();
             for (let t = 0; t < r.hero.duration; t += .05) { r.time = t; seen.add(heroPose(r).frame); }
             expect(seen.size).toBeGreaterThanOrEqual(6);
             r.time = r.hero.duration - .05; expect(heroPose(r).state).toBe('flex-out');
-            r.time = r.hero.duration; expect(heroPose(r).state).toBe('idle');
+            r.time = r.hero.duration; r.moving = false; expect(heroPose(r).state).toBe('idle');
         });
         it(`${id}: death sequence advances while simulation remains stopped and resets on a new run`, () => {
             const animator = new HeroAnimator(), r = new Run(id); r.mode = 'lost'; r.time = 10;
@@ -66,6 +67,20 @@ describe('authored hero pose playback', () => {
         }
         const r = new Run('sigma'); r.moving = true; r.movementFacing = -3 * Math.PI / 4;
         expect(heroPose(r).flip).toBe(true);
+    });
+    it('loads eight distinct padded transformation frames fully inside the new PNG', () => {
+        const png = readFileSync('public/assets/runtime/cool-kid-flex-v2.png');
+        expect(flexFrames).toHaveLength(8);
+        for (const [x, y, w, h] of flexFrames) {
+            expect(x).toBeGreaterThanOrEqual(0); expect(y).toBeGreaterThanOrEqual(0);
+            expect(x + w).toBeLessThanOrEqual(png.readUInt32BE(16));
+            expect(y + h).toBeLessThanOrEqual(png.readUInt32BE(20));
+        }
+    });
+    it('keeps Cool Kid transformed when hurt and restores normal art after Flex', () => {
+        const r = new Run('cool-kid'); r.time = 2; r.flexUntil = 5; r.timers.hurtUntil = 2.1;
+        expect(heroPose(r)).toMatchObject({ sheet: 'flex-v2', frame: 6, state: 'hurt' });
+        r.time = 5; expect(heroPose(r).sheet).toBe('atlas');
     });
     it('synchronizes Alpha impact poses with the three real slam times, never every animation loop', () => {
         const r = new Run('alpha'); r.flexUntil = 6;

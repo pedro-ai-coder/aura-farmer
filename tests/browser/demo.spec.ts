@@ -179,11 +179,11 @@ for (const hero of ['sigma', 'cool-kid', 'alpha'] as const)
             scene.tick = () => {}; // Presentation fixture: no combat or random damage during captures.
             const image = scene.children.getByName('hero') as import('phaser').GameObjects.Image;
             const canvas = document.createElement('canvas');
-            canvas.id = 'animation-proof'; canvas.width = 960; canvas.height = 960;
-            canvas.style.cssText = 'position:fixed;inset:0;z-index:99999;width:960px;height:960px';
+            canvas.id = 'animation-proof'; canvas.width = 960; canvas.height = 1100;
+            canvas.style.cssText = 'position:fixed;inset:0;z-index:99999;width:960px;height:1100px';
             document.body.append(canvas);
             const ctx = canvas.getContext('2d')!;
-            ctx.fillStyle = '#eee5ce'; ctx.fillRect(0, 0, 960, 960);
+            ctx.fillStyle = '#eee5ce'; ctx.fillRect(0, 0, 960, 1100);
             ctx.fillStyle = '#253449'; ctx.font = 'bold 20px Arial';
             ctx.fillText(`${r.hero.name} — runtime poses / 1.5× game scale`, 20, 28);
             const labels = ['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'];
@@ -192,9 +192,9 @@ for (const hero of ['sigma', 'cool-kid', 'alpha'] as const)
                 scene.update(0, 100);
                 const frame = image.frame, p = image.getData('pose');
                 seen.push(`${p.sheet}:${p.frame}`);
-                const x = 25 + col * 116, y = 60 + row * 145;
+                const x = 25 + col * 116, y = 60 + row * 165;
                 ctx.fillStyle = '#253449'; ctx.font = '12px Arial'; ctx.fillText(label, x, y);
-                ctx.save(); ctx.translate(x + 46, y + 112);
+                ctx.save(); ctx.translate(x + 46, y + 140);
                 ctx.scale(image.scaleX * 1.5 * (image.flipX ? -1 : 1), image.scaleY * 1.5);
                 ctx.drawImage(frame.source.image as HTMLImageElement, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight,
                     -frame.width / 2, -frame.height, frame.width, frame.height);
@@ -208,15 +208,17 @@ for (const hero of ['sigma', 'cool-kid', 'alpha'] as const)
                     capture(dir, step, `${labels[dir]} · ${step + 1}`);
                 }
             }
-            r.moving = false; r.flexUntil = 20 + r.hero.duration;
+            r.moving = true; r.flexUntil = 20 + r.hero.duration;
             for (let step = 0; step < 8; step++) {
                 r.time = step === 7 ? r.flexUntil - .05 : 20 + [0, .15, .3, .45, 1.8, 1.95, 2][step];
+                r.pos.x += r.hero.speed / 11.25 + .01;
                 capture(step, 4, `Flex ${Math.round((r.time - 20) * 100) / 100}s`);
             }
             r.flexUntil = 0; r.mode = 'lost';
             for (let step = 0; step < 8; step++) capture(step, 5, `Defeat ${step}`);
             return { final: image.getData('pose'), frames: seen };
         });
+        if (hero === 'cool-kid') expect(result.frames.some(f => f.startsWith('flex-v2:'))).toBe(true);
         expect(result.final.frame).toBe(hero === 'cool-kid' ? 32 : 40);
         if (hero !== 'sigma') expect(result.frames.some(f => f.startsWith('rear-v2:'))).toBe(true);
         await page.locator('#animation-proof').screenshot({ path: `test-results/animation-${hero}.png` });

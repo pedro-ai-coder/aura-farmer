@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import heroFrames from './hero-frames.json';
+import flexFrames from './hero-flex-frames.json';
 import rearFrames from './hero-rear-frames.json';
 import { HeroAnimator } from './hero-animation';
 import { HEROES } from '../game/catalog/content';
@@ -29,6 +30,7 @@ export class BrowserScene extends Phaser.Scene {
             this.load.image(hero.id + '-atlas', `/assets/runtime/${hero.id}-atlas.png`);
             if (hero.id !== 'sigma') this.load.image(hero.id + '-rear-v2', `/assets/runtime/${hero.id}-rear-v2.png`);
         }
+        this.load.image('cool-kid-flex-v2', '/assets/runtime/cool-kid-flex-v2.png');
         this.load.image('npc', ROOT + 'enemies/phone-guy.png');
         this.load.image('hater', ROOT + 'enemies/hater.png');
         this.load.image('boss', ROOT + 'enemies/big-hater.png');
@@ -51,6 +53,7 @@ export class BrowserScene extends Phaser.Scene {
             const texture = this.textures.get(id + '-rear-v2');
             rearFrames[id].forEach(([x, y, w, h], i) => texture.add(i, 0, x, y, w, h));
         }
+        flexFrames.forEach(([x, y, w, h], i) => this.textures.get('cool-kid-flex-v2').add(i, 0, x, y, w, h));
         const texture = this.textures.get('enemy-atlas'), source = texture.getSourceImage() as HTMLImageElement;
         for (let row = 0; row < 4; row++)
             for (let col = 0; col < 4; col++)
