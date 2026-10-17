@@ -586,9 +586,12 @@ export class Run {
                 const pool = (Object.keys(ENEMIES) as EnemyKind[]).filter(k => !ENEMIES[k].boss && k !== 'terminal' && ENEMIES[k].wave <= this.wave && (k !== 'hater' || this.time >= 90));
                 // The first-wave roster has only two kinds: choosing each equally
                 // created an oppressive ranged-projectile swarm after 1:30.
-                // Keep Hater introductions readable while preserving spawn and XP budgets.
+                // Keep ranged threats a minority in waves one and two without changing spawn or XP budgets.
                 const spawnPool: EnemyKind[] = this.wave === 1 && this.time >= 90
-                    ? ['npc', 'npc', 'npc', 'npc', 'hater'] : pool;
+                    ? ['npc', 'npc', 'npc', 'npc', 'npc', 'npc', 'npc', 'hater']
+                    : this.wave === 2
+                        ? [...pool.filter(k => k !== 'hater'), ...pool.filter(k => k !== 'hater'), 'hater']
+                        : pool;
                 this.spawn(spawnPool[Math.floor(this.random() * spawnPool.length)], undefined, this.wave >= 3 && this.enemies.filter(e => e.elite).length < 2 && this.random() < .07);
             }
         }
