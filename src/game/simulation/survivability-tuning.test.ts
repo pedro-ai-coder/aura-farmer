@@ -17,7 +17,7 @@ describe('phase 4.16: opening-wave survival tuning', () => {
     });
 
     it('preserves enemy HP, XP, event timings, full-run length and boss berserk', () => {
-        expect(ENEMIES.npc).toMatchObject({ hp: 35, xp: 5, damage: 8 });
+        expect(ENEMIES.npc).toMatchObject({ hp: 35, xp: 5, damage: 5.5 });
         expect(ENEMIES['reply-guy']).toMatchObject({ hp: 1400, xp: 120, damage: 14 });
         expect(EVENTS).toEqual([
             { at: 195, kind: 'reply-guy' },
@@ -37,9 +37,9 @@ describe('phase 4.16: opening-wave survival tuning', () => {
             const firstMob = first.spawn('npc', { x: 850, y: 600 });
             expect(firstMob).toBeDefined();
             expect(firstMob!.hp).toBe(35);
-            expect(firstMob!.damage).toBeCloseTo(8 * .8);
+            expect(firstMob!.damage).toBeCloseTo(5.5 * .8);
             first.hurt(firstMob!.damage, firstMob);
-            expect(first.damageTaken).toBeCloseTo(8 * .8 * (1 - hero.resistance));
+            expect(first.damageTaken).toBeCloseTo(5.5 * .8 * (1 - hero.resistance));
 
             const second = new Run(hero.id, 41601);
             second.wave = 2;
@@ -47,16 +47,16 @@ describe('phase 4.16: opening-wave survival tuning', () => {
             const secondMob = second.spawn('npc', { x: 850, y: 600 });
             expect(secondMob).toBeDefined();
             expect(secondMob!.hp).toBeCloseTo(35 * 1.3);
-            expect(secondMob!.damage).toBeCloseTo(8 * .88);
+            expect(secondMob!.damage).toBeCloseTo(5.5 * .88);
             second.hurt(secondMob!.damage, secondMob);
-            expect(second.damageTaken).toBeCloseTo(8 * .88 * (1 - hero.resistance));
+            expect(second.damageTaken).toBeCloseTo(5.5 * .88 * (1 - hero.resistance));
 
             const replyGuy = second.spawn('reply-guy', { x: 850, y: 700 });
             expect(replyGuy).toBeDefined();
             expect(replyGuy!.hp).toBe(1400);
             expect(replyGuy!.damage).toBe(14);
             second.hurt(replyGuy!.damage, replyGuy);
-            expect(second.damageTaken).toBeCloseTo((8 * .88 + 14) * (1 - hero.resistance));
+            expect(second.damageTaken).toBeCloseTo((5.5 * .88 + 14) * (1 - hero.resistance));
         });
     }
 });
