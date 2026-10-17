@@ -514,7 +514,7 @@ export class Run {
             this.drops = this.drops.filter(d => d.id !== drop.id);
             if (drop.kind === 'snack') {
                 this.heal(this.maxHp * .18);
-                this.announce('SNACK DE RUA · HP RESTORED');
+                this.announce('AURA SNACK · HP RESTORED');
             } else if (drop.kind === 'magnet') {
                 // Consume existing crystals exactly once, preserving their XP values.
                 const xp = this.drops.reduce((sum, d) => sum + (d.kind ? 0 : d.xp), 0);
