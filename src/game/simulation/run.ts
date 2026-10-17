@@ -522,7 +522,10 @@ export class Run {
         this.resolveAreas();
         if (this.mode !== 'playing') return;
         for (const drop of [...this.drops]) {
-            if (!this.drops.some(d => d.id === drop.id) || distance(drop, this.pos) >= 38) continue;
+            // Special pickups have a slightly larger proximity radius than XP
+            // crystals so their rare utility is practical during a crowded wave.
+            const pickupRadius = drop.kind === 'magnet' ? 72 : drop.kind === 'snack' ? 56 : 38;
+            if (!this.drops.some(d => d.id === drop.id) || distance(drop, this.pos) >= pickupRadius) continue;
             this.drops = this.drops.filter(d => d.id !== drop.id);
             if (drop.kind === 'snack') {
                 this.counters.snacksCollected = (this.counters.snacksCollected ?? 0) + 1;
