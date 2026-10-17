@@ -371,12 +371,24 @@ export class Run {
         }
         if (!this.counters['add:' + e.id]) {
             this.drops.push({ x: e.x, y: e.y, id: this.nextId++, xp: e.elite ? 60 : ENEMIES[e.kind].xp });
-            // Seeded, bounded special drops; elite rivals offer a higher reward chance.
+            // Distinct rare drops: recovery is more common than the XP magnet.
+            // Use one seeded roll per kill, with improved elite odds.
             const roll = this.random();
-            const special = roll < (e.elite ? .12 : .018) ? 'snack'
-                : roll < (e.elite ? .145 : .021) ? 'magnet' : undefined;
-            if (special && this.drops.filter(d => d.kind === special).length < 2)
+            const snackChance = e.elite ? .2 : .05;
+            const magnetChance = e.elite ? .08 : .02;
+            const special = roll < snackChance ? 'snack'
+                : roll < snackChance + magnetChance ? 'magnet' : undefined;
+            if (special) {
+                // Previously two uncollected drops anywhere in the world could
+                // suppress this kind forever. Recycle only the oldest special
+                // pickup; never remove XP crystals or change the XP budget.
+                const existing = this.drops.filter(d => d.kind === special);
+                if (existing.length >= 5)
+                    this.drops = this.drops.filter(d => d.id !== existing[0].id);
                 this.drops.push({ x: e.x + 18, y: e.y - 12, id: this.nextId++, xp: 0, kind: special });
+                const key = special === 'snack' ? 'snacksSpawned' : 'magnetsSpawned';
+                this.counters[key] = (this.counters[key] ?? 0) + 1;
+            }
         }
         if (e.kind === 'hype-bot' && this.boss)
             this.timers.bossExposed = this.time + 3;
@@ -513,9 +525,11 @@ export class Run {
             if (!this.drops.some(d => d.id === drop.id) || distance(drop, this.pos) >= 38) continue;
             this.drops = this.drops.filter(d => d.id !== drop.id);
             if (drop.kind === 'snack') {
+                this.counters.snacksCollected = (this.counters.snacksCollected ?? 0) + 1;
                 this.heal(this.maxHp * .18);
                 this.announce('AURA SNACK · HP RESTORED');
             } else if (drop.kind === 'magnet') {
+                this.counters.magnetsCollected = (this.counters.magnetsCollected ?? 0) + 1;
                 // Consume existing crystals exactly once, preserving their XP values.
                 const xp = this.drops.reduce((sum, d) => sum + (d.kind ? 0 : d.xp), 0);
                 this.drops = this.drops.filter(d => d.kind);
