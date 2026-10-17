@@ -129,14 +129,14 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         milestones };
 }
 
-describe('phase 4.12: adaptive-build early-wave balance', () => {
+describe('phase 4.16: guided six-minute survival QA', () => {
     for (const hero of heroes) for (const seed of seeds) {
         it(`${hero}/${seed} survives or reports real defeat deterministically`, () => {
-            const first = simulate(hero, seed, 180);
-            const replay = simulate(hero, seed, 180);
+            const first = simulate(hero, seed, 360);
+            const replay = simulate(hero, seed, 360);
             expect(first).toEqual(replay);
             expect(first.seconds).toBeGreaterThan(0);
-            expect(first.seconds).toBeLessThanOrEqual(180.25);
+            expect(first.seconds).toBeLessThanOrEqual(360.25);
             expect(first.weapons.length).toBeLessThanOrEqual(3);
             expect(first.passives.length).toBeLessThanOrEqual(5);
             expect(first.damageTaken).toBeGreaterThanOrEqual(0);
