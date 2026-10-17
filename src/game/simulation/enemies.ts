@@ -106,7 +106,7 @@ export function updateEnemies(r: Run, dt: number) {
             case 'hater':
                 if (clearLine(e, r.pos)) {
                     if (projectile(.6))
-                        e.nextAttack = r.time + 2.4;
+                        e.nextAttack = r.time + 3;
                 }
                 else
                     e.nextAttack = r.time + .1;
