@@ -40,7 +40,15 @@ describe('phase 4: wave, boss and result regression', () => {
             run.update(1 / 60);
             const boss = run.boss;
             expect(boss).toBeDefined();
-            // Exercise actual damage/death handling rather than assigning mode directly.
+            // Resolve queued wave upgrades and the boss spawn telegraph before
+            // attempting a hit. Enemy damage is not legal while a modal is open
+            // or before its born timestamp.
+            while (run.mode === 'upgrade' || run.mode === 'legendary') {
+                if (run.mode === 'legendary') run.deferLegendary();
+                else expect(run.choose(0)).toBe(true);
+            }
+            run.time = Math.max(run.time, boss!.born);
+            expect(run.mode).toBe('playing');
             run.hitEnemy(boss!, boss!.hp + boss!.shield + 1);
             expect(run.bossDefeated).toBe(true);
             expect(run.mode).toBe('won');
