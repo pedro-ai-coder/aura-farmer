@@ -87,17 +87,23 @@ export class Inventory {
                 'thick-skin', 'built-different', 'certified-w',
                 'big-chad', 'homie-check', 'so-back',
             ]);
-            const defensive = candidates.filter(c => c.kind === 'passive' && c.item && supportIds.has(c.item.id));
-            if (defensive.length)
+            const hasDefense = this.passives.some(p => supportIds.has(p.id));
+            const defensive = candidates.filter(c => c.kind === 'passive' && c.item &&
+                supportIds.has(c.item.id) && c.action === 'new');
+            // Guarantee the opportunity to acquire defense, not a duplicate
+            // defensive upgrade on every subsequent level.
+            if (!hasDefense && defensive.length)
                 result.push(defensive[Math.floor(random() * defensive.length)]);
         }
         // Preserve an area-clear choice alongside the defensive choice in the
         // opening waves. The offer is still optional, role-legal and rarity-gated.
         if (wave <= 2 && result.length < 3) {
             const areaIds = new Set(['brainrot-feed', 'touch-grass', 'personal-space']);
+            const hasAreaWeapon = this.weapons.some(w => areaIds.has(w.id));
             const area = candidates.filter(c => c.kind === 'weapon' && c.item &&
-                areaIds.has(c.item.id) && !result.some(o => o.item?.id === c.item?.id));
-            if (area.length)
+                areaIds.has(c.item.id) && c.action === 'new' &&
+                !result.some(o => o.item?.id === c.item?.id));
+            if (!hasAreaWeapon && area.length)
                 result.push(area[Math.floor(random() * area.length)]);
         }
         const upgrades = candidates.filter(c => c.action === 'upgrade' && !result.some(o => o.item?.id === c.item?.id));
