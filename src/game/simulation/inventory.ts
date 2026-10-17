@@ -79,7 +79,19 @@ export class Inventory {
             candidates.push({ kind: 'passive', action: old ? 'upgrade' : this.passives.length === 5 ? 'replace' : 'new', item: { id: p.id, rarity: p.rarity, level: (old?.level ?? 0) + 1 } });
         }
         const result: Choice[] = [];
-        const upgrades = candidates.filter(c => c.action === 'upgrade');
+        // In early waves, keep a meaningful defensive or area-clear option in the
+        // upgrade selection. This changes offer visibility, not inventory caps,
+        // rarity eligibility, damage values, or the number of choices.
+        if (wave <= 2) {
+            const supportIds = new Set([
+                'thick-skin', 'built-different', 'certified-w',
+                'big-chad', 'homie-check', 'so-back',
+            ]);
+            const defensive = candidates.filter(c => c.kind === 'passive' && c.item && supportIds.has(c.item.id));
+            if (defensive.length)
+                result.push(defensive[Math.floor(random() * defensive.length)]);
+        }
+        const upgrades = candidates.filter(c => c.action === 'upgrade' && !result.some(o => o.item?.id === c.item?.id));
         if (upgrades.length)
             result.push(upgrades[Math.floor(random() * upgrades.length)]);
         while (result.length < 3) {
