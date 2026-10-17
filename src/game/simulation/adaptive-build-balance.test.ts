@@ -73,6 +73,19 @@ function guidedMovement(run: Run) {
 
 function simulate(hero: typeof heroes[number], seed: number, limit: number) {
     const run = new Run(hero, seed);
+    // Attribute actual HP loss to the enemy that caused it; shielded/mitigated
+    // hits contribute only the damage that reached player HP.
+    const damageBySource: Record<string, number> = {};
+    const applyHurt = run.hurt.bind(run);
+    run.hurt = (raw, source, contact = false, hazard = false) => {
+        const before = run.damageTaken;
+        applyHurt(raw, source, contact, hazard);
+        const applied = run.damageTaken - before;
+        if (applied > 0) {
+            const key = source?.kind ?? (hazard ? 'hazard' : 'unknown');
+            damageBySource[key] = (damageBySource[key] ?? 0) + applied;
+        }
+    };
     let ticks = 0;
     let selections = 0;
     const milestones: { second: number; wave: number; hp: number; level: number; weapons: number; passives: number }[] = [];
@@ -111,7 +124,9 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         damageTaken: Number(run.damageTaken.toFixed(2)), damageDealt: Number(run.damageDealt.toFixed(2)),
         healing: Number(run.healing.toFixed(2)), flex: run.flexCount, shields: Number(run.protection.toFixed(2)),
         selections, weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
-        bossDefeated: run.bossDefeated, milestones };
+        bossDefeated: run.bossDefeated,
+        damageBySource: Object.fromEntries(Object.entries(damageBySource).map(([key, value]) => [key, Number(value.toFixed(2))])),
+        milestones };
 }
 
 describe('phase 4.12: adaptive-build early-wave balance', () => {
