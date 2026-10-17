@@ -6,7 +6,7 @@ describe('Aura Snack English localization', () => {
         const run = new Run('sigma', 77100);
         run.hurt(30, undefined);
         const before = run.hp;
-        run.drops.push({ id: run.nextId++, kind: 'snack', x: run.pos.x, y: run.pos.y, value: 0 });
+        run.drops.push({ id: run.nextId++, kind: 'snack', x: run.pos.x, y: run.pos.y, xp: 0 });
         run.update(1 / 60);
         expect(run.hp).toBeGreaterThan(before);
         expect(run.message).toContain('AURA SNACK');
