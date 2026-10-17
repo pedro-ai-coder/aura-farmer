@@ -21,7 +21,7 @@ export const ENEMIES: Record<EnemyKind, EnemyDefinition> = {
     'ping-sniper': { name: 'Ping Sniper', hp: 60, speed: 40, damage: 24, xp: 12, wave: 4, radius: 16 },
     'copium-puffer': { name: 'Copium Puffer', hp: 90, speed: 45, damage: 12, xp: 12, wave: 4, radius: 21 },
     'comment-mod': { name: 'Comment Mod', hp: 100, speed: 50, damage: 10, xp: 14, wave: 5, radius: 18 },
-    'reply-guy': { name: 'Reply Guy', hp: 1400, speed: 40, damage: 18, xp: 120, wave: 2, radius: 32, boss: true },
+    'reply-guy': { name: 'Reply Guy', hp: 1400, speed: 40, damage: 14, xp: 120, wave: 2, radius: 32, boss: true },
     'mod-supremo': { name: 'Mod Supremo', hp: 3200, speed: 32, damage: 28, xp: 240, wave: 3, radius: 36, boss: true },
     'ohio-express': { name: 'Ohio Express', hp: 2800, speed: 55, damage: 22, xp: 120, wave: 4, radius: 34, boss: true },
     'doomscroll-prime': { name: 'Doomscroll Prime', hp: 5200, speed: 25, damage: 18, xp: 240, wave: 5, radius: 38, boss: true },
