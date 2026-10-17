@@ -1,0 +1,34 @@
+# Phase 4.16 — Substantial opening-wave survivability pass
+
+## Why this is different from the previous QA-only iterations
+
+Two manual playtests resulted in deaths with different heroes immediately after wave two began:
+
+| Hero | Defeat | Wave | Level |
+| --- | --- | --- | --- |
+| Cool Kid | 3:29 | 2 | 10 |
+| Sigma | 4:01 | 2 | 11 |
+
+The GDD places the Reply Guy mini-boss at **3:15**. Its cone attack, contact damage and four additional NPCs every 12 seconds overlap with the regular wave-two escalation. The early-wave defensive and area-weapon offers added in prior PRs did not directly reduce this incoming pressure.
+
+## Proposed numerical tuning
+
+| Value | Main before | This PR | Relative change |
+| --- | ---: | ---: | ---: |
+| Wave 1 enemy damage multiplier | 1.00 | 0.80 | −20% |
+| Wave 1 spawn-density multiplier | 1.00 | 0.90 | −10% |
+| Wave 2 enemy damage multiplier | 1.08 | 0.88 | −18.5% |
+| Wave 2 spawn-density multiplier | 1.12 | 1.00 | −10.7% |
+| Reply Guy base/contact/cone damage | 18 | 14 | −22.2% |
+
+Wave two remains more dangerous than wave one. Wave-two mob HP remains 1.30×; all rarity probabilities, XP, weapons, passives, shield rules, Flex mechanics and hero starting stats remain unchanged. Reply Guy still spawns at 3:15 with 1,400 HP, spawns four NPCs every 12 seconds, and retains its attack cadence. Waves 3–5, their event schedules and the Big Hater are unaffected.
+
+## Required evidence before merge
+
+1. Confirm TypeScript, Vitest, build, Playwright and Vercel on the final commit.
+2. Run PR #79's nine full-length adaptive attempts on both main and this branch; report actual deaths, survival times, wave reach, XP, damage and boss outcomes. Run `AURA_ADAPTIVE_FULL_QA=1 npm test -- adaptive-build-balance.test.ts` separately; normal CI does not execute that optional suite.
+3. Run manual game sessions with Sigma, Cool Kid and Alpha Chad, including the Reply Guy event, shield pickups, area builds and Flex. Record character, seed when available, wave reached, and why the run ended.
+4. Verify that wave three is reachable in ordinary play without making wave four, wave five or Big Hater trivial.
+5. If the change does not materially improve early survival, do not call this balanced; revise tuning based on evidence.
+
+The numbers are a **proposed gameplay adjustment for owner review**, not a claim that balance has been solved. No new mechanics, login, backend, persistence requirements or paid services are introduced.
