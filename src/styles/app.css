@@ -156,3 +156,10 @@
  #modal .equipment-slot{min-height:34px;padding:3px 7px}
  #modal .equipment-slot small{margin-top:1px}
 }
+
+/* Full-arena floating touch movement. */
+@media (pointer:coarse) {
+ #app[data-screen=playing] #touch-zone { inset:0; width:100%; height:100%; z-index:3; }
+}
+#app:fullscreen { width:100vw; height:100dvh; min-height:0; overflow:hidden; }
+#app:fullscreen #game { width:100%; height:100%; }

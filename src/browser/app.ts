@@ -159,6 +159,12 @@ export class BrowserApp {
         };
         window.addEventListener('resize', updateOrientation);
         window.addEventListener('orientationchange', updateOrientation);
+        // Fullscreen transitions can change canvas dimensions without a window resize.
+        document.addEventListener('fullscreenchange', () => {
+            updateOrientation();
+            requestAnimationFrame(() => this.alignHud());
+        });
+        window.visualViewport?.addEventListener('resize', () => this.alignHud());
         updateOrientation();
         this.render(true);
     }
@@ -210,6 +216,7 @@ export class BrowserApp {
         if (action === 'resume') {
             this.run?.resume();
             this.render(true);
+            requestAnimationFrame(() => this.alignHud());
         }
         if (action === 'pause') {
             this.run?.pause();
