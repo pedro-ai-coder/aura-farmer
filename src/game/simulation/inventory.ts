@@ -91,6 +91,15 @@ export class Inventory {
             if (defensive.length)
                 result.push(defensive[Math.floor(random() * defensive.length)]);
         }
+        // Preserve an area-clear choice alongside the defensive choice in the
+        // opening waves. The offer is still optional, role-legal and rarity-gated.
+        if (wave <= 2 && result.length < 3) {
+            const areaIds = new Set(['brainrot-feed', 'touch-grass', 'personal-space']);
+            const area = candidates.filter(c => c.kind === 'weapon' && c.item &&
+                areaIds.has(c.item.id) && !result.some(o => o.item?.id === c.item?.id));
+            if (area.length)
+                result.push(area[Math.floor(random() * area.length)]);
+        }
         const upgrades = candidates.filter(c => c.action === 'upgrade' && !result.some(o => o.item?.id === c.item?.id));
         if (upgrades.length)
             result.push(upgrades[Math.floor(random() * upgrades.length)]);
