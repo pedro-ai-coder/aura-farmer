@@ -10,7 +10,7 @@ export interface EnemyDefinition {
     boss?: boolean;
 }
 export const ENEMIES: Record<EnemyKind, EnemyDefinition> = {
-    'npc': { name: 'Phone Guy', hp: 35, speed: 75, damage: 5.5, xp: 5, wave: 1, radius: 15 },
+    'npc': { name: 'Phone Guy', hp: 35, speed: 75, damage: 8, xp: 5, wave: 1, radius: 15 },
     'hater': { name: 'Hater', hp: 50, speed: 60, damage: 10, xp: 8, wave: 1, radius: 17 },
     'reply-goblin': { name: 'Reply Goblin', hp: 25, speed: 125, damage: 6, xp: 6, wave: 2, radius: 12 },
     'beta': { name: 'Beta Bot', hp: 120, speed: 45, damage: 16, xp: 12, wave: 2, radius: 21 },
