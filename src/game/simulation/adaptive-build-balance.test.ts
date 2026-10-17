@@ -41,7 +41,13 @@ function guidedMovement(run: Run) {
     }, undefined);
     const healTarget = run.hp < run.maxHp * .6 &&
         run.time >= run.safeSpotReadyAt && distance(run.pos, run.safeSpot) < 340;
-    const target = healTarget ? run.safeSpot : closestDrop;
+    // Melee and tank heroes must close distance to ranged Haters; the previous
+    // kiting-only bot let shooters accumulate indefinitely.
+    const rangedTarget = run.hero.role === 'ranged' ? undefined :
+        run.enemies.filter(e => e.kind === 'hater' && e.born <= run.time &&
+            e.hp > 0 && distance(e, run.pos) < 420)
+            .sort((a, b) => distance(a, run.pos) - distance(b, run.pos))[0];
+    const target = healTarget ? run.safeSpot : rangedTarget ?? closestDrop;
     const phase = Math.floor(run.time / 8) % 4;
     const preferred = [
         { x: 1, y: 0 }, { x: 0, y: 1 },
@@ -60,8 +66,10 @@ function guidedMovement(run: Run) {
         const next = worldMove(run.pos, candidate.x * travel, candidate.y * travel);
         const progress = distance(run.pos, next);
         if (progress < 8) continue;
-        const threatPenalty = visible.reduce((sum, e) =>
-            sum + Math.pow(Math.max(0, 140 - distance(next, e)), 2) / 65, 0);
+        const threatPenalty = visible.reduce((sum, e) => {
+            const minimum = run.hero.role !== 'ranged' && e.kind === 'hater' ? 92 : 140;
+            return sum + Math.pow(Math.max(0, minimum - distance(next, e)), 2) / 65;
+        }, 0);
         const targetProgress = target
             ? distance(run.pos, target) - distance(next, target) : 0;
         const score = progress * .15 - threatPenalty + targetProgress * 1.6 +
