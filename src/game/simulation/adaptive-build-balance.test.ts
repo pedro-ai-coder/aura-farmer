@@ -133,6 +133,15 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         healing: Number(run.healing.toFixed(2)), flex: run.flexCount, shields: Number(run.protection.toFixed(2)),
         selections, weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
         bossDefeated: run.bossDefeated,
+        eventBossesDefeated: [...run.eventsDefeated],
+        activeEventBosses: run.enemies.filter(e => ['reply-guy', 'mod-supremo', 'ohio-express', 'doomscroll-prime'].includes(e.kind))
+            .map(e => ({ kind: e.kind, hp: Math.round(e.hp) })),
+        drops: {
+            snacksSpawned: run.counters.snacksSpawned ?? 0,
+            snacksCollected: run.counters.snacksCollected ?? 0,
+            magnetsSpawned: run.counters.magnetsSpawned ?? 0,
+            magnetsCollected: run.counters.magnetsCollected ?? 0,
+        },
         damageBySource: Object.fromEntries(Object.entries(damageBySource).map(([key, value]) => [key, Number(value.toFixed(2))])),
         milestones };
 }
