@@ -45,6 +45,29 @@ describe('phase 4.16: meaningful and reproducible special drops', () => {
         expect(elite.totalXpOnMap).toBe(500 * 60);
     });
 
+    it('lets players collect specials from farther away without changing the XP radius', () => {
+        const run = new Run('sigma', 78);
+        run.hurt(25, undefined);
+        run.drops.push({ x: run.pos.x + 50, y: run.pos.y,
+            id: run.nextId++, xp: 0, kind: 'snack' });
+        run.drops.push({ x: run.pos.x + 50, y: run.pos.y,
+            id: run.nextId++, xp: 5 });
+        const before = run.hp;
+        run.update(1 / 60);
+        expect(run.hp).toBeGreaterThan(before);
+        expect(run.counters.snacksCollected).toBe(1);
+        expect(run.drops.some(d => d.xp === 5)).toBe(true);
+
+        const magnet = new Run('sigma', 79);
+        magnet.drops.push({ x: magnet.pos.x + 65, y: magnet.pos.y,
+            id: magnet.nextId++, xp: 0, kind: 'magnet' });
+        magnet.drops.push({ x: magnet.pos.x + 140, y: magnet.pos.y,
+            id: magnet.nextId++, xp: 12 });
+        magnet.update(1 / 60);
+        expect(magnet.counters.magnetsCollected).toBe(1);
+        expect(magnet.xpCollected).toBe(12);
+    });
+
     it('Aura Snack heals and Aura Magnet collects existing XP exactly once', () => {
         const run = new Run('sigma', 31);
         run.hurt(40, undefined);
