@@ -15,6 +15,33 @@ The existing guided survival bot had **no Big Hater target**: once the regular e
 - Record actual boss HP damage, time within close attack range, and closest approach.
 - Add a separate isolated encounter regression that confirms each starter weapon can damage Big Hater via the same public combat engine. That fast-forward fixture is **not** counted as a victory or as a complete game.
 
+## First confirmed complete wins (real damage, no injected victory)
+
+On code commit `e86d83ed7003c00661b586d0ded38bb55e0fcf03`, the [nine-seed boss workflow](https://github.com/pedro-ai-coder/aura-farmer/actions/runs/39124527420) completed successfully with all 18 simulation checks green. The bot's pre-15:00 input and build policy were unchanged compared with PR #86. Only the **post-entrance movement and aim policy** changed.
+
+| Hero | Seed | Result | Time | Boss HP damage | Remaining player HP |
+| --- | ---: | --- | ---: | ---: | ---: |
+| Sigma | 47001 | Defeat — wave 4 | 10:22 | 0 | 0 |
+| Sigma | 47002 | Defeat — wave 3 | 7:24 | 0 | 0 |
+| Sigma | 47003 | Defeat — wave 5 | 13:07 | 0 | 0 |
+| Cool Kid | 47001 | Defeat — wave 3 | 7:15 | 0 | 0 |
+| Cool Kid | 47002 | Defeat — wave 3 | 6:42 | 0 | 0 |
+| Cool Kid | 47003 | Defeat — wave 5 | 12:41 | 0 | 0 |
+| Alpha Chad | 47001 | **Won** | **17:29** | **30,000** | **127.71** |
+| Alpha Chad | 47002 | **Won** | **17:20** | **30,000** | **239.18** |
+| Alpha Chad | 47003 | **Won** | **17:38** | **30,000** | **103.04** |
+
+The Alpha Chad victories occur **before** the 18:00 berserk threshold; they do not validate recovering from berserk. In the earlier PR #86 survival-only bot, Alpha reached berserk 3/3 times but did virtually no boss damage. This strongly indicates a **test player engagement problem**, not a need to cut Big Hater's approved 30,000 HP.
+
+The full-run test now also **requires at least one legitimate 30,000-HP boss defeat** in the fixed seeds. It will not pass simply because the bot survives 20 minutes. This does not prove a human can reliably win, nor does it show Sigma or Cool Kid reaching Big Hater. They remain the priority for a separately approved **hero survivability/progression balance** iteration.
+
+## Known incomplete functional acceptance
+
+- No Sigma or Cool Kid complete-run victory in these seeds.
+- No playthrough validating a victorious run *after entering* the berserk state.
+- No manual on-device playtest of Big Hater attacks, aiming, and final result screen.
+- No production damage, defensive stats or equipment numbers have been changed in this evidence-focused PR.
+
 ## Evidence and acceptance
 
 - [ ] Run the same nine hero/seed complete attempts with the updated boss-attack policy and report true wins/losses/remaining boss HP.
