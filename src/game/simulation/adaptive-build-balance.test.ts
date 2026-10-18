@@ -96,6 +96,8 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
     };
     let ticks = 0;
     let selections = 0;
+    let legendaryChoicesMade = 0;
+    let berserkObserved = false;
     const milestones: { second: number; wave: number; hp: number; level: number; weapons: number; passives: number }[] = [];
     let nextMilestone = 60;
     while (run.time < limit && run.mode !== 'lost' && run.mode !== 'won') {
@@ -115,11 +117,31 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
             if (!chosen) throw new Error(`No legal upgrade: ${hero}/${seed}`);
             continue;
         }
-        if (run.mode === 'legendary') { run.deferLegendary(); continue; }
+        if (run.mode === 'legendary') {
+            // The old test bot always deferred legendary equipment and therefore
+            // could never measure a representative late-game build or boss fight.
+            // Choose an actual legal legendary through the same public UI action.
+            const candidates = run.choices.map((choice, index) => ({ choice, index }))
+                .sort((a, b) => Number(b.choice.kind === 'passive') - Number(a.choice.kind === 'passive'));
+            let selected = false;
+            for (const { choice, index } of candidates) {
+                const replaceId = choice.action === 'replace'
+                    ? (choice.kind === 'weapon' ? run.inventory.weapons[0]?.id : run.inventory.passives[0]?.id)
+                    : undefined;
+                if (run.choose(index, replaceId)) {
+                    legendaryChoicesMade++;
+                    selected = true;
+                    break;
+                }
+            }
+            if (!selected) throw new Error(`No legal legendary: ${hero}/${seed}`);
+            continue;
+        }
         if (run.mode !== 'playing') throw new Error(`Unexpected mode: ${run.mode}`);
         const input = guidedMovement(run);
         if (run.aura >= 100) run.activateFlex();
         run.update(.25, input);
+        berserkObserved ||= run.berserk;
         if (++ticks > limit * 5 + 100) throw new Error('Simulation stalled');
         if (run.time >= nextMilestone) {
             milestones.push({ second: nextMilestone, wave: run.wave, hp: Math.round(run.hp), level: run.level,
@@ -131,8 +153,11 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         level: run.level, hp: Number(run.hp.toFixed(2)), kills: run.kills, xp: run.xpCollected,
         damageTaken: Number(run.damageTaken.toFixed(2)), damageDealt: Number(run.damageDealt.toFixed(2)),
         healing: Number(run.healing.toFixed(2)), flex: run.flexCount, shields: Number(run.protection.toFixed(2)),
-        selections, weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
-        bossDefeated: run.bossDefeated,
+        selections, legendaryChoicesMade, legendarySpent: run.inventory.legendarySpent,
+        weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
+        bossSpawned: run.counters.bossSpawned ?? 0, bossDefeated: run.bossDefeated,
+        bossHpRemaining: run.boss ? Math.round(run.boss.hp) : null,
+        berserkObserved,
         eventBossesDefeated: [...run.eventsDefeated],
         activeEventBosses: run.enemies.filter(e => ['reply-guy', 'mod-supremo', 'ohio-express', 'doomscroll-prime'].includes(e.kind))
             .map(e => ({ kind: e.kind, hp: Math.round(e.hp) })),
@@ -163,13 +188,23 @@ describe('phase 4.16: guided six-minute survival QA', () => {
     }
 });
 
-describe.skipIf(process.env.AURA_ADAPTIVE_FULL_QA !== '1')('phase 4.12: full-length adaptive builds', () => {
+describe.skipIf(process.env.AURA_ADAPTIVE_FULL_QA !== '1')('phase 4.17: complete 20-minute seeded balance and boss evidence', () => {
     for (const hero of heroes) for (const seed of seeds) {
         it(`${hero}/${seed} full attempt`, () => {
             const result = simulate(hero, seed, 1200);
             console.info('[adaptive-balance-full]', JSON.stringify(result));
             expect(result.seconds).toBeGreaterThan(0);
-            expect(['playing', 'won', 'lost']).toContain(result.outcome);
+            expect(['playing', 'upgrade', 'legendary', 'won', 'lost']).toContain(result.outcome);
+            if (result.seconds >= 900)
+                expect(result.bossSpawned).toBe(1);
+            if (result.seconds < 900)
+                expect(result.bossSpawned).toBe(0);
+            if (result.seconds > 570)
+                expect(result.legendaryChoicesMade).toBe(1);
+            if (result.bossDefeated) {
+                expect(result.outcome).toBe('won');
+                expect(result.bossSpawned).toBe(1);
+            }
             if (result.outcome === 'won') expect(result.bossDefeated).toBe(true);
         }, 120_000);
     }
