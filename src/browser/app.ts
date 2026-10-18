@@ -129,6 +129,22 @@ export class BrowserApp {
         };
         zone.addEventListener('pointerdown', event => {
             if (this.touchPointer !== null || this.run?.mode !== 'playing') return;
+            // The zone can be one frame behind the camera or viewport after
+            // mobile fullscreen/rotation. Reject touches on the blue backdrop
+            // using the actual canvas-to-world projection, not stale overlay
+            // coordinates. This also protects against a CSS/Phaser resize race.
+            this.alignTouchZone();
+            const canvas = this.game.canvas;
+            const rect = canvas.getBoundingClientRect();
+            if (!rect.width || !rect.height ||
+                event.clientX < rect.left || event.clientX >= rect.right ||
+                event.clientY < rect.top || event.clientY >= rect.bottom) return;
+            const worldPoint = this.scene.cameras.main.getWorldPoint(
+                (event.clientX - rect.left) * canvas.width / rect.width,
+                (event.clientY - rect.top) * canvas.height / rect.height,
+            );
+            if (worldPoint.x < 0 || worldPoint.x >= WORLD.width ||
+                worldPoint.y < 0 || worldPoint.y >= WORLD.height) return;
             // The upper HUD and bottom action controls are not part of the
             // interactive arena, even though they are drawn over the canvas.
             const controls = document.querySelectorAll('#hud .hud-top, #hud .hud-bottom, #hud .boss-meter');
@@ -352,8 +368,11 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
-            if (this.scene.ready && matchMedia('(pointer: coarse) and (orientation: landscape)').matches) {
-                this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
+            if (this.scene.ready && matchMedia('(pointer: coarse)').matches) {
+                if (matchMedia('(orientation: landscape)').matches)
+                    this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
+                // Keep the input overlay in sync with camera and viewport
+                // in both orientations, including fullscreen transitions.
                 this.alignTouchZone();
             }
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
