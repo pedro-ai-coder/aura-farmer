@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'src/game/simulation/adaptive-build-balance.test.ts'
+      - 'src/game/simulation/run.ts'
+      - 'src/game/simulation/enemies.ts'
+      - 'src/game/simulation/spawn-weights.ts'
+      - 'src/game/catalog/content.ts'
       - '.github/workflows/full-run-qa.yml'
   workflow_dispatch:
 
