@@ -29,9 +29,20 @@ Drop probabilities are independent, use **one seeded random roll per eligible ki
 
 The current special pool only includes **Aura Snack** and **Aura Magnet**; this change does not invent any additional item, shop, currency or backend. Three weapon slots, five passive slots, rarities, caps and hero kits remain unchanged.
 
+## Initial measured results
+
+On commit `d046cd7ee924ba9e37ae45ef3ecb66ee21b09f6b`, TypeScript, the extended Vitest discovery (232 passing tests across 22 files), and the build passed. In **nine seeded guided six-minute attempts**:
+
+- **9/9 survived to the start of wave three**.
+- **8/9 defeated Reply Guy**; one Alpha Chad attempt still had Reply Guy alive with 1,111/1,400 HP at six minutes.
+- **12–18 Aura Snacks** and **2–8 Aura Magnets** were generated per simulated run. All magnets were collected by the guided bot; at most one or two snacks remained uncollected.
+- XP gains and upgrade variety continued to work with real enemy AI and damage.
+
+These runs use a deterministic pickup-focused control policy, **not a human player**. Collecting nearly every pickup makes these results optimistic. They do not prove that a normal player will see the same quantity of drops or clear the mini-boss. A baseline comparison with identical controls and actual full-run gameplay are still outstanding.
+
 ## Validation
 
-- [ ] TypeScript, all Vitest suites, build, Playwright, secret audit, and Vercel preview green on the final SHA.
+- [ ] TypeScript, all Vitest suites, build, Playwright, secret audit, and Vercel preview green on the **final** SHA.
 - [ ] Normal/elite special drop distribution deterministic in multiple seeds; XP remains intact when on-map specials are recycled.
 - [ ] Pickup radii and one-time magnet XP collection verified.
 - [ ] Legal, varied upgrade offers verified across all three heroes after AOE and defense acquisition.
