@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { HeroAnimator, heroPose } from '../src/browser/hero-animation';
+import { HERO_FRAME_EDGE_MATTE, heroFrameTexture } from '../src/browser/hero-frame-mattes';
 import frames from '../src/browser/hero-frames.json';
 import flexFrames from '../src/browser/hero-flex-frames.json';
 import rear from '../src/browser/hero-rear-frames.json';
@@ -8,6 +9,29 @@ import { Run } from '../src/game/simulation/run';
 const heroes = ['sigma', 'cool-kid', 'alpha'] as const;
 
 describe('authored hero pose playback', () => {
+    it('extracts all seven overlapping approved frames with original atlas bounds', () => {
+        let cleaned = 0;
+        for (const [hero, specs] of Object.entries(HERO_FRAME_EDGE_MATTE)) {
+            const spriteFrames = frames[hero as keyof typeof frames];
+            for (const [id, edges] of Object.entries(specs)) {
+                const n = Number(id);
+                const box = spriteFrames[n];
+                expect(box).toBeDefined();
+                expect(edges.left + edges.right).toBeGreaterThan(0);
+                expect(edges.left + edges.right).toBeLessThan(box[2] / 3);
+                expect(heroFrameTexture(hero, 'atlas', n))
+                    .toEqual({ key: `${hero}-matte-${n}` });
+                cleaned++;
+            }
+        }
+        expect(cleaned).toBe(7);
+        expect(heroFrameTexture('sigma', 'atlas', 34))
+            .toEqual({ key: 'sigma-atlas', frame: 34 });
+        expect(heroFrameTexture('cool-kid', 'rear-v2', 2))
+            .toEqual({ key: 'cool-kid-rear-v2', frame: 2 });
+        expect(heroFrameTexture('cool-kid', 'flex-v2', 5))
+            .toEqual({ key: 'cool-kid-flex-v2', frame: 5 });
+    });
     it('keeps locomotion independent of automatic aim', () => {
         const r = new Run('sigma');
         r.moving = true; r.time = 1; r.movementFacing = -Math.PI / 2; r.facing = 0;
