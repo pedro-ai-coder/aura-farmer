@@ -26,6 +26,10 @@
 | Main menu | `ui/main-menu.png` | Approved master exists per GDD A.14; runtime home is primarily CSS/DOM. Compare its composition with Option A without claiming the PNG is integrated | stage V4 |
 | Weapons and drops | Phaser graphics in `scene.ts`, icons/text in `app.ts` | Functional but partly procedural shapes/text. GDD A.8 requires distinct silhouettes, attack timing, shield and pickup semantics; new illustrated icons are pending | stage V3 and #97 |
 
+**Verified image inventory:** the first [PR #90 browser CI artifact](https://github.com/pedro-ai-coder/aura-farmer/actions/runs/39174099544) contained **21 image assets**: **10 approved masters** in `option-a-v1` and **11 runtime PNG files**, with **zero byte-identical duplicate groups**. The artifact includes the actual filenames, byte sizes and SHA-256; these are factual byte-level results, not an opinion on finish quality.
+
+**First screenshots inspected:** in the same run's earlier functional captures, the **home menu** already uses warm paper panels, recognizable hero portraits and outlined buttons. **Ruin Alley** is illustrated with distinct landmarks and an unobstructed central path. A **Big Hater boss impact** frame has a visible coral danger circle. However, smaller HUD/build-chip/body text and secondary menu copy in `src/styles/app.css` use **9–12 px** sizes at the 1280×720 reference layout, below GDD A.9's **16 px minimum effect/body text**. Mark this as an explicit PR V4 legibility issue, rather than concluding all existing UI is approved. These captures demonstrate selected states only, not crowded-wave action clarity.
+
 **Counts above are frame-rectangle/metadata counts, not an artistic assessment or proof of directional completeness.** Exact file-existence, bytes and hash values come from the generated CI inventory rather than guessed asset sizes.
 
 ### Gap / risk register, ordered by production dependency
