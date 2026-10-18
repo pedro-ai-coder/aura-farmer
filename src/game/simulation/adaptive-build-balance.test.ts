@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { Run } from './run';
 import type { Choice } from './inventory';
-import { distance, move as worldMove } from './world';
+import { clearLine, distance, move as worldMove } from './world';
 
 const heroes = ['sigma', 'cool-kid', 'alpha'] as const;
 const seeds = [47001, 47002, 47003] as const;
@@ -27,7 +27,48 @@ function choiceScore(c: Choice, run: Run): number {
  * Unlike the former 12-second fixed square, it collects nearby drops and kites
  * visible enemies. Enemy AI, contact damage and collision remain fully active.
  */
+/** Guide a real combatant into weapon range of Big Hater.
+ * The previous survival bot orbited empty floor and scarcely attacked the boss,
+ * even when it survived for five minutes past boss spawn.
+ * Movement, attack damage, collision and telegraphs remain production rules.
+ */
+function bossMovement(run: Run) {
+    const boss = run.boss!;
+    const idealDistance = run.hero.role === 'ranged' ? 215 : run.hero.role === 'melee' ? 76 : 82;
+    const diagonal = Math.SQRT1_2;
+    const choices = [
+        { x: 1, y: 0 }, { x: diagonal, y: diagonal }, { x: 0, y: 1 },
+        { x: -diagonal, y: diagonal }, { x: -1, y: 0 },
+        { x: -diagonal, y: -diagonal }, { x: 0, y: -1 },
+        { x: diagonal, y: -diagonal },
+    ];
+    let best = choices[0], bestScore = -Infinity;
+    const pace = run.hero.speed * .25;
+    const orbit = Math.floor(run.time / 6) % 2 ? 1 : -1;
+    for (const candidate of choices) {
+        const next = worldMove(run.pos, candidate.x * pace, candidate.y * pace);
+        const travelled = distance(run.pos, next);
+        if (travelled < 7) continue;
+        const d = distance(next, boss);
+        const dx = next.x - boss.x, dy = next.y - boss.y;
+        const tangent = (candidate.x * -dy + candidate.y * dx) / Math.max(1, d);
+        const floorScore = -Math.abs(d - idealDistance) * 2.5 + orbit * tangent * 5;
+        const blocked = clearLine(next, boss) ? 0 : 120;
+        // Visible, armed ground hazards are avoidable: stay out if doing so
+        // does not completely abandon weapon range.
+        const floorHazards = run.areas.filter(a => a.hostile && a.shape === 'circle' &&
+            a.at <= run.time + .25 && a.end >= run.time &&
+            distance(next, a) < a.radius + 16);
+        const score = floorScore - blocked - floorHazards.length * 80 + travelled * .025;
+        if (score > bestScore) { bestScore = score; best = candidate; }
+    }
+    return best;
+}
+
 function guidedMovement(run: Run) {
+    if (run.boss && run.boss.born <= run.time)
+        return bossMovement(run);
+
     if (run.hp < run.maxHp * .6 &&
         run.time >= run.safeSpotReadyAt &&
         distance(run.pos, run.safeSpot) < run.safeSpot.radius - 12)
@@ -85,6 +126,9 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
     // hits contribute only the damage that reached player HP.
     const damageBySource: Record<string, number> = {};
     const applyHurt = run.hurt.bind(run);
+    let bossDamageActual = 0;
+    let framesWithinBossRange = 0;
+    let closestBossDistance = Infinity;
     run.hurt = (raw, source, contact = false, hazard = false) => {
         const before = run.damageTaken;
         applyHurt(raw, source, contact, hazard);
@@ -93,6 +137,13 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
             const key = source?.kind ?? (hazard ? 'hazard' : 'unknown');
             damageBySource[key] = (damageBySource[key] ?? 0) + applied;
         }
+    };
+    const applyHit = run.hitEnemy.bind(run);
+    run.hitEnemy = (enemy, amount, weapon = '', activation = 0, primary = false) => {
+        const before = enemy.hp;
+        applyHit(enemy, amount, weapon, activation, primary);
+        if (enemy.kind === 'boss')
+            bossDamageActual += Math.max(0, before - Math.max(0, enemy.hp));
     };
     let ticks = 0;
     let selections = 0;
@@ -139,8 +190,18 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         }
         if (run.mode !== 'playing') throw new Error(`Unexpected mode: ${run.mode}`);
         const input = guidedMovement(run);
+        // Manual aim is a normal input setting; no artificial target locks,
+        // damage, invulnerability or teleportation are used.
+        const boss = run.boss;
+        if (boss && boss.born <= run.time) {
+            const d = distance(run.pos, boss);
+            closestBossDistance = Math.min(closestBossDistance, d);
+            if (d <= 115) framesWithinBossRange++;
+        }
         if (run.aura >= 100) run.activateFlex();
-        run.update(.25, input);
+        run.update(.25, boss && boss.born <= run.time
+            ? { ...input, aim: { x: boss.x, y: boss.y }, manual: true }
+            : input);
         berserkObserved ||= run.berserk;
         if (++ticks > limit * 5 + 100) throw new Error('Simulation stalled');
         if (run.time >= nextMilestone) {
@@ -157,6 +218,9 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
         bossSpawned: run.counters.bossSpawned ?? 0, bossDefeated: run.bossDefeated,
         bossHpRemaining: run.boss ? Math.round(run.boss.hp) : null,
+        bossDamageActual: Math.round(bossDamageActual),
+        bossEngagementSeconds: Number((framesWithinBossRange * .25).toFixed(2)),
+        closestBossDistance: Number.isFinite(closestBossDistance) ? Math.round(closestBossDistance) : null,
         berserkObserved,
         eventBossesDefeated: [...run.eventsDefeated],
         activeEventBosses: run.enemies.filter(e => ['reply-guy', 'mod-supremo', 'ohio-express', 'doomscroll-prime'].includes(e.kind))
