@@ -10,10 +10,6 @@ export function weightedSpawnPool(pool: readonly EnemyKind[], wave: number, time
     if (wave === 2)
         return [...pool.filter(k => k !== 'hater'), ...pool.filter(k => k !== 'hater'), 'hater'];
     if (wave >= 3)
-        // Haters remained at full roster weight on wave three, undoing the
-        // early-wave ranged-pressure reduction. Keep all ranged/hazard threats
-        // present but do not double their spawn share.
-        return pool.flatMap(k => k === 'doomscroller' || k === 'ping-sniper' || k === 'hater'
-            ? [k] : [k, k]);
+        return pool.flatMap(k => k === 'doomscroller' || k === 'ping-sniper' ? [k] : [k, k]);
     return [...pool];
 }
