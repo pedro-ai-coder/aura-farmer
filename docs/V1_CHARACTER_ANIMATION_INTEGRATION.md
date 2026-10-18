@@ -25,10 +25,22 @@ Counts represent existing texture rectangles and **must not** be reported as uni
 
 The animation change is **presentation-only**. It does not modify movement, colliders, weapon targeting, attack timing, RNG, Flex duration or save data.
 
+## Second observed rendering problem: neighbouring atlas fragments
+
+The **actual sprite contact sheets** from the initial V1 evidence run showed stray pixels from adjacent authored drawings inside several tightly packed atlas rectangles. Examples:
+
+- **Cool Kid attack frames 27–28:** the next drawing's shoe appears to the right of the keyboard strike, and the previous drawing's keyboard floats at the left of the following pose.
+- **Cool Kid hurt frames 29–30:** narrow edge fragments flicker beside the falling character.
+- **Alpha attack frames 34–36:** a stray neighbouring shoe, shield edge or ink mark appears beside the intended slam/attack pose.
+
+These are runtime atlas extraction artifacts, not missing new character designs. `src/browser/hero-frame-mattes.ts` now extracts seven affected poses into tiny runtime canvases and clears **only documented source-edge bands**. The approved source PNGs and original cropped frame sizes remain intact, so the gameplay position, world sprite size and foot pivot do not change. All other poses still use the unchanged atlas and rear/Flex textures.
+
+The new browser QA checks that cleaned bands are fully transparent and the interior remains drawn, and the six contact sheets now show the *actual runtime-corrected* images (marked `CLEAN` where applicable). This does **not** create a new illustrated pose, generate artwork, edit a source master or change any combat rules.
+
 ## Visual and automated QA
 
 - `tests/hero-animation.test.ts` asserts that **all 96 logical walk poses** (3 heroes × 8 directions × 4 phases) keep the same frame, sheet, scale and mirror as auto-aim moves from right to left. Idle aim still turns independently. Existing tests verify frame bounds, death, Flex and pause stability.
-- `tests/browser/character-direction-review.spec.ts` saves six PNG contact sheets, two per hero: **32 approved runtime direction/phase images** and **15 action-state images**, with sheet, frame and mirror labels. These are **renders of already existing textures**, not newly generated sprites.
+- `tests/browser/character-direction-review.spec.ts` saves six PNG contact sheets, two per hero: **32 approved runtime direction/phase images** and **15 action-state images**, with sheet, frame and mirror labels. They include the *seven fringe-cleaned runtime extracts*, verified to have transparent edge bands and opaque interior art. These are **renders of already existing textures**, not newly painted sprites.
 - Screenshot outputs are written to `test-results/v1-approved-*.png` and published in GitHub Actions' `browser-test-results` artifact alongside PR #90's baselines. A screenshot proof is not a substitute for a video of running animation.
 - Compare `test-results/before-<hero>-gameplay-1280x720.png` from PR #90 and its original CI artifact against the PR preview and the new sprite sheets.
 - Required checks: TypeScript, Vitest, Vite build, Playwright Chromium, security audit and exact-commit Vercel deployment.
@@ -55,6 +67,7 @@ The solo demo still needs Sigma/Cool Kid complete-run balance acceptance, post-b
 
 - [ ] All tests and preview green on final commit.
 - [ ] The six direction/action contact sheets are present, inspected and linked to their exact CI run.
+- [ ] All seven fringe-cleaned frames show no stray pixel fragments in real before/after contact sheets.
 - [ ] The visual integration regression is absent while moving west/north and attacking in another direction.
 - [ ] Explicit acknowledgement that GDD A.5's new painted frame quota remains open until separate asset-production approval.
 - [ ] Owner explicitly approves **this PR** before merge.
