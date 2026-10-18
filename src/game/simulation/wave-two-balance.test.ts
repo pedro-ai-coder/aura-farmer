@@ -17,7 +17,7 @@ describe('phase 4.14: second-wave difficulty adjustment', () => {
         expect(BOSS_START).toBe(900);
         expect(WAVES[1].weights).toEqual([70, 28, 2]);
         expect(WAVES[2].hp).toBe(1.65);
-        expect(WAVES[3].damage).toBe(1.5);
-        expect(WAVES[4].damage).toBe(1.75);
+        expect(WAVES[3].damage).toBe(1.35);
+        expect(WAVES[4].damage).toBe(1.58);
     });
 });
