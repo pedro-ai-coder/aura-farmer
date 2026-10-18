@@ -1,4 +1,4 @@
-# Visual Audit — Option A / Cartoon Arcade (PR #93)
+# Visual Audit — Option A / Cartoon Arcade (stage V0, actual GitHub PR #90)
 
 **Status:** evidence and production planning; NOT art sign-off or a gameplay release.  
 **Source of truth:** [GDD V2.0, Annex A](GDD.md) (especially A.1–A.10), [asset policy](ASSET_POLICY.md), and the runtime code on the PR's `main` base.  
@@ -16,15 +16,15 @@
 
 | Category | Approved master or code reference | Runtime state / risk | Production owner |
 | --- | --- | --- | --- |
-| Sigma | `public/assets/cartoon/option-a-v1/characters/sigma.png` | `/assets/runtime/sigma-atlas.png`; 48 frame rectangles in `hero-frames.json`; inspect rear diagonals and action readability at 48–64 world units | PR #94 |
-| Cool Kid | `public/assets/cartoon/option-a-v1/characters/cool-kid.png` | `cool-kid-atlas.png` (40 frames), `cool-kid-rear-v2.png` (4 frames), `cool-kid-flex-v2.png` (8 frames); code reuses front/diagonal groups for several directions | PR #94 |
-| Alpha Chad | `public/assets/cartoon/option-a-v1/characters/alpha.png` | `alpha-atlas.png` (48 frames), `alpha-rear-v2.png` (12 frames); direction groups reuse frames, requiring visual check | PR #94 |
-| Enemy families | Approved masters: `enemies/phone-guy.png`, `enemies/hater.png`, `enemies/big-hater.png` | `enemy-frames.json` has **17 actor/state families, eight frames each**, sourced from `enemies-a-v2.png`, `enemies-b-v2.png`, `events-v2.png`, and `haters-v2.png`; no assumption that 8 animation states means 8 directions | PR #95 |
-| Boss | Approved `enemies/big-hater.png` | Both `boss` and `boss-berserk` have eight recorded frames; compare attack warning, scale, silhouette, regen and FULL HATER MODE | PR #95 |
-| Ruin Alley | `public/assets/cartoon/option-a-v1/maps/ruin-alley.png` | Loaded as `ruin` and stretched to world bounds; props/cover are partly drawn as reused atlas frames. Inspect landmarks, collisions, layering and floor contrast | PR #98 |
+| Sigma | `public/assets/cartoon/option-a-v1/characters/sigma.png` | `/assets/runtime/sigma-atlas.png`; 48 frame rectangles in `hero-frames.json`; inspect rear diagonals and action readability at 48–64 world units | stage V1 |
+| Cool Kid | `public/assets/cartoon/option-a-v1/characters/cool-kid.png` | `cool-kid-atlas.png` (40 frames), `cool-kid-rear-v2.png` (4 frames), `cool-kid-flex-v2.png` (8 frames); code reuses front/diagonal groups for several directions | stage V1 |
+| Alpha Chad | `public/assets/cartoon/option-a-v1/characters/alpha.png` | `alpha-atlas.png` (48 frames), `alpha-rear-v2.png` (12 frames); direction groups reuse frames, requiring visual check | stage V1 |
+| Enemy families | Approved masters: `enemies/phone-guy.png`, `enemies/hater.png`, `enemies/big-hater.png` | `enemy-frames.json` has **17 actor/state families, eight frames each**, sourced from `enemies-a-v2.png`, `enemies-b-v2.png`, `events-v2.png`, and `haters-v2.png`; no assumption that 8 animation states means 8 directions | stage V2 |
+| Boss | Approved `enemies/big-hater.png` | Both `boss` and `boss-berserk` have eight recorded frames; compare attack warning, scale, silhouette, regen and FULL HATER MODE | stage V2 |
+| Ruin Alley | `public/assets/cartoon/option-a-v1/maps/ruin-alley.png` | Loaded as `ruin` and stretched to world bounds; props/cover are partly drawn as reused atlas frames. Inspect landmarks, collisions, layering and floor contrast | stage V5 |
 | Additional maps | `maps/crown-court.png`, `maps/toxic-garden.png` | **Approved static masters, not demo gameplay maps.** Do not present them as implemented or add them to this solo slice | Later content |
-| Main menu | `ui/main-menu.png` | Approved master exists per GDD A.14; runtime home is primarily CSS/DOM. Compare its composition with Option A without claiming the PNG is integrated | PR #97 |
-| Weapons and drops | Phaser graphics in `scene.ts`, icons/text in `app.ts` | Functional but partly procedural shapes/text. GDD A.8 requires distinct silhouettes, attack timing, shield and pickup semantics; new illustrated icons are pending | PR #96 and #97 |
+| Main menu | `ui/main-menu.png` | Approved master exists per GDD A.14; runtime home is primarily CSS/DOM. Compare its composition with Option A without claiming the PNG is integrated | stage V4 |
+| Weapons and drops | Phaser graphics in `scene.ts`, icons/text in `app.ts` | Functional but partly procedural shapes/text. GDD A.8 requires distinct silhouettes, attack timing, shield and pickup semantics; new illustrated icons are pending | stage V3 and #97 |
 
 **Counts above are frame-rectangle/metadata counts, not an artistic assessment or proof of directional completeness.** Exact file-existence, bytes and hash values come from the generated CI inventory rather than guessed asset sizes.
 
@@ -32,15 +32,15 @@
 
 | ID | Priority | Observed technical fact / gap to verify | GDD anchor | Proposed resolution |
 | --- | --- | --- | --- | --- |
-| VIS-01 | P0 | Cool Kid run groups reuse front/diagonal frames and rear sheet covers only one direction with 4 frames; eight-direction requirement is not yet verifiably met | A.4–A.5 | Separate approved-model sprite/animation pass, compare idle/run/attack/hurt/Flex in eight directions (#94) |
-| VIS-02 | P0 | Alpha direction groups reuse existing frames; rear sheet has 12 frames for three directions. Check direction coverage and transition continuity | A.4–A.5 | Dedicated directional art or approved reuse; retain signature shoulders/hair and readable shield (#94) |
-| VIS-03 | P0 | Enemy animation maps move/idle/windup/impact/recover/hurt/death to eight frames per family. This is **state coverage**, not eight-direction movement/attack verification | A.6 | Verify actual art/silhouette and telegraph directions per species; boss/berserk hero-size check (#95) |
-| VIS-04 | P0 | Shields, AoE, item drops and Flex are rendered with several generic Phaser circles/lines; must confirm they remain distinguishable at wave density | A.8, C.1.3–4 | Approved sprite/icon effects, timing-true warnings, reduced-particles mobile variant (#96) |
-| VIS-05 | P0 | Home/upgrade/HUD styling uses CSS panels and text glyph icons; needs joint comic identity and real 32×32 item icon legibility | A.2, A.8–A.9 | Redesign UI layer using Option A; no overlapping panels; six legendary cards fit (#97) |
-| VIS-06 | P1 | Ruin Alley is an image backdrop with some reuse-based obstacle visuals; terrain/cover perspective, collision consistency and hero footprint need side-by-side review | A.7 | Stage prop/shadow pass without gameplay or collision changes (#98) |
-| VIS-07 | P0 | Runtime contrast, clipping, bad alpha halos and mobile fullscreen have not been signed off on actual devices | A.5, A.10, C.1 | Baseline screenshot artifact + physical device review; final QA (#99) |
-| VIS-08 | P1 | 60 FPS desktop target and stable 30 FPS reduced profile are requirements, **not measured metrics** in this audit | Section 16, A.10 | Define reference devices, crowded-wave test scene, profile and measured FPS (#99) |
-| VIS-09 | P1 | GDD reference concept lives at `docs/references/exec-751c31ed-f3c5-4a5f-894e-92f42146c607.png`. Need human side-by-side review; a reference drawing is not a gameplay screenshot | A.1–A.2 | Owner visual checkpoint before authoring any missing images (#93 handoff, #94 kickoff) |
+| VIS-01 | P0 | Cool Kid run groups reuse front/diagonal frames and rear sheet covers only one direction with 4 frames; eight-direction requirement is not yet verifiably met | A.4–A.5 | Separate approved-model sprite/animation pass, compare idle/run/attack/hurt/Flex in eight directions (V1) |
+| VIS-02 | P0 | Alpha direction groups reuse existing frames; rear sheet has 12 frames for three directions. Check direction coverage and transition continuity | A.4–A.5 | Dedicated directional art or approved reuse; retain signature shoulders/hair and readable shield (V1) |
+| VIS-03 | P0 | Enemy animation maps move/idle/windup/impact/recover/hurt/death to eight frames per family. This is **state coverage**, not eight-direction movement/attack verification | A.6 | Verify actual art/silhouette and telegraph directions per species; boss/berserk hero-size check (V2) |
+| VIS-04 | P0 | Shields, AoE, item drops and Flex are rendered with several generic Phaser circles/lines; must confirm they remain distinguishable at wave density | A.8, C.1.3–4 | Approved sprite/icon effects, timing-true warnings, reduced-particles mobile variant (V3) |
+| VIS-05 | P0 | Home/upgrade/HUD styling uses CSS panels and text glyph icons; needs joint comic identity and real 32×32 item icon legibility | A.2, A.8–A.9 | Redesign UI layer using Option A; no overlapping panels; six legendary cards fit (V4) |
+| VIS-06 | P1 | Ruin Alley is an image backdrop with some reuse-based obstacle visuals; terrain/cover perspective, collision consistency and hero footprint need side-by-side review | A.7 | Stage prop/shadow pass without gameplay or collision changes (V5) |
+| VIS-07 | P0 | Runtime contrast, clipping, bad alpha halos and mobile fullscreen have not been signed off on actual devices | A.5, A.10, C.1 | Baseline screenshot artifact + physical device review; final QA (V6) |
+| VIS-08 | P1 | 60 FPS desktop target and stable 30 FPS reduced profile are requirements, **not measured metrics** in this audit | Section 16, A.10 | Define reference devices, crowded-wave test scene, profile and measured FPS (V6) |
+| VIS-09 | P1 | GDD reference concept lives at `docs/references/exec-751c31ed-f3c5-4a5f-894e-92f42146c607.png`. Need human side-by-side review; a reference drawing is not a gameplay screenshot | A.1–A.2 | Owner visual checkpoint before authoring any missing images (V0 handoff, V1 kickoff) |
 
 ## Baseline screenshots, not marketing renders
 
