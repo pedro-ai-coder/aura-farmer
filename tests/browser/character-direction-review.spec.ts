@@ -69,8 +69,70 @@ test('Option A sprite contact sheets: all existing frames and logical directions
         }, heroId);
         expect(result).toHaveLength(32);
         await page.locator('#character-contact-sheet').screenshot({
-            path: `test-results/v1-before-${heroId}-directions.png`,
+            path: `test-results/v1-approved-${heroId}-directions.png`,
         });
+        await page.evaluate(async (id) => {
+            const runUrl: string = '/src/game/simulation/run.ts';
+            const poseUrl: string = '/src/browser/hero-animation.ts';
+            const { Run } = await import(/* @vite-ignore */ runUrl);
+            const { heroPose } = await import(/* @vite-ignore */ poseUrl);
+            const game = (window as any).__app;
+            const scenarios: { name: string; setup: (r: any) => void; defeat?: number }[] = [
+                { name: 'idle EAST', setup: r => { r.facing = 0; } },
+                { name: 'idle WEST', setup: r => { r.facing = Math.PI; } },
+                { name: 'run NORTH', setup: r => { r.moving = true; r.movementFacing = -Math.PI / 2; } },
+                ...[0, .08, .16].map((t, n) => ({
+                    name: 'attack ' + (n + 1), setup: (r: any) => { r.time = t; r.timers.attackUntil = .22; },
+                })),
+                ...[0, .12].map((t, n) => ({
+                    name: 'hurt ' + (n + 1), setup: (r: any) => { r.time = t; r.timers.hurtUntil = .18; },
+                })),
+                ...[0, .15, .3, .5].map((age, n) => ({
+                    name: 'defeat ' + (n + 1), setup: (r: any) => { r.mode = 'lost'; }, defeat: age,
+                })),
+                { name: 'Flex enter', setup: r => { r.flexUntil = r.hero.duration; r.time = .1; } },
+                { name: 'Flex active', setup: r => { r.flexUntil = r.hero.duration; r.time = 1; } },
+                { name: 'Flex exit', setup: r => { r.flexUntil = r.hero.duration; r.time = r.hero.duration - .1; } },
+            ];
+            const cellW = 230, cellH = 218, columns = 5;
+            const sheet = document.createElement('canvas');
+            sheet.width = columns * cellW;
+            sheet.height = Math.ceil(scenarios.length / columns) * cellH + 55;
+            sheet.id = 'hero-state-contact-sheet';
+            sheet.style.cssText = 'position:fixed;top:0;left:0;z-index:1100;background:#fff6df;display:block';
+            const ctx = sheet.getContext('2d')!;
+            ctx.fillStyle = '#fff6df'; ctx.fillRect(0, 0, sheet.width, sheet.height);
+            ctx.fillStyle = '#253449'; ctx.font = 'bold 19px sans-serif';
+            ctx.fillText(id + ' — authored runtime action states (not newly drawn frames)', 14, 30);
+            scenarios.forEach((scenario, i) => {
+                const r = new Run(id);
+                scenario.setup(r);
+                const p = heroPose(r, { walk: .2, defeat: scenario.defeat ?? 0 });
+                const texture = game.scene.textures.get(id + '-' + p.sheet);
+                const frame = texture.get(p.frame);
+                if (!frame) throw new Error('Missing state frame: ' + id + '/' + scenario.name);
+                const source = texture.getSourceImage() as HTMLImageElement;
+                const x = (i % columns) * cellW;
+                const y = Math.floor(i / columns) * cellH + 55;
+                ctx.fillStyle = i % 2 ? '#f4e9c9' : '#e7eee9';
+                ctx.fillRect(x, y, cellW - 2, cellH - 2);
+                ctx.fillStyle = '#253449'; ctx.font = 'bold 14px sans-serif';
+                ctx.fillText(scenario.name + ' — ' + p.sheet + ':' + p.frame, x + 8, y + 19);
+                const dw = frame.cutWidth * p.scale * 2.3;
+                const dh = frame.cutHeight * p.scale * 2.3;
+                ctx.save();
+                ctx.translate(x + cellW / 2, y + cellH - 9);
+                if (p.flip) ctx.scale(-1, 1);
+                ctx.drawImage(source, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, -dw / 2, -dh, dw, dh);
+                ctx.restore();
+            });
+            document.getElementById('hero-state-contact-sheet')?.remove();
+            document.body.append(sheet);
+        }, heroId);
+        await page.locator('#hero-state-contact-sheet').screenshot({
+            path: `test-results/v1-approved-${heroId}-states.png`,
+        });
+        await page.locator('#hero-state-contact-sheet').evaluate(el => el.remove());
     }
     await page.locator('#character-contact-sheet').evaluate(el => el.remove());
 });
