@@ -76,6 +76,8 @@ test('Option A sprite contact sheets: all existing frames and logical directions
             const poseUrl: string = '/src/browser/hero-animation.ts';
             const { Run } = await import(/* @vite-ignore */ runUrl);
             const { heroPose } = await import(/* @vite-ignore */ poseUrl);
+            const matteUrl: string = '/src/browser/hero-frame-mattes.ts';
+            const { heroFrameTexture } = await import(/* @vite-ignore */ matteUrl);
             const game = (window as any).__app;
             const scenarios: { name: string; setup: (r: any) => void; defeat?: number }[] = [
                 { name: 'idle EAST', setup: r => { r.facing = 0; } },
@@ -108,8 +110,9 @@ test('Option A sprite contact sheets: all existing frames and logical directions
                 const r = new Run(id);
                 scenario.setup(r);
                 const p = heroPose(r, { walk: .2, defeat: scenario.defeat ?? 0 });
-                const texture = game.scene.textures.get(id + '-' + p.sheet);
-                const frame = texture.get(p.frame);
+                const reference = heroFrameTexture(id, p.sheet, p.frame);
+                const texture = game.scene.textures.get(reference.key);
+                const frame = texture.get(reference.frame);
                 if (!frame) throw new Error('Missing state frame: ' + id + '/' + scenario.name);
                 const source = texture.getSourceImage() as HTMLImageElement;
                 const x = (i % columns) * cellW;
@@ -117,7 +120,8 @@ test('Option A sprite contact sheets: all existing frames and logical directions
                 ctx.fillStyle = i % 2 ? '#f4e9c9' : '#e7eee9';
                 ctx.fillRect(x, y, cellW - 2, cellH - 2);
                 ctx.fillStyle = '#253449'; ctx.font = 'bold 14px sans-serif';
-                ctx.fillText(scenario.name + ' — ' + p.sheet + ':' + p.frame, x + 8, y + 19);
+                ctx.fillText(scenario.name + ' — ' + p.sheet + ':' + p.frame +
+                    (reference.key.includes('-matte-') ? ' CLEAN' : ''), x + 8, y + 19);
                 const dw = frame.cutWidth * p.scale * 2.3;
                 const dh = frame.cutHeight * p.scale * 2.3;
                 ctx.save();
