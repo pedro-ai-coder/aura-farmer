@@ -35,17 +35,31 @@ test('joystick only starts on visible artwork, not the blue canvas or HUD', asyn
         camera.centerOn(724, 543);
         (window.__app as unknown as { alignTouchZone(): void }).alignTouchZone();
     });
+    // A camera constrained against a world edge can letterbox either side.
+    // Do not assume the image is centered (the screenshot shows it at left).
     await expect.poll(async () => {
-        const zone = await page.locator('#touch-zone').boundingBox();
-        return zone !== null && zone.width < 650 && zone.x > 60;
+        const geometry = await page.evaluate(() => {
+            const camera = window.__app.scene.cameras.main;
+            camera.setZoom(.35);
+            (window.__app as unknown as { alignTouchZone(): void }).alignTouchZone();
+            const z = document.querySelector('#touch-zone')!.getBoundingClientRect();
+            const c = document.querySelector('#game canvas')!.getBoundingClientRect();
+            return { gap: c.width - z.width, left: z.left - c.left, right: c.right - z.right };
+        });
+        return geometry.gap > 100 && (geometry.left > 10 || geometry.right > 10);
     }).toBe(true);
 
     const zone = (await page.locator('#touch-zone').boundingBox())!;
     const canvas = (await page.locator('#game canvas').boundingBox())!;
-    expect(zone.x).toBeGreaterThan(canvas.x);
-    expect(zone.x + zone.width).toBeLessThan(canvas.x + canvas.width);
+    expect(zone.width).toBeLessThan(canvas.width - 100);
+    expect(zone.x).toBeGreaterThanOrEqual(canvas.x - 1);
+    expect(zone.x + zone.width).toBeLessThanOrEqual(canvas.x + canvas.width + 1);
 
-    const outsideX = canvas.x + 20, centerY = zone.y + zone.height / 2;
+    const leftGap = zone.x - canvas.x;
+    const rightGap = canvas.x + canvas.width - zone.x - zone.width;
+    const outsideX = leftGap > rightGap ? canvas.x + leftGap / 2
+        : zone.x + zone.width + rightGap / 2;
+    const centerY = zone.y + zone.height / 2;
     await page.mouse.move(outsideX, centerY);
     await page.mouse.down();
     expect(await page.evaluate(() => window.__app['touchPointer'])).toBe(null);
@@ -53,7 +67,7 @@ test('joystick only starts on visible artwork, not the blue canvas or HUD', asyn
     await page.mouse.up();
 
     const hud = (await page.locator('#hud .hud-top').boundingBox())!;
-    await page.mouse.move(hud.x + 15, hud.y + hud.height / 2);
+    await page.mouse.move(hud.x + hud.width / 3, hud.y + hud.height / 2);
     await page.mouse.down();
     expect(await page.evaluate(() => window.__app['touchPointer'])).toBe(null);
     await page.mouse.up();
@@ -69,7 +83,7 @@ test('joystick only starts on visible artwork, not the blue canvas or HUD', asyn
     expect(await page.evaluate(() => window.__app['touchPointer'])).toBe(null);
 
     // HUD action remains clickable because its stacking order is above touch.
-    await page.locator('#hud [data-action=pause]').click();
+    await page.locator('#hud .hud-top [data-action=pause]').click();
     await expect(page.locator('.pause')).toBeVisible();
     await expect(page.locator('#touch-zone')).toBeHidden();
 });
@@ -92,7 +106,7 @@ test('touch playfield follows the camera, viewport and resume lifecycle', async 
     expect(moved.x).toBeGreaterThanOrEqual(canvas.x - 1);
     expect(moved.x + moved.width).toBeLessThanOrEqual(canvas.x + canvas.width + 1);
 
-    await page.locator('#hud [data-action=pause]').click();
+    await page.locator('#hud .hud-top [data-action=pause]').click();
     await expect(page.locator('#touch-zone')).toBeHidden();
     await page.getByRole('button', { name: 'BACK TO THE FARM' }).click();
     await expect(page.locator('#touch-zone')).toBeVisible();
