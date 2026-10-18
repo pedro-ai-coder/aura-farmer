@@ -41,6 +41,8 @@ test('Option A BEFORE: desktop menu at 1280 and 1920, upgrade and pause', async 
     await expect(page.locator('#hud')).toBeVisible();
     await page.waitForTimeout(250);
     await capture(page, testInfo, 'before-sigma-gameplay-1280x720');
+    await page.evaluate(() => { const run = window.__app.run!; run.aura = 100; run.activateFlex(); });
+    await capture(page, testInfo, 'before-sigma-flex-1280x720');
 
     await page.evaluate(() => { window.__app.run!.gainXp(100); });
     await expect(page.locator('.choices .choice')).toHaveCount(3);
@@ -64,6 +66,8 @@ for (const hero of ['cool-kid', 'alpha'] as const)
         await expect(page.locator('#modal')).toBeHidden();
         await page.waitForTimeout(250);
         await capture(page, testInfo, `before-${hero}-gameplay-1280x720`);
+        await page.evaluate(() => { const run = window.__app.run!; run.aura = 100; run.activateFlex(); });
+        await capture(page, testInfo, `before-${hero}-flex-1280x720`);
     });
 
 test('Option A BEFORE: Big Hater presentation (test fixture, not a completed run)', async ({ page }, testInfo) => {
@@ -81,6 +85,9 @@ test('Option A BEFORE: Big Hater presentation (test fixture, not a completed run
     });
     await expect(page.locator('.boss-meter')).toContainText('BIG HATER');
     await capture(page, testInfo, 'before-big-hater-1280x720');
+    await page.evaluate(() => { window.__app.run!.time = 1080; });
+    await expect(page.locator('.boss-meter')).toContainText('FULL HATER MODE');
+    await capture(page, testInfo, 'before-berserk-1280x720');
 });
 
 test('Option A BEFORE: mobile portrait and landscape viewport', async ({ browser }, testInfo) => {
