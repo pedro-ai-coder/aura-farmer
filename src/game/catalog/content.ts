@@ -90,9 +90,9 @@ export const passiveById = (id: string) => PASSIVES.find(p => p.id === id);
 export const WAVES = [
     { name: 'First Post', hp: 1, damage: .8, density: .9, weights: [90, 10, 0] },
     { name: 'Comment Section', hp: 1.3, damage: .88, density: 1, weights: [70, 28, 2] },
-    { name: 'Going Viral', hp: 1.65, damage: 1.3, density: 1.4, weights: [45, 45, 10] },
-    { name: 'Cancel Storm', hp: 2.05, damage: 1.5, density: 1.65, weights: [25, 50, 25] },
-    { name: 'Final Ratio', hp: 2.5, damage: 1.75, density: 1.9, weights: [10, 50, 40] },
+    { name: 'Going Viral', hp: 1.65, damage: 1.15, density: 1.28, weights: [45, 45, 10] },
+    { name: 'Cancel Storm', hp: 2.05, damage: 1.35, density: 1.48, weights: [25, 50, 25] },
+    { name: 'Final Ratio', hp: 2.5, damage: 1.58, density: 1.72, weights: [10, 50, 40] },
 ] as const;
 export const WAVE_SECONDS = 180;
 export const BOSS_START = 900;

@@ -5,6 +5,7 @@ import { angleDelta, clearLine, direction, distance, move, seededRandom, spawnPo
 import type { Area, Drop, Effect, Enemy, Input, Projectile, RunMode, Shield } from './types';
 import { updateWeapons } from './weapons';
 import { updateEnemies } from './enemies';
+import { weightedSpawnPool } from './spawn-weights';
 /** Pure, seeded simulation. Seconds are active time; every modal freezes this clock. */
 export class Run {
     readonly hero;
@@ -601,14 +602,9 @@ export class Run {
             this.nextSpawn = this.time + 1 / (.8 * wave.density * (1 + .1 * (this.time % 180) / 180));
             if (this.enemies.length < 100) {
                 const pool = (Object.keys(ENEMIES) as EnemyKind[]).filter(k => !ENEMIES[k].boss && k !== 'terminal' && ENEMIES[k].wave <= this.wave && (k !== 'hater' || this.time >= 90));
-                // The first-wave roster has only two kinds: choosing each equally
-                // created an oppressive ranged-projectile swarm after 1:30.
-                // Keep ranged threats a minority in waves one and two without changing spawn or XP budgets.
-                const spawnPool: EnemyKind[] = this.wave === 1 && this.time >= 90
-                    ? ['npc', 'npc', 'npc', 'npc', 'npc', 'npc', 'npc', 'hater']
-                    : this.wave === 2
-                        ? [...pool.filter(k => k !== 'hater'), ...pool.filter(k => k !== 'hater'), 'hater']
-                        : pool;
+                // Preserve enemy eligibility, but limit simultaneous ranged and
+                // persistent-hazard pressure through weighted seeded selection.
+                const spawnPool = weightedSpawnPool(pool, this.wave, this.time);
                 this.spawn(spawnPool[Math.floor(this.random() * spawnPool.length)], undefined, this.wave >= 3 && this.enemies.filter(e => e.elite).length < 2 && this.random() < .07);
             }
         }

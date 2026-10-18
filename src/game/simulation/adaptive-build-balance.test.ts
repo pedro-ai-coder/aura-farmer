@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { Run } from './run';
 import type { Choice } from './inventory';
 import { distance, move as worldMove } from './world';
@@ -189,9 +189,22 @@ describe('phase 4.16: guided six-minute survival QA', () => {
 });
 
 describe.skipIf(process.env.AURA_ADAPTIVE_FULL_QA !== '1')('phase 4.17: complete 20-minute seeded balance and boss evidence', () => {
+    const fullOutcomes: ReturnType<typeof simulate>[] = [];
+    afterAll(() => {
+        expect(fullOutcomes).toHaveLength(9);
+        // Phase 4.17 reached Big Hater in zero out of nine attempts. This
+        // later-wave tuning must demonstrably improve that baseline with the
+        // *same* seeds and movement policy, without scripted damage or wins.
+        expect(fullOutcomes.filter(result => result.bossSpawned === 1).length)
+            .toBeGreaterThanOrEqual(2);
+        for (const hero of ['sigma', 'cool-kid'] as const)
+            expect(fullOutcomes.some(result => result.hero === hero && result.wave >= 4))
+                .toBe(true);
+    });
     for (const hero of heroes) for (const seed of seeds) {
         it(`${hero}/${seed} full attempt`, () => {
             const result = simulate(hero, seed, 1200);
+            fullOutcomes.push(result);
             console.info('[adaptive-balance-full]', JSON.stringify(result));
             expect(result.seconds).toBeGreaterThan(0);
             expect(['playing', 'upgrade', 'legendary', 'won', 'lost']).toContain(result.outcome);

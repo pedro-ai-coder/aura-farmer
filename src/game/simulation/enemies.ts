@@ -2,6 +2,7 @@ import { ENEMIES } from '../catalog/enemies';
 import { angleDelta, clearLine, direction, distance, move, spawnPoint } from './world';
 import type { Run } from './run';
 import type { Enemy } from './types';
+export const PING_SNIPER_SHOT_INTERVAL = 6;
 /** Presentation cue only: deadlines are taken from the actual attack, never drive damage. */
 export function cueEnemyAttack(e: Enemy, now: number, impact: number, angle: number, duration = .18) {
     if (e.attackPose && e.attackPose.impact > now && e.attackPose.impact < impact) return;
@@ -113,7 +114,8 @@ export function updateEnemies(r: Run, dt: number) {
                 break;
             case 'ping-sniper':
                 if (projectile(1.2))
-                    e.nextAttack = r.time + 4.8;
+                    // The GDD specifies one locked shot every 6 seconds.
+                    e.nextAttack = r.time + PING_SNIPER_SHOT_INTERVAL;
                 break;
             case 'ratio-ram':
             case 'ohio-express': {
