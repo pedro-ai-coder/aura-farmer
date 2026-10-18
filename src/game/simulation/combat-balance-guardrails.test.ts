@@ -26,7 +26,7 @@ describe('phase 4.10: combat balance guardrails', () => {
             expect(shield).toBeLessThanOrEqual(run.maxHp * .4);
             run.hurt(shield * .5, undefined);
             expect(run.hp).toBe(hp);
-            expect(run.protection).toBeCloseTo(shield * .5);
+            expect(run.protection).toBeCloseTo(shield * .5 * (1 - hero.resistance));
             expect(run.damageTaken).toBe(0);
             run.hurt(shield * 2, undefined);
             expect(run.hp).toBeLessThan(hp);

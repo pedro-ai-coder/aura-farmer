@@ -4,8 +4,8 @@ import { WAVES, WAVE_SECONDS, BOSS_START } from '../catalog/content';
 describe('phase 4.14: second-wave difficulty adjustment', () => {
     it('eases wave-two pressure without weakening its health scaling', () => {
         expect(WAVES[1].hp).toBe(1.3);
-        expect(WAVES[1].damage).toBe(1.08);
-        expect(WAVES[1].density).toBe(1.12);
+        expect(WAVES[1].damage).toBe(.88);
+        expect(WAVES[1].density).toBe(1);
         expect(WAVES[1].damage).toBeGreaterThan(WAVES[0].damage);
         expect(WAVES[1].density).toBeGreaterThan(WAVES[0].density);
         expect(WAVES[2].damage).toBeGreaterThan(WAVES[1].damage);

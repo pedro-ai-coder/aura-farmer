@@ -88,8 +88,8 @@ export const PASSIVES: readonly Passive[] = [
 export const weaponById = (id: string) => WEAPONS.find(w => w.id === id);
 export const passiveById = (id: string) => PASSIVES.find(p => p.id === id);
 export const WAVES = [
-    { name: 'First Post', hp: 1, damage: 1, density: 1, weights: [90, 10, 0] },
-    { name: 'Comment Section', hp: 1.3, damage: 1.08, density: 1.12, weights: [70, 28, 2] },
+    { name: 'First Post', hp: 1, damage: .8, density: .9, weights: [90, 10, 0] },
+    { name: 'Comment Section', hp: 1.3, damage: .88, density: 1, weights: [70, 28, 2] },
     { name: 'Going Viral', hp: 1.65, damage: 1.3, density: 1.4, weights: [45, 45, 10] },
     { name: 'Cancel Storm', hp: 2.05, damage: 1.5, density: 1.65, weights: [25, 50, 25] },
     { name: 'Final Ratio', hp: 2.5, damage: 1.75, density: 1.9, weights: [10, 50, 40] },

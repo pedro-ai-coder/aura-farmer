@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Run } from './run';
 import type { Choice } from './inventory';
+import { distance, move as worldMove } from './world';
 
 const heroes = ['sigma', 'cool-kid', 'alpha'] as const;
 const seeds = [47001, 47002, 47003] as const;
@@ -22,8 +23,77 @@ function choiceScore(c: Choice, run: Run): number {
     return score;
 }
 
+/** A deterministic player-like movement policy that avoids walking into walls.
+ * Unlike the former 12-second fixed square, it collects nearby drops and kites
+ * visible enemies. Enemy AI, contact damage and collision remain fully active.
+ */
+function guidedMovement(run: Run) {
+    if (run.hp < run.maxHp * .6 &&
+        run.time >= run.safeSpotReadyAt &&
+        distance(run.pos, run.safeSpot) < run.safeSpot.radius - 12)
+        return { x: 0, y: 0 };
+
+    const visible = run.enemies.filter(e => e.born <= run.time && e.hp > 0 &&
+        distance(e, run.pos) < 260);
+    const closestDrop = run.drops.reduce<typeof run.drops[number] | undefined>((closest, d) => {
+        const value = distance(run.pos, d);
+        return value < 260 && (!closest || value < distance(run.pos, closest)) ? d : closest;
+    }, undefined);
+    const healTarget = run.hp < run.maxHp * .6 &&
+        run.time >= run.safeSpotReadyAt && distance(run.pos, run.safeSpot) < 340;
+    // Melee and tank heroes must close distance to ranged Haters; the previous
+    // kiting-only bot let shooters accumulate indefinitely.
+    const rangedTarget = run.hero.role === 'ranged' ? undefined :
+        run.enemies.filter(e => e.kind === 'hater' && e.born <= run.time &&
+            e.hp > 0 && distance(e, run.pos) < 420)
+            .sort((a, b) => distance(a, run.pos) - distance(b, run.pos))[0];
+    const target = healTarget ? run.safeSpot : rangedTarget ?? closestDrop;
+    const phase = Math.floor(run.time / 8) % 4;
+    const preferred = [
+        { x: 1, y: 0 }, { x: 0, y: 1 },
+        { x: -1, y: 0 }, { x: 0, y: -1 },
+    ][phase];
+    const diagonal = Math.SQRT1_2;
+    const candidates = [
+        { x: 1, y: 0 }, { x: diagonal, y: diagonal }, { x: 0, y: 1 },
+        { x: -diagonal, y: diagonal }, { x: -1, y: 0 },
+        { x: -diagonal, y: -diagonal }, { x: 0, y: -1 },
+        { x: diagonal, y: -diagonal },
+    ];
+    let best = preferred, bestScore = -Infinity;
+    const travel = run.hero.speed * .25;
+    for (const candidate of candidates) {
+        const next = worldMove(run.pos, candidate.x * travel, candidate.y * travel);
+        const progress = distance(run.pos, next);
+        if (progress < 8) continue;
+        const threatPenalty = visible.reduce((sum, e) => {
+            const minimum = run.hero.role !== 'ranged' && e.kind === 'hater' ? 92 : 140;
+            return sum + Math.pow(Math.max(0, minimum - distance(next, e)), 2) / 65;
+        }, 0);
+        const targetProgress = target
+            ? distance(run.pos, target) - distance(next, target) : 0;
+        const score = progress * .15 - threatPenalty + targetProgress * 1.6 +
+            (candidate.x * preferred.x + candidate.y * preferred.y) * 5;
+        if (score > bestScore) { bestScore = score; best = candidate; }
+    }
+    return best;
+}
+
 function simulate(hero: typeof heroes[number], seed: number, limit: number) {
     const run = new Run(hero, seed);
+    // Attribute actual HP loss to the enemy that caused it; shielded/mitigated
+    // hits contribute only the damage that reached player HP.
+    const damageBySource: Record<string, number> = {};
+    const applyHurt = run.hurt.bind(run);
+    run.hurt = (raw, source, contact = false, hazard = false) => {
+        const before = run.damageTaken;
+        applyHurt(raw, source, contact, hazard);
+        const applied = run.damageTaken - before;
+        if (applied > 0) {
+            const key = source?.kind ?? (hazard ? 'hazard' : 'unknown');
+            damageBySource[key] = (damageBySource[key] ?? 0) + applied;
+        }
+    };
     let ticks = 0;
     let selections = 0;
     const milestones: { second: number; wave: number; hp: number; level: number; weapons: number; passives: number }[] = [];
@@ -47,10 +117,9 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         }
         if (run.mode === 'legendary') { run.deferLegendary(); continue; }
         if (run.mode !== 'playing') throw new Error(`Unexpected mode: ${run.mode}`);
-        const phase = Math.floor(run.time / 12) % 4;
-        const move = [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }][phase];
+        const input = guidedMovement(run);
         if (run.aura >= 100) run.activateFlex();
-        run.update(.25, move);
+        run.update(.25, input);
         if (++ticks > limit * 5 + 100) throw new Error('Simulation stalled');
         if (run.time >= nextMilestone) {
             milestones.push({ second: nextMilestone, wave: run.wave, hp: Math.round(run.hp), level: run.level,
@@ -63,17 +132,28 @@ function simulate(hero: typeof heroes[number], seed: number, limit: number) {
         damageTaken: Number(run.damageTaken.toFixed(2)), damageDealt: Number(run.damageDealt.toFixed(2)),
         healing: Number(run.healing.toFixed(2)), flex: run.flexCount, shields: Number(run.protection.toFixed(2)),
         selections, weapons: run.inventory.weapons.map(i => i.id), passives: run.inventory.passives.map(i => i.id),
-        bossDefeated: run.bossDefeated, milestones };
+        bossDefeated: run.bossDefeated,
+        eventBossesDefeated: [...run.eventsDefeated],
+        activeEventBosses: run.enemies.filter(e => ['reply-guy', 'mod-supremo', 'ohio-express', 'doomscroll-prime'].includes(e.kind))
+            .map(e => ({ kind: e.kind, hp: Math.round(e.hp) })),
+        drops: {
+            snacksSpawned: run.counters.snacksSpawned ?? 0,
+            snacksCollected: run.counters.snacksCollected ?? 0,
+            magnetsSpawned: run.counters.magnetsSpawned ?? 0,
+            magnetsCollected: run.counters.magnetsCollected ?? 0,
+        },
+        damageBySource: Object.fromEntries(Object.entries(damageBySource).map(([key, value]) => [key, Number(value.toFixed(2))])),
+        milestones };
 }
 
-describe('phase 4.12: adaptive-build early-wave balance', () => {
+describe('phase 4.16: guided six-minute survival QA', () => {
     for (const hero of heroes) for (const seed of seeds) {
         it(`${hero}/${seed} survives or reports real defeat deterministically`, () => {
-            const first = simulate(hero, seed, 180);
-            const replay = simulate(hero, seed, 180);
+            const first = simulate(hero, seed, 360);
+            const replay = simulate(hero, seed, 360);
             expect(first).toEqual(replay);
             expect(first.seconds).toBeGreaterThan(0);
-            expect(first.seconds).toBeLessThanOrEqual(180.25);
+            expect(first.seconds).toBeLessThanOrEqual(360.25);
             expect(first.weapons.length).toBeLessThanOrEqual(3);
             expect(first.passives.length).toBeLessThanOrEqual(5);
             expect(first.damageTaken).toBeGreaterThanOrEqual(0);

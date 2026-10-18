@@ -9,8 +9,8 @@ Measure whether players who deliberately select existing area-clear weapons and 
 - Three heroes (Sigma, Cool Kid, Alpha Chad), three fixed seeds each.
 - Real enemy AI, contact damage, attacks, XP collection, equipment choices, Flex and early defeats.
 - Deterministic, transparent selection heuristic: prioritize healing at critical HP, defensive passives when injured, area weapons and useful upgrades; select a legal replacement when slots are full.
-- Move in a twelve-second clockwise square; use Flex when charged. This is a test policy, not a substitute for a human player.
-- Default CI: nine 180-second attempts, each replayed to check determinism.
+- Deterministic guided movement seeks nearby pickups, keeps moving around obstacles, and avoids visible enemies; uses Flex when charged. The original twelve-second square was too prone to getting stuck at map boundaries. Neither policy substitutes for human playtesting.
+- Default CI (updated in PR #83): nine 360-second attempts, each replayed to check determinism and cover the 3:15 Reply Guy event; damage totals are attributed to their enemy kind.
 - Extended suite: nine up-to-1,200-second attempts, logging one-minute snapshots and outcomes.
 
 ## Run
