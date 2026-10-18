@@ -139,4 +139,34 @@ test('Option A sprite contact sheets: all existing frames and logical directions
         await page.locator('#hero-state-contact-sheet').evaluate(el => el.remove());
     }
     await page.locator('#character-contact-sheet').evaluate(el => el.remove());
+
+    const actualMattes = await page.evaluate(async () => {
+        const matteUrl: string = '/src/browser/hero-frame-mattes.ts';
+        const { HERO_FRAME_EDGE_MATTE, heroFrameTexture } =
+            await import(/* @vite-ignore */ matteUrl);
+        const game = (window as any).__app;
+        const results: { hero: string; frame: number; opaqueInterior: number }[] = [];
+        for (const [hero, frames] of Object.entries(HERO_FRAME_EDGE_MATTE)) {
+            for (const [id, boundaries] of Object.entries(frames as Record<string, {
+                left: number; right: number;
+            }>)) {
+                const art = heroFrameTexture(hero, 'atlas', Number(id));
+                const texture = game.scene.textures.get(art.key);
+                const canvas = texture.getSourceImage() as HTMLCanvasElement;
+                const ctx = canvas.getContext('2d')!;
+                const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let opaqueInterior = 0;
+                for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
+                    const alpha = data[(y * canvas.width + x) * 4 + 3];
+                    const edge = x < boundaries.left || x >= canvas.width - boundaries.right;
+                    if (edge && alpha !== 0) throw new Error('Uncleaned fringe: ' + art.key);
+                    if (!edge && alpha > 0) opaqueInterior++;
+                }
+                results.push({ hero, frame: Number(id), opaqueInterior });
+            }
+        }
+        return results;
+    });
+    expect(actualMattes).toHaveLength(7);
+    for (const frame of actualMattes) expect(frame.opaqueInterior).toBeGreaterThan(800);
 });
