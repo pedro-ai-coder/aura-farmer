@@ -5,6 +5,7 @@ import { itemInterval, itemPower, type Choice, type Item } from '../game/simulat
 import { Run, choiceSummary, isDemoHero } from '../game/simulation/run';
 import { WORLD } from '../game/simulation/world';
 import { BrowserScene } from './scene';
+import { visiblePlayfieldBounds } from './touch-playfield';
 import { AudioCues } from './audio';
 import { readSave, writeSave, recordResult, type Save, type StorageLike } from './save';
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
@@ -125,11 +126,26 @@ export class BrowserApp {
         };
         zone.addEventListener('pointerdown', event => {
             if (this.touchPointer !== null || this.run?.mode !== 'playing') return;
+            // The upper HUD and bottom action controls are not part of the
+            // interactive arena, even though they are drawn over the canvas.
+            const controls = document.querySelectorAll('#hud .hud-top, #hud .hud-bottom, #hud .boss-meter');
+            for (const control of controls) {
+                const b = control.getBoundingClientRect();
+                if (event.clientX >= b.left && event.clientX < b.right &&
+                    event.clientY >= b.top && event.clientY < b.bottom) return;
+            }
+            const bounds = zone.getBoundingClientRect();
+            if (bounds.width <= 0 || bounds.height <= 0) return;
             this.touchPointer = event.pointerId;
             origin = { x: event.clientX, y: event.clientY };
-            const bounds = zone.getBoundingClientRect();
-            joystick.style.left = `${event.clientX - bounds.left}px`;
-            joystick.style.top = `${event.clientY - bounds.top}px`;
+            // Keep the entire 116px control artwork inside the playfield,
+            // including near the world edges. Its movement origin is still
+            // the finger's true starting position.
+            const half = 58;
+            const x = Math.max(Math.min(bounds.width - half, event.clientX - bounds.left), Math.min(half, bounds.width / 2));
+            const y = Math.max(Math.min(bounds.height - half, event.clientY - bounds.top), Math.min(half, bounds.height / 2));
+            joystick.style.left = `${x}px`;
+            joystick.style.top = `${y}px`;
             joystick.style.display = 'flex';
             zone.setPointerCapture(event.pointerId);
             updateTouch(event);
@@ -186,6 +202,32 @@ export class BrowserApp {
         camera.setZoom(Math.max(.01, zoom));
         camera.setBounds(0, 0, WORLD.width, WORLD.height);
         camera.centerOn(this.run?.pos.x ?? WORLD.width / 2, this.run?.pos.y ?? WORLD.height / 2);
+        this.alignTouchZone();
+    }
+    /** Track the rendered map rather than the full app/canvas background. */
+    private alignTouchZone() {
+        if (!this.scene.ready || !matchMedia('(pointer: coarse)').matches) return;
+        const zone = document.querySelector<HTMLElement>('#touch-zone');
+        const canvas = this.game?.canvas;
+        if (!zone || !canvas) return;
+        const bounds = canvas.getBoundingClientRect();
+        const stage = document.querySelector('#app')!.getBoundingClientRect();
+        const camera = this.scene.cameras.main;
+        const area = visiblePlayfieldBounds(bounds, stage, {
+            topLeft: camera.getWorldPoint(0, 0),
+            bottomRight: camera.getWorldPoint(canvas.width, canvas.height),
+        }, WORLD);
+        const styles = {
+            left: `${area.left.toFixed(2)}px`,
+            top: `${area.top.toFixed(2)}px`,
+            width: `${area.width.toFixed(2)}px`,
+            height: `${area.height.toFixed(2)}px`,
+            right: 'auto',
+            bottom: 'auto',
+        };
+        for (const [name, value] of Object.entries(styles))
+            if (zone.style.getPropertyValue(name) !== value)
+                zone.style.setProperty(name, value);
     }
     start(hero: DemoHero = this.save.selected) {
         this.audio.unlock();
@@ -304,8 +346,10 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
-            if (this.scene.ready && matchMedia('(pointer: coarse) and (orientation: landscape)').matches)
+            if (this.scene.ready && matchMedia('(pointer: coarse) and (orientation: landscape)').matches) {
                 this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
+                this.alignTouchZone();
+            }
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
             if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
