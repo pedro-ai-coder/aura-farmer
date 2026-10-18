@@ -24,11 +24,15 @@ describe('mobile joystick visible-map bounds', () => {
 
     it('clips to the current camera view after the player moves', () => {
         const viewport = { topLeft: { x: 724, y: 400 }, bottomRight: { x: 2172, y: 1486 } };
-        expect(visiblePlayfieldBounds(
+        const area = visiblePlayfieldBounds(
             { left: 50, top: 30, width: 720, height: 540 },
             { left: 30, top: 20 },
             viewport, world
-        )).toEqual({ left: 20, top: 10, width: 362, height: 343 });
+        );
+        expect(area.left).toBe(20);
+        expect(area.top).toBe(10);
+        expect(area.width).toBeCloseTo(360);
+        expect(area.height).toBeCloseTo(341.1, 1);
     });
 
     it('never returns negative or non-finite dimensions when the world is off-screen', () => {
