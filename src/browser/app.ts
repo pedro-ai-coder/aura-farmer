@@ -129,7 +129,7 @@ export class BrowserApp {
             // The upper HUD and bottom action controls are not part of the
             // interactive arena, even though they are drawn over the canvas.
             const controls = document.querySelectorAll('#hud .hud-top, #hud .hud-bottom, #hud .boss-meter');
-            for (const control of controls) {
+            for (const control of Array.from(controls)) {
                 const b = control.getBoundingClientRect();
                 if (event.clientX >= b.left && event.clientX < b.right &&
                     event.clientY >= b.top && event.clientY < b.bottom) return;
