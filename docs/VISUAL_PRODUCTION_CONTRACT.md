@@ -24,7 +24,7 @@
 
 These are semantic anchors from GDD A.3, **not** a ban on additional clothing, rarity or map colors. Common, rare, epic, legendary must be conveyed by symbol and text as well as color; danger telegraphs must not be only red versus green. Do not introduce an unrelated neon UI theme.
 
-## Character production targets — PR #94
+## Character production targets — stage V1
 
 | Hero | Must remain identifiable without labels | Specific verification |
 | --- | --- | --- |
@@ -36,19 +36,19 @@ Per GDD A.5: **8 logical directions**, **4 run frames per direction**, **2 idle 
 
 **Acceptance evidence:** capture each hero in 8 directions, idle/run/attack/hurt/defeat and all Flex stages at normal viewport; confirm no sliding, popping, hair/accessory inversion, clipped limbs or incorrect hitboxes. Count states and visually inspect frames; metadata alone cannot prove they are distinct drawings.
 
-## Enemy and boss targets — PR #95
+## Enemy and boss targets — stage V2
 
 NPC/Phone Guy, Hater, Beta Bot, Doomscroller, Ping Sniper and all active enemy families require individual silhouettes; do not present atlas metadata as final silhouettes. Windup/impact/recovery for projectile and charge enemies must visually correspond to the locked attack direction. Elite rank requires more than recoloring. Big Hater retains crown, pink body, white shirt and huge fists; berserk changes expression and timing without obscuring telegraphs or granting invisible attack phases.
 
 **Acceptance evidence:** a side-by-side unlit silhouette sheet at game scale; recorded windup/impact frames for ranged/melee/hazard enemies; separate boss normal/berserk screenshots and telegraph/hitbox alignment checks.
 
-## Weapons, Flex, shields and drops — PR #96
+## Weapons, Flex, shields and drops — stage V3
 
 Every one of the nine weapons needs recognizable animation/projectile/attack shape matching GDD A.8. Area attacks show precise affected regions without covering the player or hiding hostile warnings. Shield absorption, expiry, healing and cooldown are visibly distinct. Aura Snack and Aura Magnet must be distinct in shape as well as hue; ordinary XP crystals remain separate. Each hero's Flex should have an unmistakable start, active and exit state, visually different from other heroes' Flex.
 
 **Acceptance evidence:** real input/combat recordings for every attack family, shield absorption/expiry, pickups and Flex. No visual frame changes should alter combat ticks, damage or invulnerability. Limit VFX draw calls/particles on phones.
 
-## HUD, modals and item illustrations — PR #97
+## HUD, modals and item illustrations — stage V4
 
 - HUD: HP/shield, XP/level, wave/time and Flex all independently legible; boss HP/timer appears without displacing critical gameplay controls.
 - Reference **1280×720**: permanent panels should generally stay within **15% of usable game area** (GDD A.9). Item comparison belongs in a separate actionable panel.
@@ -56,11 +56,11 @@ Every one of the nine weapons needs recognizable animation/projectile/attack sha
 - Illustrations: approved GDD target is **at least 64×64 exports**, legible at **32×32**; visual matches attack in game, even across rarity variants. The full catalog's icons need not be declared complete if only the current solo subset is delivered.
 - Inputs: desktop focus rings and mobile safe-area/landscape fallbacks must survive visual restyling. English UI copy only.
 
-## Environment — PR #98
+## Environment — stage V5
 
 Ruin Alley is the only required playable map in the initial solo web demo. Keep authored landmarks, side passages and real cover. Match visual ground contact, shadow, prop perspective and collision. Do not silently introduce Crown Court/Toxic Garden as playable maps; their approved PNG masters are future content.
 
-## Quality evidence — PR #99
+## Quality evidence — stage V6
 
 Test **1280×720**, **1920×1080**, **800×600**, **mobile landscape 915×412** and a portrait viewport. Desktop 60 FPS and low-profile stable 30 FPS are **targets that require measurement on a defined device**, not assertions about the current build. Check high enemy density, fullscreen transitions, safe areas, upgrade cards, boss/bursts, frame clipping and reduced-motion/effects. A screenshot is insufficient for animation timing: include a short actual gameplay video or frame-by-frame test evidence.
 
