@@ -115,6 +115,9 @@ export class BrowserApp {
             this.touchDirection = { x: 0, y: 0 };
             joystick.style.display = 'none';
             knob.style.transform = '';
+            // A camera pan can change visible playfield bounds while dragging.
+            // Re-align on release instead of moving the joystick under a finger.
+            this.alignTouchZone();
         };
         const updateTouch = (event: PointerEvent) => {
             const radius = 44;
@@ -206,6 +209,9 @@ export class BrowserApp {
     }
     /** Track the rendered map rather than the full app/canvas background. */
     private alignTouchZone() {
+        // Lock the touch surface for the gesture's lifetime so the floating
+        // control does not slide under the finger when the camera follows.
+        if (this.touchPointer !== null) return;
         if (!this.scene.ready || !matchMedia('(pointer: coarse)').matches) return;
         const zone = document.querySelector<HTMLElement>('#touch-zone');
         const canvas = this.game?.canvas;
