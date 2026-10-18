@@ -16,8 +16,12 @@ test('Option A sprite contact sheets: all existing frames and logical directions
     await expect(page.locator('#hud')).toBeVisible();
     for (const heroId of ['sigma', 'cool-kid', 'alpha'] as const) {
         const result = await page.evaluate(async (id) => {
-            const { Run } = await import('/src/game/simulation/run.ts');
-            const { heroPose } = await import('/src/browser/hero-animation.ts');
+            // Dynamic dev-server modules run in the browser, not the Node
+            // Playwright process; Vite resolves these absolute URLs.
+            const runUrl: string = '/src/game/simulation/run.ts';
+            const poseUrl: string = '/src/browser/hero-animation.ts';
+            const { Run } = await import(/* @vite-ignore */ runUrl);
+            const { heroPose } = await import(/* @vite-ignore */ poseUrl);
             const game = (window as any).__app;
             const run = new Run(id);
             const scene = game.scene;
