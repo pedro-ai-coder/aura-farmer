@@ -44,9 +44,9 @@
 
 ## Baseline screenshots, not marketing renders
 
-Run `npm run test:browser -- visual-baseline.spec.ts`, or read the screenshots attached to the **Playwright Chromium / browser-test-results** artifact from the PR's CI run. The test records a desktop home at 1280×720 and 1920×1080, in-game **all three launch heroes**, an upgrade panel, pause, a Big Hater encounter screenshot, and portrait/landscape mobile captures.
+Run `npm run test:browser -- visual-baseline.spec.ts`, or read the screenshots attached to the **Playwright Chromium / browser-test-results** artifact from the PR's CI run. The test records a desktop home at 1280×720 and 1920×1080, in-game **all three launch heroes**, their individual Flex presentations, an upgrade panel, pause, Big Hater and berserk, and portrait/landscape mobile captures.
 
-The boss and upgrade captures use explicit **test-only simulation fixtures** to reach those UI states; they do **not** prove a real player can reach the boss or win. Crowd density/Flex/berserk visuals remain **uncaptured** until a dedicated controlled art-scene harness or real run provides representative images. Do not fabricate before/after panels or call this pass a visual overhaul.
+The boss and upgrade captures use explicit **test-only simulation fixtures** to reach those UI states; they do **not** prove a real player can reach the boss or win. Flex and berserk screenshots are captured as **isolated test fixtures**, not continuous combat evidence; crowded-wave visuals and real animation recordings remain **uncaptured** until a controlled dense-combat scene or real human run provides representative images. Do not fabricate before/after panels or call this pass a visual overhaul.
 
 ### Handoff / owner checkpoint
 
