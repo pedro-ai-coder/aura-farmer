@@ -22,10 +22,11 @@ async function visitWithTestHook(page: Page) {
 }
 
 async function capture(page: Page, testInfo: TestInfo, name: string) {
-    await testInfo.attach(name, {
-        body: await page.screenshot({ animations: 'disabled', fullPage: true }),
-        contentType: 'image/png',
-    });
+    // Playwright reporter attachments alone were not present in CI's existing
+    // browser-test-results ZIP. Persist explicit paths under test-results too.
+    const path = `test-results/${name}.png`;
+    await page.screenshot({ path, animations: 'disabled', fullPage: true });
+    await testInfo.attach(name, { path, contentType: 'image/png' });
 }
 
 test('Option A BEFORE: desktop menu at 1280 and 1920, upgrade and pause', async ({ page }, testInfo) => {
