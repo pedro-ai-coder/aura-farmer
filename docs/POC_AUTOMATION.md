@@ -35,7 +35,7 @@ The output file is a local artifact, not a source of truth and not an authorizat
 In Actions, select **PoC readiness inventory (manual, read-only)** and choose **Run workflow**. The run validates the guardrails, creates an inventory, and uploads a JSON artifact retained for three days. Because it has only workflow_dispatch, it will not run on a push, pull request, schedule or merge.
 
 The existing workflows remain the actual technical validation:
-- .github/workflows/ci.yml: TypeScript, Vitest, Vite production build and Playwright.
+- .github/workflows/ci.yml: TypeScript, Vitest, Vite production build and Playwright; this PR adds a native Node guardrail-test step and read-only GDD inventory check to the existing PR CI job.
 - .github/workflows/secrets.yml: secret exposure scan.
 - scripts/validate-local.mjs: repeatable validation for scoped work.
 
@@ -73,4 +73,4 @@ A later stateful coordinator may select the next eligible task only when all pre
 
 ## Safety of this stage
 
-This change does not touch game source, GDD, assets, CI workflow semantics or deployment configuration. It never calls external AI APIs. The new workflow runs only if a person manually starts it, and only after the workflow is present on the appropriate branch in GitHub Actions. It cannot autonomously develop the game. That ability requires later reviewable infrastructure and explicit approval.
+This change does not touch game source, GDD, assets or deployment configuration. Existing CI triggers are preserved; only two read-only orchestration validation steps are added to the existing CI job. It never calls external AI APIs. The new workflow runs only if a person manually starts it, and only after the workflow is present on the appropriate branch in GitHub Actions. It cannot autonomously develop the game. That ability requires later reviewable infrastructure and explicit approval.
