@@ -28,6 +28,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: PoC orchestration safety tests
+        run: node --test automation/poc-readiness.test.mjs
+      - name: Check canonical GDD and PoC readiness inventory
+        run: node automation/poc-readiness.mjs > /dev/null
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
