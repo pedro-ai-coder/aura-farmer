@@ -44,10 +44,11 @@ describe('phase 4.18: late-wave survival pressure', () => {
             const weighted = weightedSpawnPool(pool, wave, wave * 180 - 90);
             for (const kind of pool) {
                 expect(weighted.filter(k => k === kind)).toHaveLength(
-                    kind === 'doomscroller' || kind === 'ping-sniper' ? 1 : 2
+                    kind === 'doomscroller' || kind === 'ping-sniper' || kind === 'hater' ? 1 : 2
                 );
             }
             expect(weighted.every(k => pool.includes(k))).toBe(true);
+            expect(weighted.filter(k => k === 'hater')).toHaveLength(1);
             expect(weighted.filter(k => k === 'doomscroller')).toHaveLength(1);
             if (wave >= 4) expect(weighted.filter(k => k === 'ping-sniper')).toHaveLength(1);
         });
