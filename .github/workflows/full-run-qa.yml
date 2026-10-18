@@ -1,0 +1,44 @@
+name: Complete-run boss QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/game/simulation/adaptive-build-balance.test.ts'
+      - '.github/workflows/full-run-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-run-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  balance:
+    name: Nine real-damage complete runs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Nine seeded complete-run simulations
+        shell: bash
+        run: |
+          set -o pipefail
+          AURA_ADAPTIVE_FULL_QA=1 npm test -- adaptive-build-balance.test.ts | tee complete-run-qa.log
+      - name: Archive full-run evidence for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete-run-qa-evidence
+          path: complete-run-qa.log
+          if-no-files-found: warn
+          retention-days: 3
