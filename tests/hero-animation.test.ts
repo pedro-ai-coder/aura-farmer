@@ -13,6 +13,38 @@ describe('authored hero pose playback', () => {
         r.moving = true; r.time = 1; r.movementFacing = -Math.PI / 2; r.facing = 0;
         expect(heroPose(r).frame).toBe(25);
     });
+    for (const id of heroes) {
+        it(`${id}: running frames and mirroring never depend on auto-aim direction`, () => {
+            const r = new Run(id);
+            r.moving = true;
+            for (let dir = 0; dir < 8; dir++) {
+                r.movementFacing = dir * Math.PI / 4;
+                for (let step = 0; step < 4; step++) {
+                    const playback = { walk: (step + .1) / 9, defeat: 0 };
+                    r.facing = 0;
+                    const eastAim = heroPose(r, playback);
+                    r.facing = Math.PI;
+                    const westAim = heroPose(r, playback);
+                    expect(eastAim).toEqual(westAim);
+                    const expectedMirror = id === 'sigma' ? dir === 5 : dir === 4;
+                    expect(eastAim.flip).toBe(expectedMirror);
+                    expect(eastAim.state).toBe('run');
+                }
+            }
+        });
+    }
+    it('retains independent aim when stationary without changing the frame state', () => {
+        const run = new Run('sigma');
+        run.moving = false;
+        run.facing = 0;
+        const lookingEast = heroPose(run);
+        run.facing = Math.PI;
+        const lookingWest = heroPose(run);
+        expect(lookingEast.state).toBe('idle');
+        expect(lookingEast.frame).toBe(lookingWest.frame);
+        expect(lookingEast.flip).toBe(false);
+        expect(lookingWest.flip).toBe(true);
+    });
     it('uses the actual Cool Kid death pose, not a walk frame', () => {
         const r = new Run('cool-kid'); r.mode = 'lost'; r.moving = true;
         expect(heroPose(r).frame).toBe(32);
