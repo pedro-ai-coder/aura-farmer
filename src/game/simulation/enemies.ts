@@ -113,7 +113,8 @@ export function updateEnemies(r: Run, dt: number) {
                 break;
             case 'ping-sniper':
                 if (projectile(1.2))
-                    e.nextAttack = r.time + 4.8;
+                    // The GDD specifies one locked shot every 6 seconds.
+                    e.nextAttack = r.time + 6;
                 break;
             case 'ratio-ram':
             case 'ohio-express': {
