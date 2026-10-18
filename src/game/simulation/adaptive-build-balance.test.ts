@@ -261,6 +261,12 @@ describe.skipIf(process.env.AURA_ADAPTIVE_FULL_QA !== '1')('phase 4.17: complete
         // *same* seeds and movement policy, without scripted damage or wins.
         expect(fullOutcomes.filter(result => result.bossSpawned === 1).length)
             .toBeGreaterThanOrEqual(2);
+        // Do not accept a green full-run workflow that only proves the bot
+        // can outlive the boss without inflicting enough damage to win.
+        expect(fullOutcomes.some(result =>
+            result.outcome === 'won' && result.bossDefeated &&
+            result.bossDamageActual >= 30000
+        )).toBe(true);
         for (const hero of ['sigma', 'cool-kid'] as const)
             expect(fullOutcomes.some(result => result.hero === hero && result.wave >= 4))
                 .toBe(true);
