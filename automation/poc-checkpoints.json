@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "sourceOfTruth": "docs/GDD.md",
+  "scope": "First solo desktop/mobile browser test build; Discord, multiplayer, backend, monetization and full release excluded.",
+  "checkpoints": [
+    {
+      "id": "solo-baseline",
+      "title": "Confirm browser solo baseline",
+      "dependsOn": [],
+      "acceptance": [
+        "CI passing on exact candidate SHA",
+        "Three playable heroes and five-wave boss loop match GDD",
+        "Functional gaps documented with links to evidence"
+      ]
+    },
+    {
+      "id": "art-and-presentation",
+      "title": "Validate approved art and game presentation",
+      "dependsOn": [
+        "solo-baseline"
+      ],
+      "acceptance": [
+        "Reconcile in-game art gaps with GDD and ASSET_POLICY",
+        "No new asset generation without owner approval",
+        "Review actual browser presentation"
+      ]
+    },
+    {
+      "id": "desktop-mobile-input",
+      "title": "Validate desktop and mobile controls",
+      "dependsOn": [
+        "solo-baseline"
+      ],
+      "acceptance": [
+        "Browser tests on exact candidate SHA",
+        "Real Android and iOS landscape playtests",
+        "Fullscreen, joystick, pause and modal handling verified"
+      ]
+    },
+    {
+      "id": "full-run-balance",
+      "title": "Validate full runs and balance",
+      "dependsOn": [
+        "solo-baseline"
+      ],
+      "acceptance": [
+        "Reproducible genuine-damage full runs for three heroes",
+        "Record seeds, builds, damage, waves, boss and results",
+        "Human playtests and balance conclusions reviewed"
+      ]
+    },
+    {
+      "id": "stability-performance",
+      "title": "Validate stability and device performance",
+      "dependsOn": [
+        "desktop-mobile-input",
+        "full-run-balance"
+      ],
+      "acceptance": [
+        "TypeScript, Vitest, build and Playwright green on final SHA",
+        "Reliability and performance checked on reference devices",
+        "No outstanding critical regressions"
+      ]
+    },
+    {
+      "id": "preview-and-owner-acceptance",
+      "title": "Vercel preview and owner acceptance",
+      "dependsOn": [
+        "art-and-presentation",
+        "stability-performance"
+      ],
+      "acceptance": [
+        "Live HTTPS preview manually verified playable",
+        "Known scope gaps and limitations documented",
+        "Explicit owner approval for merge and PoC acceptance"
+      ]
+    }
+  ]
+}

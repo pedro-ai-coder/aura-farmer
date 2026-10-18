@@ -1,0 +1,34 @@
+name: PoC readiness inventory (manual, read-only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: poc-readiness-readonly
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    name: Inspect GDD and acceptance checkpoints
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify orchestration guardrails
+        run: node --test automation/poc-readiness.test.mjs
+      - name: Generate read-only report (no AI or paid APIs)
+        run: node automation/poc-readiness.mjs --output reports/automation/poc-readiness.json
+      - name: Upload readiness report
+        uses: actions/upload-artifact@v4
+        with:
+          name: poc-readiness-inventory
+          path: reports/automation/poc-readiness.json
+          retention-days: 3
