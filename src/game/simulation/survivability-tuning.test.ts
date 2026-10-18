@@ -12,8 +12,8 @@ describe('phase 4.16: opening-wave survival tuning', () => {
             expect(WAVES[i].density).toBeGreaterThan(WAVES[i - 1].density);
         }
         expect(WAVES[2].hp).toBe(1.65);
-        expect(WAVES[3].damage).toBe(1.5);
-        expect(WAVES[4].damage).toBe(1.75);
+        expect(WAVES[3].damage).toBe(1.35);
+        expect(WAVES[4].damage).toBe(1.58);
     });
 
     it('preserves enemy HP, XP, event timings, full-run length and boss berserk', () => {
