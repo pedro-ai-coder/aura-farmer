@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 // Playwright's Node runner does not support implicit JSON import assertions.
-const enemyFrames = JSON.parse(readFileSync('src/browser/enemy-frames.json', 'utf8'))
-    as Record<string, { sheet: string; frames: unknown[] }>;
+const enemyFrames: Record<string, { sheet: string; frames: unknown[] }> =
+    JSON.parse(readFileSync('src/browser/enemy-frames.json', 'utf8'));
 
 /** A review artifact made from actual already-approved runtime textures.
  * Not AI-generated art, a placeholder or proof of finishing every animation.
