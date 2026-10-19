@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { EnemyAnimator, enemyPose } from '../src/browser/enemy-animation';
+import { enemyTelegraph } from '../src/browser/enemy-telegraph';
 import frames from '../src/browser/enemy-frames.json';
 import { ENEMIES, type EnemyKind } from '../src/game/catalog/enemies';
 import { Run } from '../src/game/simulation/run';
@@ -41,13 +42,56 @@ describe('enemy animation presentation', () => {
             expect(new Set(poses.map(p => p.scale)).size).toBe(1);
         }
     });
+    it('attack markers track only real windups, hit the locked aim, and never invent a hit', () => {
+        for (const kind of ['hater', 'ratio-ram', 'ping-sniper', 'reply-guy', 'boss'] as EnemyKind[]) {
+            const { r, e } = fixture(kind);
+            e.angle = -Math.PI / 2;
+            cueEnemyAttack(e, 10, 11.2, Math.PI / 3);
+            const original = JSON.stringify(r);
+            expect(enemyTelegraph(enemyPose(e, 9.99, 0, false, false), 9.99)).toBeUndefined();
+            const early = enemyTelegraph(enemyPose(e, 10.3, 0, false, false), 10.3)!;
+            const late = enemyTelegraph(enemyPose(e, 11, 0, false, false), 11)!;
+            expect(early.kind).toBe('windup');
+            expect(early.angle).toBeCloseTo(Math.PI / 3);
+            expect(late.angle).toBeCloseTo(Math.PI / 3);
+            expect(late.progress).toBeGreaterThan(early.progress);
+            expect(early.radius).toBeGreaterThan(e.radius);
+            expect(enemyTelegraph(enemyPose(e, 11.2, 0, false, false), 11.2)?.kind).toBe('impact');
+            expect(enemyPose(e, 11.46, 0, false, false)).toMatchObject({
+                state: 'recover', frame: `${kind}:0`,
+            });
+            expect(enemyTelegraph(enemyPose(e, 11.46, 0, false, false), 11.46)).toBeUndefined();
+            expect(enemyTelegraph(enemyPose(e, 12, 0, false, false), 12)).toBeUndefined();
+            expect(JSON.stringify(r)).toBe(original);
+        }
+    });
+    it('never highlights ordinary idle, healing support pulses, defeated or staggered enemies as aimed attacks', () => {
+        for (const kind of ['npc', 'hype-bot', 'comment-mod'] as EnemyKind[]) {
+            const { e } = fixture(kind);
+            cueEnemyAttack(e, 10, 11, 0);
+            expect(enemyTelegraph(enemyPose(e, 10.5, 0, false, false), 10.5)).toBeUndefined();
+        }
+        const { e } = fixture('boss');
+        cueEnemyAttack(e, 10, 11, 0);
+        e.staggerUntil = 13;
+        expect(enemyTelegraph(enemyPose(e, 10.5, 0, false, true), 10.5)).toBeUndefined();
+        expect(enemyTelegraph(enemyPose(e, 10.5, 0, false, true, .1), 10.5)).toBeUndefined();
+        const bossBerserk = fixture('boss').e;
+        cueEnemyAttack(bossBerserk, 10, 11, Math.PI);
+        const p = enemyPose(bossBerserk, 10.7, 0, false, true);
+        expect(p.sheet).toBe(frames['boss-berserk'].sheet);
+        expect(p.frame).toBe('boss-berserk:4');
+        expect(enemyTelegraph(p, 10.7)).toMatchObject({ boss: true, angle: Math.PI });
+    });
     it('locks telegraph facing, respects exact impact and recovery, and does not invent damage', () => {
         const { r, e } = fixture(); cueEnemyAttack(e, 10, 10.6, Math.PI);
         e.angle = 0; e.hurtAt = 10.55;
         const before = JSON.stringify(r);
         expect(enemyPose(e, 10.59, 1, true, false)).toMatchObject({ state: 'windup', flip: true });
         expect(enemyPose(e, 10.6, 1, true, false).state).toBe('impact');
-        expect(enemyPose(e, 10.8, 1, true, false).state).toBe('recover');
+        expect(enemyPose(e, 10.8, 1, true, false)).toMatchObject({
+            state: 'recover', frame: 'hater:0',
+        });
         expect(enemyPose(e, 11.1, 1, false, false).state).toBe('idle');
         expect(JSON.stringify(r)).toBe(before);
     });
