@@ -1,0 +1,235 @@
+/* Visual V4 — Option A / Cartoon Arcade. UI-only readability pass.
+ * Deliberately ordered after legacy/mobile styles to normalize the cascade.
+ * Graphic symbols reuse catalog icons; final painted PNGs need owner approval.
+ */
+:root {
+  --ui-paper: #f7edcd;
+  --ui-card: #fff9e9;
+  --ui-ink: #253449;
+  --ui-teal: #6eaab0;
+  --ui-coral: #e57461;
+  --ui-gold: #f8c45f;
+}
+#modal .panel {
+  background: var(--ui-paper);
+  border-color: var(--ui-ink);
+  box-shadow: 7px 9px 0 #1725358a;
+}
+#modal .panel h2 {
+  font-family: Impact, 'Arial Black', Arial, sans-serif;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.14;
+  letter-spacing: .01em;
+}
+#modal .panel p:not(.eyebrow):not(.hero-description),
+#modal .panel .hero-description {
+  font-size: 16px;
+  line-height: 1.45;
+}
+#modal .eyebrow {
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: .09em;
+}
+#modal .home .hero-card {
+  border: 3px solid var(--ui-ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ui-ink);
+  transition: transform .12s ease-out;
+}
+#modal .home .hero-card.selected { background: var(--ui-gold); }
+#modal .home .hero-card strong { font-size: 16px; }
+#modal .home .hero-card small { font-size: 13px; letter-spacing: .035em; }
+#modal .home footer, #modal .home .controls,
+#modal .home .run-contract span, #modal .local-progress {
+  font-size: 13px;
+  line-height: 1.4;
+}
+#modal .home footer button.small { font-size: 13px; }
+#modal .home .hero-description { min-height: 4.35em; }
+
+/* Normal offers remain one row; legendary's six items are exactly 3 × 2.
+ * Scroll the panel, never crush the descriptions into unreadable microtext.
+ */
+#modal .upgrades { max-width: 1110px; }
+#modal .upgrades header { max-width: 800px; margin-inline: auto; }
+#modal .choices,
+#modal .legendary-offer .choices {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+#modal .choice, #modal .legendary-offer .choice {
+  min-width: 0;
+  min-height: 0;
+  border-width: 3px;
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--ui-card);
+  box-shadow: 0 4px 0 #25344930;
+  gap: 6px;
+}
+#modal .choice.selected {
+  background: #fff1c6;
+  border-color: var(--ui-ink);
+  outline: 3px solid var(--ui-gold);
+  outline-offset: 2px;
+}
+#modal .choice.rare { border-color: #448d9d; }
+#modal .choice.epic { border-color: #9167a4; }
+#modal .choice.legendary { border-color: #bc8328; }
+#modal .choice .choice-top {
+  font-size: 13px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  font-weight: 900;
+  width: 100%;
+}
+#modal .choice .icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 3px 0;
+  flex: 0 0 54px;
+  border: 3px solid var(--ui-ink);
+  border-radius: 12px;
+  background: #f7e5a9;
+  font-size: 27px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ui-ink);
+  box-shadow: inset 0 -4px 0 #25344916;
+}
+#modal .choice.legendary .icon { background: var(--ui-gold); }
+#modal .choice.epic .icon { background: #dfc6ea; }
+#modal .choice.rare .icon { background: #c7e4df; }
+#modal .choice h3 {
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+#modal .choice p,
+#modal .legendary-offer .choice p {
+  font-size: 16px;
+  line-height: 1.38;
+  margin: 4px 0;
+  flex-grow: 1;
+}
+#modal .choice small,
+#modal .legendary-offer .choice small {
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+#modal .comparison {
+  margin-top: auto;
+  font-size: 14px;
+  line-height: 1.45;
+  border-top: 2px solid #a4b2a7;
+}
+#modal .replacement, #modal .replacement span,
+#modal .offer-footer > small { font-size: 14px; }
+#modal .choice:focus-visible { outline: 4px solid #168798; outline-offset: 4px; }
+
+/* Inventory: slot numbers and catalog symbols both convey item identity.
+ * A new illustrated sprite is NOT assumed to exist.
+ */
+#modal .equipment-group h3 { font-size: 19px; }
+#modal .equipment-group h3 span { font-size: 13px; }
+#modal .equipment-slot {
+  background: var(--ui-card);
+  border-radius: 12px;
+  min-width: 0;
+  min-height: 70px;
+  gap: 10px;
+}
+#modal .equipment-slot .slot-number { flex-basis: 28px; height: 28px; }
+#modal .equipment-slot .slot-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  height: 40px;
+  border: 2px solid var(--ui-ink);
+  border-radius: 9px;
+  background: #f4dc9f;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ui-ink);
+}
+#modal .equipment-slot.rare .slot-icon { background: #c7e4df; }
+#modal .equipment-slot.epic .slot-icon { background: #dfc6ea; }
+#modal .equipment-slot.legendary .slot-icon { background: var(--ui-gold); }
+#modal .equipment-slot .slot-copy { min-width: 0; }
+#modal .equipment-slot strong { font-size: 16px; line-height: 1.2; }
+#modal .equipment-slot small { font-size: 13px; line-height: 1.35; }
+#modal .equipment-slot.empty .slot-icon { background: transparent; border-style: dashed; }
+#modal .stats span, #modal .save-note { font-size: 14px; }
+
+/* HUD must stay inside the fitted playfield. Make labels readable without
+ * giving the menu/flex new fullscreen controls or larger hitboxes.
+ */
+#hud .meter { font-size: 13px; line-height: 1.32; }
+#hud .meter > span { gap: 8px; }
+#hud .meter b { font-size: 13px; }
+#hud .wave span { font-size: 12px; letter-spacing: .025em; }
+#hud .wave b { font-size: clamp(20px, 2vw, 27px); }
+#hud .hud-top .small { font-size: 13px; min-height: 44px; }
+#hud .boss-meter { font-size: 14px; border: 2px solid #e5746199; }
+#hud .boss-meter small { font-size: 12px; }
+#hud .build-chip { font-size: 13px; line-height: 1.35; }
+#hud .build-chip small { font-size: 12px; }
+#hud .flex span, #hud .flex small { font-size: 12px; }
+#hud .flex strong { font-size: 17px; line-height: 1.2; }
+#hud .hud-right { font-size: 12px; line-height: 1.3; }
+#hud .hud-right button { font-size: 12px; }
+#hud .announcement { max-width: 80%; overflow-wrap: anywhere; }
+
+/* Preserve existing mobile / short landscape touch targets and scrolling.
+ * Trade font size for vertical scrolling inside dialogs, not clipped controls.
+ */
+@media (max-width: 850px) {
+  #modal .panel h2 { font-size: clamp(23px, 4vw, 30px); }
+  #modal .choices, #modal .legendary-offer .choices { gap: 9px; }
+  #modal .choice, #modal .legendary-offer .choice { padding: 10px; }
+  #modal .choice .choice-top { font-size: 11px; }
+  #modal .choice p, #modal .legendary-offer .choice p { font-size: 14px; }
+  #modal .choice h3 { font-size: 16px; }
+  #modal .choice small, #modal .legendary-offer .choice small { font-size: 12px; }
+  #modal .comparison { font-size: 12px; }
+  #hud .meter, #hud .meter b { font-size: 11px; }
+  #hud .wave span, #hud .flex small, #hud .flex span { font-size: 10px; }
+  #hud .build-chip, #hud .hud-right, #hud .hud-right button { font-size: 11px; }
+  #hud .hud-top .small { font-size: 11px; min-height: 38px; }
+}
+@media (max-width: 600px) {
+  #modal .choices { grid-template-columns: minmax(0, 1fr); }
+  #modal .legendary-offer .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #modal .home .hero-card strong { font-size: 13px; }
+  #modal .home .hero-card small { font-size: 11px; }
+  #modal .equipment-group h3 { font-size: 16px; }
+  #modal .equipment-slot { min-height: 54px; padding: 7px; gap: 7px; }
+  #modal .equipment-slot .slot-icon { flex-basis: 32px; height: 32px; font-size: 17px; }
+  #modal .equipment-slot strong { font-size: 14px; }
+  #modal .equipment-slot small { font-size: 11px; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  #modal .panel { padding: 10px 14px; max-height: calc(100dvh - 12px); }
+  #modal .upgrades header h2 { font-size: 24px; }
+  #modal .upgrades header p { font-size: 12px; }
+  #modal .choice .icon { width: 36px; height: 36px; flex-basis: 36px; font-size: 19px; margin: 0; }
+  #modal .choice, #modal .legendary-offer .choice { padding: 8px; gap: 4px; }
+  #modal .choice p, #modal .legendary-offer .choice p { font-size: 13px; line-height: 1.3; }
+  #modal .comparison { font-size: 11px; }
+  #modal .choices { margin: 12px 0; }
+  #hud .meter, #hud .meter b { font-size: 10px; }
+  #hud .wave b { font-size: 19px; }
+  #hud .wave span { font-size: 9px; }
+  #hud .hud-bottom { gap: 5px; }
+  #hud .flex { min-height: 58px; }
+  #hud .flex strong { font-size: 13px; }
+  #hud .flex span, #hud .flex small { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #modal .home .hero-card { transition: none; }
+}
