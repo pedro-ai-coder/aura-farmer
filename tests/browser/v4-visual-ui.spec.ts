@@ -66,6 +66,13 @@ test('V4 legendary grid uses six functional cards in two desktop rows', async ({
     const rows = await page.locator('.legendary-offer .choice').evaluateAll(cards =>
         cards.map(card => Math.round(card.getBoundingClientRect().top)));
     expect(new Set(rows).size).toBe(2);
+    const grid = await page.locator('.legendary-offer .choice').evaluateAll(cards => {
+        const rects = cards.map(card => card.getBoundingClientRect());
+        return { noOverlap: rects[0].bottom <= rects[3].top - 2,
+            contentFits: cards.every(card => card.scrollHeight <= card.clientHeight + 2) };
+    });
+    expect(grid.noOverlap).toBe(true);
+    expect(grid.contentFits).toBe(true);
     await page.locator('.choice').first().click();
     await expect(page.locator('.choice').first()).toHaveAttribute('aria-pressed', 'true');
     const confirm = page.getByRole('button', { name: /CONFIRM CHOICE|REPLACE & EQUIP/ });
