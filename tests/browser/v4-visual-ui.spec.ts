@@ -105,6 +105,10 @@ test('V4 landscape touch: scrollable cards, visible controls and no document ove
         await page.getByRole('button', { name: 'DECIDE LATER' }).click();
         await expect(page.locator('#modal')).toBeHidden();
         await expect(page.locator('#touch-zone')).toBeVisible();
+        await expect(page.locator('.build-chip')).toBeHidden();
+        await expect(page.locator('#hud .flex')).toBeVisible();
+        await expect(page.locator('[data-action="pause"]').first()).toBeVisible();
+        await page.screenshot({ path: 'test-results/v4-mobile-gameplay-915x412.png' });
     } finally {
         await context.close();
     }
