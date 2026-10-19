@@ -21,7 +21,7 @@ export function enemyTelegraph(pose: EnemyPose, time: number): EnemyTelegraph | 
     const { enemy } = pose;
     const attack = enemy.attackPose;
     if (!attack || !CHARGED_KINDS.has(enemy.kind) || time < attack.start ||
-        time >= attack.end || !['windup', 'impact'].includes(pose.state)) return;
+        time >= attack.end || (pose.state !== 'windup' && pose.state !== 'impact')) return;
     const windup = Math.max(0, attack.impact - attack.start);
     return {
         angle: attack.angle,
