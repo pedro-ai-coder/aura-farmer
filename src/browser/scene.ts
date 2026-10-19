@@ -8,6 +8,7 @@ import { installEnemyTextures } from './enemy-textures';
 import { enemyTelegraph } from './enemy-telegraph';
 import { HeroAnimator } from './hero-animation';
 import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
+import { drawWeaponProjectile, drawWeaponAreaAccent, drawSpecialDrop, drawHeroProtection } from './combat-vfx';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
@@ -123,6 +124,13 @@ export class BrowserScene extends Phaser.Scene {
             g.arc(station.x, station.y, 52, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * (1 - cooldown / 90));
             g.strokePath();
         }
+        // The simulation owns exact area geometry. Draw both player accents
+        // and danger regions before actor-local telegraph chevrons, so a gold
+        // weapon flourish never hides the actual hostile locked attack cue.
+        for (const a of r.areas) {
+            this.drawArea(a, r, g);
+            if (!a.hostile) drawWeaponAreaAccent(g, a, r.reduceMotion);
+        }
         const enemyPoses = this.enemyAnimator.sample(r, delta);
         const visible = new Set(enemyPoses.map(p => p.enemy.id));
         for (const [id, image] of this.actors) if (!visible.has(id)) {
@@ -197,14 +205,7 @@ export class BrowserScene extends Phaser.Scene {
             .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
         g.fillStyle(0x253449, .23);
         g.fillEllipse(r.pos.x, r.pos.y + 4, 40, 13);
-        if (r.shield > 0) {
-            g.lineStyle(4, 0x73c8ce, .9);
-            g.strokeCircle(r.pos.x, r.pos.y - 15, 39);
-        }
-        if (r.activeFlex) {
-            g.lineStyle(4, 0xf8c45f, .85);
-            g.strokeCircle(r.pos.x, r.pos.y, 45);
-        }
+        drawHeroProtection(g, r);
         if (r.timers.wifiUntil > r.time) {
             g.fillStyle(0x6eaab0, .13);
             g.fillCircle(r.timers.wifiX, r.timers.wifiY, 160);
@@ -212,28 +213,7 @@ export class BrowserScene extends Phaser.Scene {
             g.strokeCircle(r.timers.wifiX, r.timers.wifiY, 160);
         }
         for (const d of r.drops) {
-            if (d.kind === 'snack' || d.kind === 'magnet') {
-                const magnet = d.kind === 'magnet';
-                const color = magnet ? 0x9c79fa : 0x79e4a3;
-                g.fillStyle(0x253449, .95);
-                g.fillCircle(d.x, d.y, 17);
-                g.lineStyle(3, color, 1);
-                g.strokeCircle(d.x, d.y, 15);
-                if (magnet) {
-                    g.lineStyle(5, 0xffe4a4, 1);
-                    g.beginPath();
-                    g.arc(d.x, d.y, 9, 0, Math.PI, false);
-                    g.strokePath();
-                    g.fillStyle(0xffe4a4);
-                    g.fillRect(d.x - 11, d.y - 1, 5, 6);
-                    g.fillRect(d.x + 6, d.y - 1, 5, 6);
-                } else {
-                    g.fillStyle(color);
-                    g.fillRect(d.x - 3, d.y - 10, 6, 20);
-                    g.fillRect(d.x - 10, d.y - 3, 20, 6);
-                }
-                continue;
-            }
+            if (drawSpecialDrop(g, d)) continue;
             // Bright diamond silhouette and dark halo remain legible on sandy ground.
             g.fillStyle(0x253449, .9);
             g.fillCircle(d.x, d.y, 11);
@@ -245,13 +225,10 @@ export class BrowserScene extends Phaser.Scene {
             g.fillStyle(0xffffff, .95);
             g.fillCircle(d.x - 2, d.y - 3, 2);
         }
-        for (const a of r.areas)
-            this.drawArea(a, r, g);
-        for (const s of r.shots) {
-            f.lineStyle(s.weapon === 'no-cap' ? 12 : s.hostile ? 7 : 5, s.hostile ? 0xd83e4b : 0xf8c45f, 1);
-            f.lineBetween(s.x - Math.cos(s.angle) * 16, s.y - Math.sin(s.angle) * 16, s.x, s.y);
-            f.fillStyle(s.hostile ? 0xff7280 : 0xfff7cf);
-            f.fillCircle(s.x, s.y, s.hostile ? 5 : 3);
+        for (const shot of r.shots) {
+            // A scheduled secondary shot is invisible until its actual spawn.
+            if (shot.at !== undefined && shot.at > r.time) continue;
+            drawWeaponProjectile(f, shot);
         }
         for (const label of this.labels)
             label.setVisible(false);
