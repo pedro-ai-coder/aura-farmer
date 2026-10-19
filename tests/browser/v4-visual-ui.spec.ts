@@ -68,7 +68,10 @@ test('V4 legendary grid uses six functional cards in two desktop rows', async ({
     expect(new Set(rows).size).toBe(2);
     await page.locator('.choice').first().click();
     await expect(page.locator('.choice').first()).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('button', { name: /CONFIRM CHOICE|REPLACE & EQUIP/ })).toBeEnabled();
+    const confirm = page.getByRole('button', { name: /CONFIRM CHOICE|REPLACE & EQUIP/ });
+    await expect(confirm).toBeEnabled();
+    await expect(confirm).toBeInViewport();
+    await expect(page.getByRole('button', { name: 'DECIDE LATER' })).toBeInViewport();
     await page.screenshot({ path: 'test-results/v4-legendary-six-1280x720.png' });
 });
 
