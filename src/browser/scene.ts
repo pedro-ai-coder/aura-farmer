@@ -5,6 +5,7 @@ import rearFrames from './hero-rear-frames.json';
 import enemyAnimationFrames from './enemy-frames.json';
 import { EnemyAnimator } from './enemy-animation';
 import { installEnemyTextures } from './enemy-textures';
+import { enemyTelegraph } from './enemy-telegraph';
 import { HeroAnimator } from './hero-animation';
 import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
 import { HEROES } from '../game/catalog/content';
@@ -144,6 +145,43 @@ export class BrowserScene extends Phaser.Scene {
             if (p.state === 'death') continue;
             g.fillStyle(0x253449, .2); g.fillEllipse(e.x, e.y + 3, e.radius * 2.1, e.radius * .65);
             if (e.elite) { g.lineStyle(3, 0xf8c45f, 1); g.strokeCircle(e.x, e.y, e.radius + 6); }
+            // An attack pose and its aim are already scheduled by the combat
+            // simulation. Draw only a small local marker for that *existing*
+            // telegraph, not another independent warning or attack.
+            const cue = enemyTelegraph(p, r.time);
+            if (cue) {
+                const ink = 0x253449, color = cue.kind === 'impact' ? 0xe57461 : 0xf8c45f;
+                const radius = cue.radius;
+                g.lineStyle(5, ink, .8);
+                g.strokeCircle(e.x, e.y, radius);
+                g.lineStyle(3, color, .95);
+                if (r.reduceMotion || cue.kind === 'impact')
+                    g.strokeCircle(e.x, e.y, radius);
+                else {
+                    g.beginPath();
+                    g.arc(e.x, e.y, radius, -Math.PI / 2,
+                        -Math.PI / 2 + Math.PI * 2 * Math.max(.08, cue.progress));
+                    g.strokePath();
+                }
+                // Chevron sits just outside the enemy silhouette and points
+                // down the locked line of attack, even when the player moves.
+                const ux = Math.cos(cue.angle), uy = Math.sin(cue.angle);
+                const ox = e.x + ux * (radius + 9), oy = e.y + uy * (radius + 9);
+                const wing = cue.boss ? 8 : 6;
+                g.lineStyle(3, ink, 1);
+                g.strokeTriangle(ox + ux * 8, oy + uy * 8,
+                    ox - ux * 5 - uy * wing, oy - uy * 5 + ux * wing,
+                    ox - ux * 5 + uy * wing, oy - uy * 5 - ux * wing);
+                g.lineStyle(2, color, 1);
+                g.strokeTriangle(ox + ux * 8, oy + uy * 8,
+                    ox - ux * 5 - uy * wing, oy - uy * 5 + ux * wing,
+                    ox - ux * 5 + uy * wing, oy - uy * 5 - ux * wing);
+            }
+            if (e.kind === 'boss' && r.berserk) {
+                // World-space berserk identity, not full-screen red flashing.
+                g.lineStyle(3, 0xe57461, .8);
+                g.strokeCircle(e.x, e.y, e.radius + 8);
+            }
             const size = ENEMIES[e.kind].boss ? e.radius * 2.6 : e.radius * 3.1;
             if (e.hp < e.maxHp) {
                 f.fillStyle(0x253449, .9); f.fillRect(e.x - 22, e.y - size - 7, 44, 5);
