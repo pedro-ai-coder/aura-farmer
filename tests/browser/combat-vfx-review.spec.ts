@@ -18,7 +18,12 @@ test('V3 Option A: nine weapon looks, pickup/shield clarity and three Flexes', a
     await expect(page.locator('#modal')).toBeHidden();
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible();
+    // Freeze only simulation steps. Setting Run.mode = 'paused' also opens the
+    // app's pause modal and obscures the very art this test must inspect.
+    // Phaser scene.draw continues to render the real graphics on every frame.
+    await page.evaluate(() => { (window as any).__app.scene.tick = undefined; });
 
+    await expect(page.locator('#modal')).toBeHidden();
     const weaponIds = [
         'ratio-blaster', 'no-cap', 'brainrot-feed',
         'keyboard-warrior', 'ban-hammer', 'touch-grass',
@@ -27,7 +32,7 @@ test('V3 Option A: nine weapon looks, pickup/shield clarity and three Flexes', a
     for (const weapon of weaponIds) {
         const result = await page.evaluate((id) => {
             const run = (window as any).__app.run;
-            run.mode = 'paused'; // freeze simulation for a reproducible ART fixture
+            run.mode = 'playing'; // scene.tick is disabled; no modal obscures art
             run.time = 45;
             run.areas = []; run.shots = []; run.enemies = []; run.drops = [];
             run.effects = []; run.shields = {};
@@ -81,7 +86,7 @@ test('V3 Option A: nine weapon looks, pickup/shield clarity and three Flexes', a
             const { Run } = await import(/* @vite-ignore */ moduleUrl);
             const scene = (window as any).__app.scene;
             const run = new Run(id, 93);
-            run.mode = 'paused';
+            run.mode = 'playing';
             run.time = 50;
             run.timers.flexStart = run.time - 1;
             run.flexUntil = run.time + run.hero.duration - 1;
