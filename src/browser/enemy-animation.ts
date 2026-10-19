@@ -17,7 +17,10 @@ export function enemyPose(e: Enemy, time: number, walk: number, moving: boolean,
     if (a && time >= a.start && time < a.end) {
         angle = a.angle;
         state = time < a.impact ? 'windup' : time < a.end - .22 ? 'impact' : 'recover';
-        index = state === 'windup' ? 4 : state === 'impact' ? 5 : 4;
+        // Frame 4 is an authored anticipation pose. Returning to it during
+        // recovery looked like a second attack was about to fire. Release back
+        // into the neutral pose after the frame-5 impact instead.
+        index = state === 'windup' ? 4 : state === 'impact' ? 5 : 0;
     }
     // Telegraph/impact has priority over damage feedback, so repeated hits cannot hide an attack.
     if ((!a || time >= a.end) && time - e.hurtAt < .16) { state = 'hurt'; index = 6; }
