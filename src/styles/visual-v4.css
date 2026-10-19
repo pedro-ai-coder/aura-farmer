@@ -233,3 +233,32 @@
 @media (prefers-reduced-motion: reduce) {
   #modal .home .hero-card { transition: none; }
 }
+
+/* On reference desktop, reserve the action row: all six options remain
+ * scrollable without hiding the required Confirm / Decide Later controls.
+ * Short landscape screens deliberately keep one non-nested modal scrollbar.
+ */
+@media (min-width: 900px) and (min-height: 600px) {
+  #modal .legendary-offer {
+    display: flex;
+    flex-direction: column;
+    height: min(690px, 100%);
+    overflow: hidden;
+  }
+  #modal .legendary-offer header { flex: 0 0 auto; }
+  #modal .legendary-offer .choices {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 3px 4px 7px;
+    scrollbar-gutter: stable;
+  }
+  #modal .legendary-offer .offer-footer {
+    flex: 0 0 auto;
+    border-top: 2px solid #b9bca9;
+    padding-top: 10px;
+    background: var(--ui-paper);
+  }
+  #modal .legendary-offer .offer-footer .actions { margin-top: 0; }
+}
