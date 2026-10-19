@@ -61,8 +61,14 @@ export function heroPose(r: Run, playback: Playback = { walk: r.time, defeat: 1 
         const groups = cool ? [0, 4, 8, 12, 0, 16, 0, 20]
             : alpha ? [0, 8, 16, 24, 0, 0, 0, 0]
             : [0, 4, 8, 12, 16, 20, 24, 28];
-        // Sigma's two authored rear diagonals both face right; NW needs the symmetric pose.
-        return pose(groups[dir] + step, 'run', ((cool || alpha) && dir === 4) || (!cool && !alpha && dir === 5));
+        // Movement sprites are authored for the movement direction, not the
+        // separately tracked auto-aim angle. The previous implicit flip used
+        // r.facing, so a target moving across the hero could invert the
+        // running sprite mid-stride without changing the walk direction.
+        // Mirror only the genuinely shared authored poses: Cool/Alpha west
+        // reuse east, and Sigma's NW rear-diagonal source faces right.
+        const authoredMirror = (cool || alpha) ? dir === 4 : dir === 5;
+        return pose(groups[dir] + step, 'run', authoredMirror);
     }
     return pose((cool ? 24 : 32) + Math.floor(r.time * 2) % 2, 'idle');
 }

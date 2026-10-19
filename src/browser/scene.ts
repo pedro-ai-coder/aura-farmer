@@ -6,6 +6,7 @@ import enemyAnimationFrames from './enemy-frames.json';
 import { EnemyAnimator } from './enemy-animation';
 import { installEnemyTextures } from './enemy-textures';
 import { HeroAnimator } from './hero-animation';
+import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
@@ -59,6 +60,9 @@ export class BrowserScene extends Phaser.Scene {
             rearFrames[id].forEach(([x, y, w, h], i) => texture.add(i, 0, x, y, w, h));
         }
         flexFrames.forEach(([x, y, w, h], i) => this.textures.get('cool-kid-flex-v2').add(i, 0, x, y, w, h));
+        // Remove stray pixels from seven overlapping approved atlas rectangles,
+        // without altering master PNGs or the size/pivot of any runtime frame.
+        installHeroFrameMattes(this.textures);
         const texture = this.textures.get('enemy-atlas'), source = texture.getSourceImage() as HTMLImageElement;
         for (let row = 0; row < 4; row++)
             for (let col = 0; col < 4; col++)
@@ -148,8 +152,9 @@ export class BrowserScene extends Phaser.Scene {
             if (e.shield > 0 && e.shieldUntil > r.time) { g.lineStyle(2, 0x6eaab0, .8); g.strokeCircle(e.x, e.y, e.radius + 3); }
         }
         const pose = this.heroAnimator.sample(r, delta);
+        const art = heroFrameTexture(r.characterId, pose.sheet, pose.frame);
         // A fixed scale preserves body proportions across attacks, hurt and death.
-        this.heroImage.setVisible(true).setTexture(r.characterId + '-' + pose.sheet, pose.frame)
+        this.heroImage.setVisible(true).setTexture(art.key, art.frame)
             .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(pose.scale)
             .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
         g.fillStyle(0x253449, .23);
