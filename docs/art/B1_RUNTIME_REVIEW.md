@@ -18,6 +18,21 @@
 - All new motion is presentation-only in Phaser; ground shadows remain at the real actor contact point.
 - No paid services, dependency additions or newly generated art.
 
+## Galeria interativa — apenas os três personagens existentes
+
+O utilizador confirmou que os outros seis personagens **não devem ser criados agora**. A galeria em `/assets/cartoon/option-a-v1/animation-gallery.html` mostra apenas Sigma, Cool Kid e Alpha Chad, diretamente a partir dos PNG já aprovados em `/assets/runtime/`.
+
+- Pré-visualização de idle, corrida em oito direções, ataque, dano, Flex e derrota.
+- Seleção de personagem, direção, velocidade, escala, pausa, frame a frame, efeitos secundários e movimento reduzido.
+- `animation-gallery-data.json` replica os recortes exatos das folhas em `src/browser/hero-frames.json`, `hero-rear-frames.json` e `hero-flex-frames.json`. A suite valida a paridade.
+- A galeria é um **visualizador**, não um novo catálogo, implementação dos restantes heróis ou novo sistema de gameplay.
+
+## FPS e renderização
+
+- `?fps=1` na URL do jogo mostra FPS de frames reais do browser, percentil 95 do intervalo de frames, número de inimigos e projéteis. Sem parâmetro, a instrumentação fica inativa.
+- Ao renderizar inimigos, evita-se chamar `setTexture` quando a textura e o frame são os mesmos; um `Set` reutilizável substitui a alocação de um novo conjunto a cada frame; avisos de spawn dispensam alocação de objetos `Phaser.Geom.Line`.
+- Estas medidas reduzem trabalho potencialmente redundante, mas a melhoria real de FPS **depende de medição comparativa no mesmo dispositivo**, especialmente em waves densas e mobile. Os vídeos gravados a 30 FPS não provam a taxa real do motor.
+
 ## Review
 
 Open the Vercel PR preview and compare to main with Sigma, Cool Kid and Alpha Chad. Test starting/stopping, diagonal switches and joystick, colliding with cover, attacking, hurt, Flex, pause, reduce motion and defeat. Browser screenshots are generated as CI artifacts.
