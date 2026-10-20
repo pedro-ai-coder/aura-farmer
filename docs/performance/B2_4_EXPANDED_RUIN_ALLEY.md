@@ -6,15 +6,15 @@
 
 - Dimensão do mundo: **3500 × 2650 unidades** (versão anterior: 1448 × 1086).
 - A câmara do B2.3 enquadra aproximadamente **1040 × 585** unidades em desktop; existem mais de **três larguras** e quatro alturas de câmara disponíveis. A área caminhável tem doze vértices e recorte dos cantos. O limite da arena é um traço visível sobre o pavimento, não uma parede invisível sem feedback.
-- Ilustração `ruin-alley.png` original **mantida no centro à escala nativa**, centrada no mundo com offset (1026,782); sem esticar casas, vegetação ou pedras. Textura misturada nas margens em canvas transparente, para que os antigos limites não acabem repetidos.
+- Ilustração `ruin-alley.png` original **mantida no centro à escala nativa**, centrada no mundo expandido em coordenadas de mundo **inalteradas** (0,0); a área adicional estende-se para x negativos até -1026 e y negativos até -782; sem esticar casas, vegetação ou pedras. Textura misturada nas margens em canvas transparente, para que os antigos limites não acabem repetidos.
 - Para o restante chão, **extrai-se um fragmento do próprio PNG aprovado**, cria-se uma textura repetível de **768 × 768** com espelhamento nas duas direções e utiliza-se um único `TileSprite` Phaser sobre a área toda. A repetição do chão não duplica as paredes/edifícios.
 - Desgaste em tinta/pedra de distribuição determinística e discretas marcações de limites: uma geometria estática desenhada no arranque, **sem objetos animados ou colisões falsas**. Paleta e arte dos heróis intactas.
-- Os dois caixotes/coberturas anteriores conservam exatamente o posicionamento relativo à pintura original. Juntam-se nove pontos de cobertura com sprite já aprovado; **todos** correspondem à mesma lista `COVER` usada nas colisões, visibilidade de tiro e desenho.
+- Os dois caixotes/coberturas anteriores conservam exatamente as coordenadas físicas originais (600,550) e (940,680). Juntam-se nove pontos de cobertura com sprite já aprovado; **todos** correspondem à mesma lista `COVER` usada nas colisões, visibilidade de tiro e desenho.
 - Evita-se iniciar Phaser com uma superfície de 3500 × 2650 píxeis antes de receber o resize: o canvas inicial é 1280 × 720 e continua gerido pelo `Phaser.Scale.RESIZE`.
 
 ## Geometria e âncoras
 
-- O ponto inicial dos heróis, a estação de cura e a entrada do boss são deslocados em conjunto para o centro da nova arena. Não muda o raio de cura, timings ou dano.
+- O ponto inicial dos heróis **(724,610)**, a estação de cura **(1100,565)** e a entrada do boss **(724,445)** mantêm as posições originais de simulação. Apenas os limites e o pavimento se alargam **à volta** do distrito; os pontos antigos não são transladados. Não muda o raio de cura, timings ou dano.
 - O algoritmo de nascimento de inimigos escolhe coordenadas caminháveis numa coroa **275–640 unidades** à volta da posição atual do jogador, em vez de continuar a gerar inimigos nas coordenadas fixas do mapa antigo. Mantém a RNG seeded, densidade, inimigos possíveis e timings. É a adaptação **mínima necessária** para não tornar a expansão do mapa um espaço sem combate.
 - **B2.5** continua reservado à afinação do gameplay para a área maior (dispersão de drops, densidade de inimigos por área, boss, safe spot e balanceamento). B2.4 não anuncia o balanceamento como finalizado.
 
