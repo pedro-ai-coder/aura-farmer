@@ -48,13 +48,13 @@ test('B2.4 real art: looping world, feathered native PNG, border and 11 collisio
     });
     expect(state.world).toEqual({ width: 3500, height: 2650 });
     expect(state.original).toEqual({ width: 1448, height: 1086 });
-    expect(state.origin).toEqual({ x: 1026, y: 782 });
+    expect(state.origin).toEqual({ x: 0, y: 0 });
     expect(state.floor).toMatchObject({
         width: 3500, height: 2650, texture: 'ruin-floor-loop',
         sourceWidth: 768, sourceHeight: 768,
     });
     expect(state.district).toEqual({
-        x: 1026, y: 782, width: 1448, height: 1086,
+        x: 0, y: 0, width: 1448, height: 1086,
         texture: 'ruin-district-blend',
     });
     expect(state.border.present).toBe(true);
@@ -85,7 +85,7 @@ test('B2.4 câmara atravessa o novo cenário, com piso e limites reais nas extre
         const { walkable, RUN_START } =
             await import(/* @vite-ignore */ worldUrl);
         const app = (window as any).__app;
-        const goal = { x: 3150, y: 1392 };
+        const goal = { x: 2124, y: 610 };
         if (!walkable(goal)) throw new Error('Eastern ruin district should be walkable');
         // Only move the test fixture. Real-player movement and collision are
         // covered by unit and existing keyboard/joystick Playwright tests.
@@ -111,8 +111,8 @@ test('B2.4 câmara atravessa o novo cenário, com piso e limites reais nas extre
                 o.name === 'ruin-real-walkable-border'),
         };
     });
-    expect(far.x).toBe(3150);
-    expect(far.y).toBe(1392);
+    expect(far.x).toBe(2124);
+    expect(far.y).toBe(610);
     expect(far.hp).toBe(target.hp);
     expect(far.floorTexture).toBe('ruin-floor-loop');
     expect(far.border).toBe(true);
@@ -131,7 +131,7 @@ test('B2.4 mobile landscape controls stay over the actual expanded arena', async
         await expect(page.locator('#touch-zone')).toBeVisible();
         await page.evaluate(() => {
             const app = (window as any).__app;
-            const goal = { x: 3030, y: 1800 };
+            const goal = { x: 2004, y: 1018 };
             app.scene.tick = undefined;
             app.run.pos = goal;
             app.cameraFocus = { ...goal };
