@@ -378,7 +378,9 @@ export class BrowserApp {
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
             if (this.scene.ready && before === 'playing' && this.run.mode === 'playing') {
-                const next = followCameraCenter(this.cameraFocus, this.run.pos, dt);
+                const next = this.run.reduceMotion
+                    ? { ...this.run.pos }
+                    : followCameraCenter(this.cameraFocus, this.run.pos, dt);
                 // Do not dirty the Phaser camera when the player stands still.
                 if (Math.abs(next.x - this.cameraFocus.x) + Math.abs(next.y - this.cameraFocus.y) > .02) {
                     this.cameraFocus = next;
