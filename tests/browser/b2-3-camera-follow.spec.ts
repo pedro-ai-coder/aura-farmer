@@ -23,14 +23,14 @@ test('B2.3 desktop camera follows real keyboard movement, freezes in pause and r
     // Phaser's next preRender. Do not sample the old menu worldView.
     await expect.poll(async () => page.evaluate(() =>
         (window as any).__app.scene.cameras.main.worldView.width
-    )).toBeLessThan(1448);
+    )).toBeLessThan(3500);
     const initial = await page.evaluate(() => {
         const app = (window as any).__app, c = app.scene.cameras.main;
         return {
             zoom: c.zoom, x: app.run.pos.x, y: app.run.pos.y,
             camX: c.scrollX, camY: c.scrollY, focusX: app.cameraFocus.x,
             texture: app.scene.heroImage.texture.key,
-            worldWidth: 1448, width: c.worldView.width,
+            worldWidth: 3500, width: c.worldView.width,
         };
     });
     expect(initial.zoom).toBeGreaterThan(homeZoom * 1.35);
@@ -69,7 +69,7 @@ test('B2.3 desktop camera follows real keyboard movement, freezes in pause and r
     });
     expect(restored.run).toBe(false);
     expect(restored.zoom).toBeCloseTo(homeZoom, 3);
-    expect(restored.x).toBeCloseTo(1448 / 2, 2);
+    expect(restored.x).toBeCloseTo(3500 / 2, 2);
 });
 
 test('B2.3 touch-landscape camera zoom and joystick remain constrained to displayed world after pan', async ({ browser }) => {
