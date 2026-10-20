@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { chooseCameraZoom, followCameraCenter } from '../src/browser/camera-follow';
-import { WORLD } from '../src/game/simulation/world';
+import { ORIGINAL_ALLEY, WORLD } from '../src/game/simulation/world';
 
 describe('B2.3 adaptive camera and framerate independent following', () => {
     it('preserves familiar full-map menu, but zooms into desktop gameplay', () => {
-        const home = chooseCameraZoom(1280, 720, WORLD, false, false, true);
+        const home = chooseCameraZoom(1280, 720, ORIGINAL_ALLEY, false, false, true);
         const run = chooseCameraZoom(1280, 720, WORLD, true, false, true);
-        expect(home).toBeCloseTo(720 / WORLD.height);
+        expect(home).toBeCloseTo(720 / ORIGINAL_ALLEY.height);
         expect(run).toBeGreaterThan(home * 1.4);
         expect(1280 / run).toBeLessThan(WORLD.width);
         expect(720 / run).toBeLessThan(WORLD.height);
     });
 
     it('supports touch landscape world travel without shrinking to the whole arena', () => {
-        const oldZoom = Math.max(915 / WORLD.width, 412 / WORLD.height);
+        const oldZoom = Math.max(915 / ORIGINAL_ALLEY.width, 412 / ORIGINAL_ALLEY.height);
         const zoom = chooseCameraZoom(915, 412, WORLD, true, true, true);
         expect(zoom).toBeGreaterThan(oldZoom);
         expect(915 / zoom).toBeLessThan(WORLD.width);
@@ -23,7 +23,7 @@ describe('B2.3 adaptive camera and framerate independent following', () => {
     it('keeps touch portrait rotate hint experience and avoids empty map margins on ultrawide play', () => {
         expect(chooseCameraZoom(390, 844, WORLD, true, true, false))
             .toBeCloseTo(Math.min(390 / WORLD.width, 844 / WORLD.height));
-        expect(chooseCameraZoom(915, 412, WORLD, false, true, true))
+        expect(chooseCameraZoom(915, 412, ORIGINAL_ALLEY, false, true, true))
             .toBeCloseTo(Math.max(915 / WORLD.width, 412 / WORLD.height));
         const ultra = chooseCameraZoom(2400, 700, WORLD, true, false, true);
         expect(ultra).toBeGreaterThanOrEqual(2400 / WORLD.width);
