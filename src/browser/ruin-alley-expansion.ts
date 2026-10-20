@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { ALLEY_ORIGIN, FLOOR, ORIGINAL_ALLEY, WORLD } from '../game/simulation/world';
+import { ALLEY_ORIGIN, FLOOR, ORIGINAL_ALLEY, WORLD, WORLD_ORIGIN } from '../game/simulation/world';
 
 /**
  * Uses only the approved Ruin Alley PNG. No AI-generated replacements, no
@@ -110,8 +110,8 @@ export function drawAlleyScuffs(graphics: Phaser.GameObjects.Graphics) {
         return seed / 4294967296;
     };
     for (let i = 0; i < 145; i++) {
-        const x = 260 + rand() * (WORLD.width - 520);
-        const y = 260 + rand() * (WORLD.height - 520);
+        const x = WORLD_ORIGIN.x + 260 + rand() * (WORLD.width - 520);
+        const y = WORLD_ORIGIN.y + 260 + rand() * (WORLD.height - 520);
         const length = 10 + rand() * 28;
         const angle = rand() * Math.PI;
         graphics.lineStyle(1 + rand() * 1.8, 0x624e42, .15);
@@ -125,7 +125,7 @@ export function drawAlleyScuffs(graphics: Phaser.GameObjects.Graphics) {
 /** One looping floor sprite, native-scale landmark painting and cached border. */
 export function buildExpandedAlley(scene: Phaser.Scene) {
     installExpandedAlleyTextures(scene.textures);
-    scene.add.tileSprite(0, 0, WORLD.width, WORLD.height, 'ruin-floor-loop')
+    scene.add.tileSprite(WORLD_ORIGIN.x, WORLD_ORIGIN.y, WORLD.width, WORLD.height, 'ruin-floor-loop')
         .setOrigin(0).setDepth(-12).setName('ruin-expanded-floor');
     scene.add.image(ALLEY_ORIGIN.x, ALLEY_ORIGIN.y, 'ruin-district-blend')
         .setOrigin(0).setDepth(-11).setName('ruin-central-district');
