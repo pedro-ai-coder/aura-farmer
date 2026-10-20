@@ -27,11 +27,11 @@ async function enterArena(page: Page) {
 test('joystick only starts on visible artwork, not the blue canvas or HUD', async ({ page }) => {
     await enterArena(page);
 
-    // Widen the game camera's view to expose a large blue letterbox region,
+    // Force a world view wider than the NEW 3500U arena to expose a blue letterbox,
     // just like a mobile fullscreen/viewport aspect-ratio mismatch.
     await page.evaluate(() => {
         const camera = window.__app.scene.cameras.main;
-        camera.setZoom(.35);
+        camera.setZoom(.22);
         camera.centerOn(724, 543);
         (window.__app as unknown as { alignTouchZone(): void }).alignTouchZone();
     });
@@ -40,7 +40,7 @@ test('joystick only starts on visible artwork, not the blue canvas or HUD', asyn
     await expect.poll(async () => {
         const geometry = await page.evaluate(() => {
             const camera = window.__app.scene.cameras.main;
-            camera.setZoom(.35);
+            camera.setZoom(.22);
             (window.__app as unknown as { alignTouchZone(): void }).alignTouchZone();
             const z = document.querySelector('#touch-zone')!.getBoundingClientRect();
             const c = document.querySelector('#game canvas')!.getBoundingClientRect();
