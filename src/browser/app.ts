@@ -6,6 +6,7 @@ import { Run, choiceSummary, isDemoHero } from '../game/simulation/run';
 import { WORLD } from '../game/simulation/world';
 import { BrowserScene } from './scene';
 import { visiblePlayfieldBounds } from './touch-playfield';
+import { chooseCameraZoom, followCameraCenter } from './camera-follow';
 import { AudioCues } from './audio';
 import { readSave, writeSave, recordResult, type Save, type StorageLike } from './save';
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
@@ -26,6 +27,8 @@ export class BrowserApp {
     private hudMarkup = '';
     private screen = '';
     private lastHud = 0;
+    /** Visual camera center only. Run.pos remains authoritative for physics. */
+    private cameraFocus = { x: WORLD.width / 2, y: WORLD.height / 2 };
     private runId = '';
     private recorded = false;
     private saveFailed = false;
@@ -214,13 +217,12 @@ export class BrowserApp {
         });
         if (!this.scene.ready) return;
         const camera = this.scene.cameras.main;
-        const mobileLandscape = matchMedia('(pointer: coarse) and (orientation: landscape)').matches;
-        const zoom = mobileLandscape
-            ? Math.max(bounds.width / WORLD.width, bounds.height / WORLD.height)
-            : Math.min(bounds.width / WORLD.width, bounds.height / WORLD.height);
-        camera.setZoom(Math.max(.01, zoom));
+        const touch = matchMedia('(pointer: coarse)').matches;
+        const landscape = matchMedia('(orientation: landscape)').matches;
+        const zoom = chooseCameraZoom(bounds.width, bounds.height, WORLD, !!this.run, touch, landscape);
+        camera.setZoom(zoom);
         camera.setBounds(0, 0, WORLD.width, WORLD.height);
-        camera.centerOn(this.run?.pos.x ?? WORLD.width / 2, this.run?.pos.y ?? WORLD.height / 2);
+        camera.centerOn(this.cameraFocus.x, this.cameraFocus.y);
         this.alignTouchZone();
     }
     /** Track the rendered map rather than the full app/canvas background. */
@@ -256,6 +258,9 @@ export class BrowserApp {
         this.run = new Run(hero);
         this.scene.run = this.run;
         this.run.reduceMotion = this.save.settings.reducedMotion;
+        // Center immediately on spawn; then follow with time-based easing.
+        this.cameraFocus = { ...this.run.pos };
+        this.alignHud();
         this.runId = crypto.randomUUID();
         this.recorded = false;
         this.notice = '';
@@ -319,6 +324,8 @@ export class BrowserApp {
             this.run = undefined;
             this.scene.run = undefined;
             this.keys.clear();
+            this.cameraFocus = { x: WORLD.width / 2, y: WORLD.height / 2 };
+            this.alignHud();
             this.render(true);
         }
         if (action === 'exit') {
@@ -368,15 +375,22 @@ export class BrowserApp {
     } }
     private tick(dt: number) {
         if (this.run) {
-            if (this.scene.ready && matchMedia('(pointer: coarse)').matches) {
-                if (matchMedia('(orientation: landscape)').matches)
-                    this.scene.cameras.main.centerOn(this.run.pos.x, this.run.pos.y);
-                // Keep the input overlay in sync with camera and viewport
-                // in both orientations, including fullscreen transitions.
-                this.alignTouchZone();
-            }
             const before = this.run.mode, previousMessage = this.run.message, wasBerserk = this.run.berserk;
             this.run.update(dt, { x: Math.max(-1, Math.min(1, Number(this.keys.has('d') || this.keys.has('arrowright')) - Number(this.keys.has('a') || this.keys.has('arrowleft')) + this.touchDirection.x)), y: Math.max(-1, Math.min(1, Number(this.keys.has('s') || this.keys.has('arrowdown')) - Number(this.keys.has('w') || this.keys.has('arrowup')) + this.touchDirection.y)), aim: this.aim, manual: this.manual });
+            if (this.scene.ready && before === 'playing' && this.run.mode === 'playing') {
+                const next = followCameraCenter(this.cameraFocus, this.run.pos, dt);
+                // Do not dirty the Phaser camera when the player stands still.
+                if (Math.abs(next.x - this.cameraFocus.x) + Math.abs(next.y - this.cameraFocus.y) > .02) {
+                    this.cameraFocus = next;
+                    this.scene.cameras.main.centerOn(next.x, next.y);
+                }
+            }
+            if (this.scene.ready && matchMedia('(pointer: coarse)').matches) {
+                // Floating joystick remains intersected with actual map art
+                // after smooth pan, zoom and device rotation; a held pointer
+                // keeps its anchor until pointerup.
+                this.alignTouchZone();
+            }
             if (!wasBerserk && this.run.berserk) this.audio.play('berserk');
             else if (this.run.message !== previousMessage) this.audio.play('warning');
             if (this.run.mode !== before) {
