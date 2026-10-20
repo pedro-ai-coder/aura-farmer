@@ -12,6 +12,7 @@ import { drawWeaponProjectile, drawWeaponAreaAccent, drawSpecialDrop, drawHeroPr
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES } from '../game/catalog/enemies';
 import { COVER, WORLD } from '../game/simulation/world';
+import { drawCoverContacts, drawActorContact } from './environment-vfx';
 import type { Run } from '../game/simulation/run';
 import type { Area } from '../game/simulation/types';
 const ROOT = '/assets/cartoon/option-a-v1/';
@@ -70,6 +71,10 @@ export class BrowserScene extends Phaser.Scene {
             for (let col = 0; col < 4; col++)
                 texture.add(row * 4 + col, 0, Math.round(col * source.width / 4), Math.round(row * source.height / 4), Math.floor(source.width / 4), Math.floor(source.height / 4));
         installEnemyTextures(this.textures);
+        // A cached layer below actors, grounded precisely at the two real
+        // cover collision centers. Static artwork never obstructs play.
+        const environment = this.add.graphics().setName('alley-cover-contact').setDepth(-5);
+        drawCoverContacts(environment);
         for (const cover of COVER)
             this.add.image(cover.x, cover.y, 'enemy-atlas', 14).setDisplaySize(80, 80).setOrigin(.5, .85).setDepth(cover.y);
         this.ground = this.add.graphics().setDepth(0);
@@ -151,7 +156,7 @@ export class BrowserScene extends Phaser.Scene {
                 .setScale(e.kind === 'terminal' ? e.radius * 3.1 / image.frame.height : p.scale).setFlipX(p.flip).setDepth(e.y).setAlpha(p.alpha).setData('pose', p.state);
             image.clearTint();
             if (p.state === 'death') continue;
-            g.fillStyle(0x253449, .2); g.fillEllipse(e.x, e.y + 3, e.radius * 2.1, e.radius * .65);
+            drawActorContact(g, e, e.radius);
             if (e.elite) { g.lineStyle(3, 0xf8c45f, 1); g.strokeCircle(e.x, e.y, e.radius + 6); }
             // An attack pose and its aim are already scheduled by the combat
             // simulation. Draw only a small local marker for that *existing*
@@ -203,8 +208,7 @@ export class BrowserScene extends Phaser.Scene {
         this.heroImage.setVisible(true).setTexture(art.key, art.frame)
             .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(pose.scale)
             .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
-        g.fillStyle(0x253449, .23);
-        g.fillEllipse(r.pos.x, r.pos.y + 4, 40, 13);
+        drawActorContact(g, r.pos, 20);
         drawHeroProtection(g, r);
         if (r.timers.wifiUntil > r.time) {
             g.fillStyle(0x6eaab0, .13);
