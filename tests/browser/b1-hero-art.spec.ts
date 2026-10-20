@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test('B1 review gallery displays three original animated transparent SVG hero atlases', async ({ page }) => {
     await page.setViewportSize({ width: 1300, height: 940 });
-    await page.goto('/assets/cartoon/b1/');
+    await page.goto('/assets/cartoon/b1/index.html');
+    await expect(page).toHaveTitle('Aura Farmer — B1 Sprite Review');
     await expect(page.getByRole('heading', { name: 'SIGMA' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'COOL KID' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'ALPHA CHAD' })).toBeVisible();
