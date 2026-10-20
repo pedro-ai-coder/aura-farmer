@@ -1,0 +1,61 @@
+{
+  "version": "b1-2026-10-20",
+  "status": "proposed; requires original creator visual review",
+  "art_direction": "Option A — Cartoon Arcade",
+  "method": "Original hand-coded illustrated SVG vector paths and original posed sprite cells, authored specifically for this repository; not third-party art",
+  "source_files": [
+    "sigma-hero.svg",
+    "cool-kid-hero.svg",
+    "alpha-hero.svg"
+  ],
+  "provenance": "B1 iteration, 20 October 2026; newly authored from the project's approved character specifications and visual guidelines. Existing approved images untouched.",
+  "license_status": "Approval pending; no external asset licenses incorporated",
+  "dimension": {
+    "width": 800,
+    "height": 896,
+    "cellWidth": 200,
+    "cellHeight": 224,
+    "columns": 4,
+    "rows": 4,
+    "transparent": true
+  },
+  "frame_order": [
+    "idle-a",
+    "idle-b",
+    "front-run-left-contact",
+    "front-run-passing",
+    "front-run-right-contact",
+    "front-run-passing-alt",
+    "attack-windup",
+    "attack-impact",
+    "hurt",
+    "defeat-concept",
+    "rear-idle",
+    "rear-run-left-contact",
+    "rear-run-passing",
+    "rear-run-right-contact",
+    "rear-run-passing-alt",
+    "flex-concept"
+  ],
+  "render_used": [
+    "idle-a",
+    "idle-b",
+    "front-run-left-contact",
+    "front-run-passing",
+    "front-run-right-contact",
+    "front-run-passing-alt",
+    "attack-windup",
+    "attack-impact",
+    "hurt",
+    "rear-run-left-contact",
+    "rear-run-passing",
+    "rear-run-right-contact",
+    "rear-run-passing-alt"
+  ],
+  "existing_sprites_retained": [
+    "defeat",
+    "all Flex choreography"
+  ],
+  "game_respects": "unchanged hitboxes, timers, damage, progression, enemy behavior, save format",
+  "review": "/assets/cartoon/b1/index.html"
+}
