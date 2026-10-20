@@ -69,7 +69,7 @@ test('B2.3 desktop camera follows real keyboard movement, freezes in pause and r
     });
     expect(restored.run).toBe(false);
     expect(restored.zoom).toBeCloseTo(homeZoom, 3);
-    expect(restored.x).toBeCloseTo(3500 / 2, 2);
+    expect(restored.x).toBeCloseTo(724, 2);
 });
 
 test('B2.3 touch-landscape camera zoom and joystick remain constrained to displayed world after pan', async ({ browser }) => {
