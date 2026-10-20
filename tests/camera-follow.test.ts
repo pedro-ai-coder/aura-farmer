@@ -24,7 +24,7 @@ describe('B2.3 adaptive camera and framerate independent following', () => {
         expect(chooseCameraZoom(390, 844, WORLD, true, true, false))
             .toBeCloseTo(Math.min(390 / WORLD.width, 844 / WORLD.height));
         expect(chooseCameraZoom(915, 412, ORIGINAL_ALLEY, false, true, true))
-            .toBeCloseTo(Math.max(915 / WORLD.width, 412 / WORLD.height));
+            .toBeCloseTo(Math.max(915 / ORIGINAL_ALLEY.width, 412 / ORIGINAL_ALLEY.height));
         const ultra = chooseCameraZoom(2400, 700, WORLD, true, false, true);
         expect(ultra).toBeGreaterThanOrEqual(2400 / WORLD.width);
     });
