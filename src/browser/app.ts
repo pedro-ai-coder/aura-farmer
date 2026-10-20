@@ -47,7 +47,7 @@ export class BrowserApp {
         this.audio.enabled = this.save.settings.sound;
         this.scene.tick = dt => this.tick(dt);
         this.scene.onReady = () => { document.querySelector('#loading')?.remove(); this.alignHud(); this.render(true); };
-        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: WORLD.width, height: WORLD.height, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.NO_CENTER }, scene: [this.scene] });
+        this.game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 1280, height: 720, backgroundColor: '#253449', render: { antialias: true }, scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.NO_CENTER }, scene: [this.scene] });
         this.game.scale.on('resize', () => requestAnimationFrame(() => this.alignHud()));
         new ResizeObserver(() => this.alignHud()).observe(document.querySelector('#game')!);
         document.addEventListener('keydown', e => {
