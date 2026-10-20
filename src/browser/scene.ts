@@ -160,16 +160,16 @@ export class BrowserScene extends Phaser.Scene {
             stationBase.clear();
             this.stationCache = { run: r, ready, x: station.x, y: station.y };
             stationBase.fillStyle(ready ? 0x3fe2ad : 0x465b73, .19);
-        stationBase.fillCircle(station.x, station.y, station.radius);
-        stationBase.lineStyle(4, ready ? 0x5cf0b4 : 0x8394aa, .9);
-        stationBase.strokeCircle(station.x, station.y, station.radius);
-        stationBase.fillStyle(0x24364a, .95);
-        stationBase.fillRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
-        stationBase.lineStyle(3, ready ? 0x5cf0b4 : 0x8394aa, 1);
-        stationBase.strokeRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
-        stationBase.fillStyle(ready ? 0x5cf0b4 : 0x9ba9b7);
-        stationBase.fillRect(station.x - 5, station.y - 16, 10, 32);
-        stationBase.fillRect(station.x - 16, station.y - 5, 32, 10);
+            stationBase.fillCircle(station.x, station.y, station.radius);
+            stationBase.lineStyle(4, ready ? 0x5cf0b4 : 0x8394aa, .9);
+            stationBase.strokeCircle(station.x, station.y, station.radius);
+            stationBase.fillStyle(0x24364a, .95);
+            stationBase.fillRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
+            stationBase.lineStyle(3, ready ? 0x5cf0b4 : 0x8394aa, 1);
+            stationBase.strokeRoundedRect(station.x - 43, station.y - 26, 86, 52, 10);
+            stationBase.fillStyle(ready ? 0x5cf0b4 : 0x9ba9b7);
+            stationBase.fillRect(station.x - 5, station.y - 16, 10, 32);
+            stationBase.fillRect(station.x - 16, station.y - 5, 32, 10);
         }
         stationBase.setVisible(true);
         if (ready && r.safeSpotCharge > 0) {
