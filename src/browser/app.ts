@@ -442,8 +442,8 @@ export class BrowserApp {
             const slots = Array.from({ length: limit }, (_, slot) => {
                 const item = items[slot];
                 return item
-                    ? `<li class="equipment-slot ${item.rarity}"><span class="slot-number">${slot + 1}</span><div><strong>${itemName(item)}</strong><small>${item.rarity.toUpperCase()} · LV ${item.level}/${CAPS[item.rarity]}${kind === 'weapon' ? ' · ' + itemInterval(item, r.frequency).toFixed(2) + 's' : ''}</small></div></li>`
-                    : `<li class="equipment-slot empty"><span class="slot-number">${slot + 1}</span><div><strong>Empty slot</strong><small>Choose a ${kind} on level up</small></div></li>`;
+                    ? `<li class="equipment-slot ${item.rarity}"><span class="slot-number" aria-label="Slot ${slot + 1}">${slot + 1}</span><span class="slot-icon" aria-hidden="true">${(weaponById(item.id) ?? passiveById(item.id))?.icon ?? '✦'}</span><div class="slot-copy"><strong>${itemName(item)}</strong><small>${item.rarity.toUpperCase()} · LV ${item.level}/${CAPS[item.rarity]}${kind === 'weapon' ? ' · ' + itemInterval(item, r.frequency).toFixed(2) + 's' : ''}</small></div></li>`
+                    : `<li class="equipment-slot empty"><span class="slot-number" aria-label="Slot ${slot + 1}">${slot + 1}</span><span class="slot-icon" aria-hidden="true">+</span><div class="slot-copy"><strong>Empty slot</strong><small>Choose a ${kind} on level up</small></div></li>`;
             }).join('');
             return `<section class="equipment-group" aria-label="${kind === 'weapon' ? 'Equipped weapons' : 'Equipped passives'}"><h3>${kind === 'weapon' ? 'WEAPONS' : 'PASSIVES'} <span>${items.length}/${limit} SLOTS</span></h3><ol class="equipment-slots">${slots}</ol></section>`;
         };
@@ -457,7 +457,7 @@ export class BrowserApp {
             const damage = (i: Item) => Math.round(weaponById(i.id)!.damage * this.run!.power * itemPower(i));
             comparison += `<br>${old ? damage(old) + ' → ' : ''}${damage(item)} base damage · ${old ? itemInterval(old, this.run!.frequency).toFixed(2) + ' → ' : ''}${itemInterval(item, this.run!.frequency).toFixed(2)}s`;
         }
-        return `<button class="choice ${item?.rarity ?? 'common'} ${this.selectedChoice === index ? 'selected' : ''}" data-action="choice" data-value="${index}" aria-pressed="${this.selectedChoice === index}"><span class="choice-top">${index + 1} · ${offer.action.toUpperCase()} <span>${offer.kind.toUpperCase()}</span></span><span class="icon">${def?.icon ?? '♥'}</span><h3>${item?.rarity === 'legendary' && weaponById(item.id) ? weaponById(item.id)!.legendary : def?.name ?? 'Catch your breath'}</h3><p>${def?.description ?? choiceSummary(offer)}</p><small>${choiceSummary(offer)}</small><span class="comparison">${item ? comparison : 'No slot used'}</span></button>`;
+        return `<button class="choice ${item?.rarity ?? 'common'} ${this.selectedChoice === index ? 'selected' : ''}" data-action="choice" data-value="${index}" aria-pressed="${this.selectedChoice === index}"><span class="choice-top">${index + 1} · ${offer.action.toUpperCase()} <span>${offer.kind.toUpperCase()}</span></span><span class="icon" aria-hidden="true">${def?.icon ?? '♥'}</span><h3>${item?.rarity === 'legendary' && weaponById(item.id) ? weaponById(item.id)!.legendary : def?.name ?? 'Catch your breath'}</h3><p>${def?.description ?? choiceSummary(offer)}</p><small>${choiceSummary(offer)}</small><span class="comparison">${item ? comparison : 'No slot used'}</span></button>`;
     }
     private offers(r: Run) {
         const legendary = r.mode === 'legendary', choice = r.choices[this.selectedChoice];
