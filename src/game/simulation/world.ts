@@ -31,6 +31,15 @@ const EXTENDED_FLOOR: readonly Point[] = [
     { x: 120, y: 2020 }, { x: 120, y: 570 },
 ];
 /** Chamfered collision perimeter translated around the original district. */
+/** Original 2026 Ruin Alley floor: keep original seeded encounter locations
+ * inside this district so expanding the map does not silently rebalance it.
+ */
+const ORIGINAL_FLOOR: readonly Point[] = [
+    { x: 234, y: 448 }, { x: 440, y: 334 }, { x: 825, y: 287 },
+    { x: 1047, y: 408 }, { x: 1255, y: 550 }, { x: 1310, y: 713 },
+    { x: 1182, y: 843 }, { x: 831, y: 979 }, { x: 666, y: 880 },
+    { x: 445, y: 786 }, { x: 250, y: 772 }, { x: 169, y: 642 },
+];
 export const FLOOR: readonly Point[] = EXTENDED_FLOOR.map(p => ({
     x: p.x + WORLD_ORIGIN.x,
     y: p.y + WORLD_ORIGIN.y,
@@ -55,10 +64,10 @@ export const COVER = [
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 export const direction = (a: Point, b: Point) => Math.atan2(b.y - a.y, b.x - a.x);
 export const angleDelta = (a: number, b: number) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
-export function inFloor(p: Point, radius = 16): boolean {
+function inFootPolygon(p: Point, radius: number, polygon: readonly Point[]): boolean {
     let inside = false;
-    for (let i = 0; i < FLOOR.length; i++) {
-        const a = FLOOR[i], b = FLOOR[(i + 1) % FLOOR.length], dx = b.x - a.x, dy = b.y - a.y;
+    for (let i = 0; i < polygon.length; i++) {
+        const a = polygon[i], b = polygon[(i + 1) % polygon.length], dx = b.x - a.x, dy = b.y - a.y;
         const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
         if (distance(p, { x: a.x + t * dx, y: a.y + t * dy }) < radius)
             return false;
@@ -66,6 +75,9 @@ export function inFloor(p: Point, radius = 16): boolean {
             inside = !inside;
     }
     return inside;
+}
+export function inFloor(p: Point, radius = 16): boolean {
+    return inFootPolygon(p, radius, FLOOR);
 }
 export function walkable(p: Point, radius = 16): boolean { return inFloor(p, radius) && COVER.every(o => distance(p, o) > o.r + radius); }
 export function move(p: Point, dx: number, dy: number, radius = 16): Point {
@@ -79,9 +91,23 @@ export function clearLine(a: Point, b: Point): boolean {
     return COVER.every(o => { const t = l ? Math.max(0, Math.min(1, ((o.x - a.x) * dx + (o.y - a.y) * dy) / l)) : 0; return distance(o, { x: a.x + dx * t, y: a.y + dy * t }) > o.r; });
 }
 export function spawnPoint(player: Point, random: () => number): Point | null {
-    // World expansion must not strand spawns in the original 1448x1086 district.
-    // Keep combat near the moving camera, without changing wave counts, enemy
-    // eligibility, attack timing or seeded randomness.
+    // When still in the approved central district, preserve the EXACT
+    // historical floor, cover and seeded sampling sequence. This isolates
+    // B2.4 geography from wave balance; B2.5 can retune combat pressure.
+    const inDistrict = player.x >= 169 && player.x <= 1310 &&
+        player.y >= 287 && player.y <= 979;
+    if (inDistrict) {
+        for (let i = 0; i < 80; i++) {
+            const p = { x: 180 + random() * 1100, y: 300 + random() * 650 };
+            if (inFootPolygon(p, 24, ORIGINAL_FLOOR) &&
+                distance(p, COVER[0]) > COVER[0].r + 24 &&
+                distance(p, COVER[1]) > COVER[1].r + 24 &&
+                distance(p, player) >= 260) return p;
+        }
+        return null;
+    }
+    // Outside the original district, keep enemies near the moving player
+    // rather than continuing to spawn them in an off-screen old location.
     for (let i = 0; i < 80; i++) {
         const angle = random() * Math.PI * 2;
         const radius = 275 + random() * 365;

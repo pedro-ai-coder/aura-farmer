@@ -15,7 +15,7 @@
 ## Geometria e âncoras
 
 - O ponto inicial dos heróis **(724,610)**, a estação de cura **(1100,565)** e a entrada do boss **(724,445)** mantêm as posições originais de simulação. Apenas os limites e o pavimento se alargam **à volta** do distrito; os pontos antigos não são transladados. Não muda o raio de cura, timings ou dano.
-- O algoritmo de nascimento de inimigos escolhe coordenadas caminháveis numa coroa **275–640 unidades** à volta da posição atual do jogador, em vez de continuar a gerar inimigos nas coordenadas fixas do mapa antigo. Mantém a RNG seeded, densidade, inimigos possíveis e timings. É a adaptação **mínima necessária** para não tornar a expansão do mapa um espaço sem combate.
+- Na região central original, o nascimento mantém **a sequência seeded e os limites anteriores de Ruin Alley**, para preservar a pressão e o balanceamento já aprovados. Ao sair para as regiões novas, escolhe coordenadas caminháveis numa coroa **275–640 unidades** em redor do jogador. Mantém a RNG seeded, densidade, inimigos possíveis e timings. É a adaptação **mínima necessária** para não tornar a expansão do mapa um espaço sem combate.
 - **B2.5** continua reservado à afinação do gameplay para a área maior (dispersão de drops, densidade de inimigos por área, boss, safe spot e balanceamento). B2.4 não anuncia o balanceamento como finalizado.
 
 ## Verificações

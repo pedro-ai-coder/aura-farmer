@@ -73,7 +73,15 @@ describe('B2.4 Ruin Alley expanded geography without new art or characters', () 
                 expect(walkable(p!, 24)).toBe(true);
                 const separation = Math.hypot(p!.x - player.x, p!.y - player.y);
                 expect(separation).toBeGreaterThanOrEqual(260);
-                expect(separation).toBeLessThanOrEqual(640.01);
+                if (player === RUN_START) {
+                    // Central district reproduces the old seeded spawn bounds.
+                    expect(p!.x).toBeGreaterThanOrEqual(180);
+                    expect(p!.x).toBeLessThanOrEqual(1280);
+                    expect(p!.y).toBeGreaterThanOrEqual(300);
+                    expect(p!.y).toBeLessThanOrEqual(950);
+                } else {
+                    expect(separation).toBeLessThanOrEqual(640.01);
+                }
             }
             const replay = seededRandom(2024 + i);
             expect(Array.from({ length: 24 }, () => spawnPoint(player, replay)))
