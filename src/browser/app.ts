@@ -3,7 +3,7 @@ import { CAPS, HEROES, WAVES, heroById, passiveById, weaponById, xpRequired, typ
 import { ENEMIES } from '../game/catalog/enemies';
 import { itemInterval, itemPower, type Choice, type Item } from '../game/simulation/inventory';
 import { Run, choiceSummary, isDemoHero } from '../game/simulation/run';
-import { WORLD } from '../game/simulation/world';
+import { ORIGINAL_ALLEY, WORLD } from '../game/simulation/world';
 import { BrowserScene } from './scene';
 import { visiblePlayfieldBounds } from './touch-playfield';
 import { chooseCameraZoom, followCameraCenter } from './camera-follow';
@@ -219,7 +219,10 @@ export class BrowserApp {
         const camera = this.scene.cameras.main;
         const touch = matchMedia('(pointer: coarse)').matches;
         const landscape = matchMedia('(orientation: landscape)').matches;
-        const zoom = chooseCameraZoom(bounds.width, bounds.height, WORLD, !!this.run, touch, landscape);
+        // Menus retain the approved original district framing, not a distant
+        // bird's-eye view of the newly expanded world.
+        const zoom = chooseCameraZoom(bounds.width, bounds.height,
+            this.run ? WORLD : ORIGINAL_ALLEY, !!this.run, touch, landscape);
         camera.setZoom(zoom);
         camera.setBounds(0, 0, WORLD.width, WORLD.height);
         camera.centerOn(this.cameraFocus.x, this.cameraFocus.y);
