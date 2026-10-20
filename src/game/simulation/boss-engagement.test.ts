@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HEROES, BOSS_START } from '../catalog/content';
 import { ENEMIES } from '../catalog/enemies';
-import { walkable, clearLine } from './world';
+import { BOSS_ENTRY, walkable, clearLine } from './world';
 import { Run } from './run';
 
 describe('phase 4.19: real weapon damage against Big Hater', () => {
@@ -13,10 +13,10 @@ describe('phase 4.19: real weapon damage against Big Hater', () => {
             run.wave = 5;
             run.time = BOSS_START + 1;
             run.counters.bossSpawned = 1;
-            const boss = run.spawn('boss', { x: 724, y: 445 });
+            const boss = run.spawn('boss', BOSS_ENTRY);
             expect(boss).toBeDefined();
             expect(boss!.maxHp).toBe(ENEMIES.boss.hp);
-            run.pos = { x: hero.role === 'ranged' ? 900 : 810, y: 445 };
+            run.pos = { x: BOSS_ENTRY.x + (hero.role === 'ranged' ? 176 : 86), y: BOSS_ENTRY.y };
             expect(walkable(run.pos)).toBe(true);
             expect(clearLine(run.pos, boss!)).toBe(true);
             run.time = boss!.born;
