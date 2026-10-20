@@ -61,12 +61,15 @@ test('FPS diagnostics are explicit opt-in and do not swap character PNGs', async
     await page.goto('/?fps=1');
     await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled();
     await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
+    await expect(page.locator('#hud')).toBeVisible();
+    // Phaser initializes heroImage with the menu texture before the first
+    // scene.draw. Wait for its first actual rendered animation frame.
+    await expect.poll(async () => page.evaluate(() =>
+        (window as any).__app.scene.heroImage.texture.key as string
+    )).toMatch(/^sigma-(atlas|rear-v2|flex-v2|matte-)/);
     await expect(page.locator('#render-frame-meter')).toContainText('FPS observado:', { timeout: 15000 });
-    const data = await page.evaluate(() => ({
-        hero: (window as any).__app.scene.heroImage.texture.key as string,
-        injectedNewArt: (window as any).__app.scene.textures.exists('b1-sigma'),
-    }));
-    expect(data.hero).toMatch(/^sigma-(atlas|rear-v2|flex-v2|matte-)/);
-    expect(data.injectedNewArt).toBe(false);
+    expect(await page.evaluate(() =>
+        (window as any).__app.scene.textures.exists('b1-sigma')
+    )).toBe(false);
     await page.screenshot({ path: 'test-results/b1-frame-diagnostics.png' });
 });
