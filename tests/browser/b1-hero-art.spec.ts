@@ -4,9 +4,9 @@ test('B1 review gallery displays three original animated transparent SVG hero at
     await page.setViewportSize({ width: 1300, height: 940 });
     await page.goto('/assets/cartoon/b1/index.html');
     await expect(page).toHaveTitle('Aura Farmer — B1 Sprite Review');
-    await expect(page.getByRole('heading', { name: 'SIGMA' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'COOL KID' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'ALPHA CHAD' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SIGMA', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'COOL KID', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'ALPHA CHAD', exact: true })).toBeVisible();
     const loaded = await page.locator('.sheet img').evaluateAll(nodes => nodes.map(node => {
         const img = node as HTMLImageElement;
         return { complete: img.complete, width: img.naturalWidth, height: img.naturalHeight };
