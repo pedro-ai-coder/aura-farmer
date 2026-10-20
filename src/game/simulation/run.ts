@@ -1,7 +1,7 @@
 import { BERSERK_AFTER, BOSS_START, CAPS, HEROES, WAVES, heroById, weaponById, xpRequired, type DemoHero } from '../catalog/content';
 import { ENEMIES, EVENTS, type EnemyKind } from '../catalog/enemies';
 import { Inventory, type Choice } from './inventory';
-import { angleDelta, clearLine, direction, distance, move, seededRandom, spawnPoint, type Point } from './world';
+import { ALLEY_ORIGIN, BOSS_ENTRY, RUN_START, angleDelta, clearLine, direction, distance, move, seededRandom, spawnPoint, type Point } from './world';
 import type { Area, Drop, Effect, Enemy, Input, Projectile, RunMode, Shield } from './types';
 import { updateWeapons } from './weapons';
 import { updateEnemies } from './enemies';
@@ -13,7 +13,7 @@ export class Run {
     readonly random;
     time = 0;
     /** Ruin Alley healing station, in world coordinates. */
-    readonly safeSpot = { x: 1100, y: 565, radius: 68 };
+    readonly safeSpot = { x: ALLEY_ORIGIN.x + 1100, y: ALLEY_ORIGIN.y + 565, radius: 68 };
     safeSpotCharge = 0;
     safeSpotReadyAt = 0;
     safeSpotUses = 0;
@@ -24,7 +24,7 @@ export class Run {
     pending = 0;
     kills = 0;
     mode: RunMode = 'playing';
-    pos: Point = { x: 724, y: 610 };
+    pos: Point = { ...RUN_START };
     facing = 0;
     movementFacing = 0;
     moving = false;
@@ -580,7 +580,7 @@ export class Run {
             this.enemies = [];
             this.shots = [];
             this.areas = [];
-            this.spawn('boss', { x: 724, y: 445 });
+            this.spawn('boss', BOSS_ENTRY);
             this.announce('BIG HATER — 3:00 TO BERSERK', 6);
         }
         if (this.boss) {
