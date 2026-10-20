@@ -76,12 +76,13 @@ export function installExpandedAlleyTextures(textures: Phaser.Textures.TextureMa
 export function drawAlleyBoundary(
     graphics: Phaser.GameObjects.Graphics,
 ) {
+    const boundary = FLOOR.map(p => ({ x: p.x, y: p.y }));
     graphics.lineStyle(40, 0x2e3441, .45);
-    graphics.strokePoints(FLOOR, true);
+    graphics.strokePoints(boundary, true);
     graphics.lineStyle(14, 0xc88950, .78);
-    graphics.strokePoints(FLOOR, true);
+    graphics.strokePoints(boundary, true);
     graphics.lineStyle(3, 0xf8cf8a, .42);
-    graphics.strokePoints(FLOOR, true);
+    graphics.strokePoints(boundary, true);
     // Small hazard stripe marks follow the actual boundary, never fictional
     // collision obstacles or glowing pick-ups.
     for (let i = 0; i < FLOOR.length; i++) {
