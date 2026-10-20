@@ -94,20 +94,35 @@ export class BrowserScene extends Phaser.Scene {
         this.onReady?.();
     }
     update(_time: number, delta: number) {
+        // Instrument only on explicit ?fps=1. Avoid performance.now calls and
+        // extra allocations when diagnostics are disabled.
+        const meter = this.frameMeter;
+        const started = meter ? performance.now() : 0;
         this.tick?.(Math.min(delta / 1000, .1));
+        const afterSimulation = meter ? performance.now() : 0;
         if (this.run) this.draw(this.run, delta / 1000);
         else {
-        this.heroImage?.setVisible(false);
-        this.ground?.clear();
-        this.fx?.clear();
-        for (const image of this.actors.values())
-            image.destroy();
-        this.actors.clear();
-        this.enemyAnimator.reset();
-        for (const label of this.labels)
-            label.setVisible(false);
+            this.heroImage?.setVisible(false);
+            this.ground?.clear();
+            this.fx?.clear();
+            for (const image of this.actors.values())
+                image.destroy();
+            this.actors.clear();
+            this.enemyAnimator.reset();
+            for (const label of this.labels)
+                label.setVisible(false);
         }
-        this.frameMeter?.sample(this.run?.enemies.length ?? 0, this.run?.shots.length ?? 0);
+        if (meter) {
+            const run = this.run;
+            meter.sample(started, afterSimulation - started,
+                performance.now() - afterSimulation, {
+                    enemies: run?.enemies.length ?? 0,
+                    shots: run?.shots.length ?? 0,
+                    areas: run?.areas.length ?? 0,
+                    drops: run?.drops.length ?? 0,
+                    effects: run?.effects.length ?? 0,
+                });
+        }
     }
     private draw(r: Run, delta: number) {
         const g = this.ground, f = this.fx;
