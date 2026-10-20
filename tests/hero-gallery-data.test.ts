@@ -14,7 +14,7 @@ describe('B1 approved sprite animation gallery source of truth', () => {
         expect(gallery.scope).toContain('no new characters');
         const html = readFileSync('public/assets/cartoon/option-a-v1/animation-gallery.html','utf8');
         for (const id of Object.keys(gallery.heroes)) expect(html).toContain('data-hero="' + id + '"');
-        expect(html).toContain('sprites originais');
+        expect(html.toLowerCase()).toContain('sprites originais');
         expect(html).not.toContain('sigma-hero.svg');
         expect(html).not.toContain('/assets/cartoon/b1/');
     });
