@@ -37,21 +37,29 @@ export function enemyPose(e: Enemy, time: number, walk: number, moving: boolean,
 export class EnemyAnimator {
     private run?: Run;
     private walk = new Map<number, { x: number; y: number; phase: number }>();
+    private alive = new Set<number>();
     private finishAge = 0;
     private previous: EnemyPose[] = [];
     sample(r: Run, dt: number): EnemyPose[] {
         if (r !== this.run) { this.reset(); this.run = r; }
         if (r.mode !== 'playing' && r.mode !== 'won' && this.previous.length) return this.previous;
         if (r.mode === 'won') this.finishAge += Math.min(Math.max(dt, 0), .1);
-        const poses: EnemyPose[] = [], alive = new Set<number>();
+        const poses: EnemyPose[] = [], alive = this.alive;
+        alive.clear();
         for (const e of r.enemies) {
             if (e.born > r.time) continue;
             alive.add(e.id);
-            const old = this.walk.get(e.id) ?? { x: e.x, y: e.y, phase: 0 };
+            // Preserve a mutable per-enemy travel accumulator instead of
+            // allocating a new object on every animation frame.
+            let old = this.walk.get(e.id);
+            if (!old) {
+                old = { x: e.x, y: e.y, phase: 0 };
+                this.walk.set(e.id, old);
+            }
             const distance = Math.hypot(e.x - old.x, e.y - old.y);
-            const phase = old.phase + distance / Math.max(5, ENEMIES[e.kind].speed / 9);
-            this.walk.set(e.id, { x: e.x, y: e.y, phase });
-            poses.push(enemyPose(e, r.time, phase, distance > .001, e.kind === 'boss' && r.berserk));
+            old.phase += distance / Math.max(5, ENEMIES[e.kind].speed / 9);
+            old.x = e.x; old.y = e.y;
+            poses.push(enemyPose(e, r.time, old.phase, distance > .001, e.kind === 'boss' && r.berserk));
         }
         for (const id of this.walk.keys()) if (!alive.has(id)) this.walk.delete(id);
         for (const d of r.defeatedEnemies) {
@@ -61,5 +69,5 @@ export class EnemyAnimator {
         this.previous = poses;
         return poses;
     }
-    reset() { this.walk.clear(); this.finishAge = 0; this.run = undefined; this.previous = []; }
+    reset() { this.walk.clear(); this.alive.clear(); this.finishAge = 0; this.run = undefined; this.previous = []; }
 }
