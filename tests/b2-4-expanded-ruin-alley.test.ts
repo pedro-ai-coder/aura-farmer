@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-    ALLEY_ORIGIN, BOSS_ENTRY, COVER, FLOOR, ORIGINAL_ALLEY, RUN_START,
+    ALLEY_ORIGIN, WORLD_ORIGIN, BOSS_ENTRY, COVER, FLOOR, ORIGINAL_ALLEY, RUN_START,
     WORLD, clearLine, inFloor, move, seededRandom, spawnPoint, walkable,
 } from '../src/game/simulation/world';
 import { Run } from '../src/game/simulation/run';
@@ -12,9 +12,10 @@ describe('B2.4 Ruin Alley expanded geography without new art or characters', () 
         expect(WORLD.width / 1040).toBeGreaterThan(3);
         expect(WORLD.height / 585).toBeGreaterThan(4);
         expect(ORIGINAL_ALLEY).toEqual({ width: 1448, height: 1086 });
-        expect(ALLEY_ORIGIN).toEqual({ x: 1026, y: 782 });
-        expect(RUN_START).toEqual({ x: 1750, y: 1392 });
-        expect(BOSS_ENTRY).toEqual({ x: 1750, y: 1227 });
+        expect(WORLD_ORIGIN).toEqual({ x: -1026, y: -782 });
+        expect(ALLEY_ORIGIN).toEqual({ x: 0, y: 0 });
+        expect(RUN_START).toEqual({ x: 724, y: 610 });
+        expect(BOSS_ENTRY).toEqual({ x: 724, y: 445 });
         expect(FLOOR_TILE_SIZE).toBe(2 * FLOOR_PATCH.size);
         expect(FLOOR_PATCH.x + FLOOR_PATCH.size).toBeLessThanOrEqual(ORIGINAL_ALLEY.width);
         expect(FLOOR_PATCH.y + FLOOR_PATCH.size).toBeLessThanOrEqual(ORIGINAL_ALLEY.height);
@@ -45,23 +46,23 @@ describe('B2.4 Ruin Alley expanded geography without new art or characters', () 
     });
 
     it('allows a meaningful cross-map walk across more than two camera widths', () => {
-        let point = { x: 400, y: 1392 };
+        let point = { x: -626, y: 610 };
         expect(walkable(point)).toBe(true);
         for (let i = 0; i < 270; i++) {
             const moved = move(point, 10, 0);
             expect(moved.x).toBeGreaterThan(point.x);
             point = moved;
         }
-        expect(point.x).toBe(3100);
+        expect(point.x).toBe(2074);
         expect(walkable(point)).toBe(true);
-        expect(walkable({ x: 25, y: 1000 })).toBe(false);
-        expect(walkable({ x: 3480, y: 1100 })).toBe(false);
+        expect(walkable({ x: -1050, y: 1000 })).toBe(false);
+        expect(walkable({ x: 2490, y: 1100 })).toBe(false);
     });
 
     it('seeded mobs can spawn around the player in several districts', () => {
         const players = [
-            RUN_START, { x: 450, y: 1350 }, { x: 2980, y: 1370 },
-            { x: 800, y: 2180 }, { x: 2600, y: 530 },
+            RUN_START, { x: -570, y: 570 }, { x: 1954, y: 580 },
+            { x: -226, y: 1398 }, { x: 1574, y: -252 },
         ];
         for (const [i, player] of players.entries()) {
             expect(walkable(player)).toBe(true);
