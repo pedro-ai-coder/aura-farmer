@@ -63,9 +63,24 @@ test('V4 legendary grid uses six functional cards in two desktop rows', async ({
         run.wave = 4; run.time = 540; run.openLegendary();
     });
     await expect(page.locator('.legendary-offer .choice')).toHaveCount(6);
-    const rows = await page.locator('.legendary-offer .choice').evaluateAll(cards =>
-        cards.map(card => Math.round(card.getBoundingClientRect().top)));
-    expect(new Set(rows).size).toBe(2);
+    // The CSS hover animation lifts a card by up to 2px. The previous
+    // strict equality of rounded top coordinates sometimes counted the
+    // hovered card as a third row, even though the 3×2 grid was correct.
+    await page.mouse.move(2, 2);
+    await page.evaluate(() => document.fonts.ready);
+    await expect.poll(async () =>
+        page.locator('.legendary-offer .choice').evaluateAll(cards => {
+            const rects = cards.map(card => card.getBoundingClientRect());
+            const aligned = (indices: number[]) => {
+                const tops = indices.map(i => rects[i].top);
+                return Math.max(...tops) - Math.min(...tops) <= 3;
+            };
+            return aligned([0, 1, 2]) && aligned([3, 4, 5]) &&
+                rects[0].left < rects[1].left && rects[1].left < rects[2].left &&
+                rects[3].left < rects[4].left && rects[4].left < rects[5].left &&
+                rects[0].bottom <= rects[3].top - 2;
+        })
+    ).toBe(true);
     const grid = await page.locator('.legendary-offer .choice').evaluateAll(cards => {
         const rects = cards.map(card => card.getBoundingClientRect());
         return { noOverlap: rects[0].bottom <= rects[3].top - 2,
