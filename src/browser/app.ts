@@ -3,7 +3,7 @@ import { CAPS, HEROES, WAVES, heroById, passiveById, weaponById, xpRequired, typ
 import { ENEMIES } from '../game/catalog/enemies';
 import { itemInterval, itemPower, type Choice, type Item } from '../game/simulation/inventory';
 import { Run, choiceSummary, isDemoHero } from '../game/simulation/run';
-import { ORIGINAL_ALLEY, WORLD } from '../game/simulation/world';
+import { ORIGINAL_ALLEY, WORLD, WORLD_ORIGIN, WORLD_CENTER } from '../game/simulation/world';
 import { BrowserScene } from './scene';
 import { visiblePlayfieldBounds } from './touch-playfield';
 import { chooseCameraZoom, followCameraCenter } from './camera-follow';
@@ -28,7 +28,7 @@ export class BrowserApp {
     private screen = '';
     private lastHud = 0;
     /** Visual camera center only. Run.pos remains authoritative for physics. */
-    private cameraFocus = { x: WORLD.width / 2, y: WORLD.height / 2 };
+    private cameraFocus = { ...WORLD_CENTER };
     private runId = '';
     private recorded = false;
     private saveFailed = false;
@@ -146,8 +146,8 @@ export class BrowserApp {
                 (event.clientX - rect.left) * canvas.width / rect.width,
                 (event.clientY - rect.top) * canvas.height / rect.height,
             );
-            if (worldPoint.x < 0 || worldPoint.x >= WORLD.width ||
-                worldPoint.y < 0 || worldPoint.y >= WORLD.height) return;
+            if (worldPoint.x < WORLD_ORIGIN.x || worldPoint.x >= WORLD_ORIGIN.x + WORLD.width ||
+                worldPoint.y < WORLD_ORIGIN.y || worldPoint.y >= WORLD_ORIGIN.y + WORLD.height) return;
             // The upper HUD and bottom action controls are not part of the
             // interactive arena, even though they are drawn over the canvas.
             const controls = document.querySelectorAll('#hud .hud-top, #hud .hud-bottom, #hud .boss-meter');
@@ -224,7 +224,7 @@ export class BrowserApp {
         const zoom = chooseCameraZoom(bounds.width, bounds.height,
             this.run ? WORLD : ORIGINAL_ALLEY, !!this.run, touch, landscape);
         camera.setZoom(zoom);
-        camera.setBounds(0, 0, WORLD.width, WORLD.height);
+        camera.setBounds(WORLD_ORIGIN.x, WORLD_ORIGIN.y, WORLD.width, WORLD.height);
         camera.centerOn(this.cameraFocus.x, this.cameraFocus.y);
         this.alignTouchZone();
     }
@@ -243,7 +243,7 @@ export class BrowserApp {
         const area = visiblePlayfieldBounds(bounds, stage, {
             topLeft: camera.getWorldPoint(0, 0),
             bottomRight: camera.getWorldPoint(canvas.width, canvas.height),
-        }, WORLD);
+        }, WORLD, WORLD_ORIGIN);
         const styles = {
             left: `${area.left.toFixed(2)}px`,
             top: `${area.top.toFixed(2)}px`,
@@ -327,7 +327,7 @@ export class BrowserApp {
             this.run = undefined;
             this.scene.run = undefined;
             this.keys.clear();
-            this.cameraFocus = { x: WORLD.width / 2, y: WORLD.height / 2 };
+            this.cameraFocus = { ...WORLD_CENTER };
             this.alignHud();
             this.render(true);
         }
