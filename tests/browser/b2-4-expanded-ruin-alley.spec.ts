@@ -20,8 +20,9 @@ test('B2.4 real art: looping world, feathered native PNG, border and 11 collisio
     await page.setViewportSize({ width: 1280, height: 720 });
     await enter(page);
     const state = await page.evaluate(async () => {
+        const worldUrl: string = '/src/game/simulation/world.ts';
         const { WORLD, ALLEY_ORIGIN, ORIGINAL_ALLEY, COVER, RUN_START, walkable } =
-            await import(/* @vite-ignore */ '/src/game/simulation/world.ts');
+            await import(/* @vite-ignore */ worldUrl);
         const app = (window as any).__app, scene = app.scene;
         const floor = scene.children.list.find((obj: any) => obj.name === 'ruin-expanded-floor');
         const district = scene.children.list.find((obj: any) => obj.name === 'ruin-central-district');
@@ -80,8 +81,9 @@ test('B2.4 câmara atravessa o novo cenário, com piso e limites reais nas extre
             playerX: app.run.pos.x, playerY: app.run.pos.y };
     });
     const target = await page.evaluate(async () => {
+        const worldUrl: string = '/src/game/simulation/world.ts';
         const { walkable, RUN_START } =
-            await import(/* @vite-ignore */ '/src/game/simulation/world.ts');
+            await import(/* @vite-ignore */ worldUrl);
         const app = (window as any).__app;
         const goal = { x: 3150, y: 1392 };
         if (!walkable(goal)) throw new Error('Eastern ruin district should be walkable');
