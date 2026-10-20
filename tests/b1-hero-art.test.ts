@@ -48,10 +48,10 @@ describe('B1 Cartoon Arcade illustrated protagonists', () => {
     }
     it('never replaces unrelated characters or simulation timing', () => {
         const run = new Run('sigma');
-        const stateBefore = { time: run.time, damage: run.hero.damage, hp: run.hp };
+        const stateBefore = { time: run.time, hp: run.hp, x: run.pos.x, y: run.pos.y };
         const pose = heroPose(run);
         expect(b1HeroArt('unknown', pose, 0, run.time)).toBeUndefined();
         b1HeroArt('sigma', pose, 0, run.time);
-        expect({ time: run.time, damage: run.hero.damage, hp: run.hp }).toEqual(stateBefore);
+        expect({ time: run.time, hp: run.hp, x: run.pos.x, y: run.pos.y }).toEqual(stateBefore);
     });
 });
