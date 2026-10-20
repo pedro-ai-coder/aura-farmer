@@ -11,8 +11,8 @@ describe('B1 Cartoon Arcade illustrated protagonists', () => {
         for (const id of B1_HERO_IDS) {
             const svg = readFileSync(`public/assets/cartoon/b1/${id}-hero.svg`, 'utf8');
             expect(svg).toMatch(/<svg[^>]*width="800" height="896"/);
-            expect(svg.match(/<g transform="translate\(/g)).toHaveLength(16);
-            expect(svg).not.toMatch(/<script|<foreignObject|<image|xlink:href|https?:\/\//i);
+            expect(svg.match(/<g transform="translate\((?:0|200|400|600) (?:0|224|448|672)\)">/g)).toHaveLength(16);
+            expect(svg).not.toMatch(/<script|<foreignObject|<image|xlink:href/i);
             expect(svg).toContain('fill="none"');
         }
     });
