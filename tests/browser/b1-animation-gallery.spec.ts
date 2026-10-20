@@ -27,7 +27,11 @@ test('Interactive gallery only shows approved Sigma / Cool Kid / Alpha Chad spri
     await expect(page.locator('#frame-info')).toContainText('rear:');
     await page.locator('#secondary-motion').uncheck();
     await page.locator('#reduced-motion').check();
-    await page.locator('#speed').fill('0.5');
+    await page.locator('#speed').evaluate(node => {
+        const range = node as HTMLInputElement;
+        range.value = '0.5';
+        range.dispatchEvent(new Event('input', { bubbles: true }));
+    });
     await page.locator('#play').click();
     await page.getByRole('button', { name: 'Frame seguinte' }).click();
     await expect(page.locator('#play')).toHaveAttribute('aria-pressed', 'false');
