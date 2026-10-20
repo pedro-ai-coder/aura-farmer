@@ -37,8 +37,8 @@ test('B2.4 approved alley illustration remains central, with collision-backed cr
         };
     });
     expect(snapshot.world).toEqual({ width: 3500, height: 2650 });
-    expect(snapshot.origin).toEqual({ x: 1026, y: 782 });
-    expect(snapshot.hero).toEqual({ x: 1750, y: 1392 });
+    expect(snapshot.origin).toEqual({ x: 0, y: 0 });
+    expect(snapshot.hero).toEqual({ x: 724, y: 610 });
     expect(snapshot.floor).toEqual({ width: 3500, height: 2650, texture: 'ruin-floor-loop' });
     expect(snapshot.boundary).toBe(true);
     expect(snapshot.grounded).toBe(true);
