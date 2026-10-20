@@ -19,6 +19,11 @@ test('B2.3 desktop camera follows real keyboard movement, freezes in pause and r
     const homeZoom = await page.evaluate(() => (window as any).__app.scene.cameras.main.zoom);
     await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
     await expect(page.locator('#modal')).toBeHidden();
+    // setZoom updates Camera.zoom immediately, but worldView is recomputed on
+    // Phaser's next preRender. Do not sample the old menu worldView.
+    await expect.poll(async () => page.evaluate(() =>
+        (window as any).__app.scene.cameras.main.worldView.width
+    )).toBeLessThan(1448);
     const initial = await page.evaluate(() => {
         const app = (window as any).__app, c = app.scene.cameras.main;
         return {
