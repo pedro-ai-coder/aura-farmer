@@ -12,6 +12,11 @@ test('B1 keeps approved sprites while providing in-game pose transitions', async
     await expect(page.getByRole('button', { name: 'ENTER RUIN ALLEY' })).toBeEnabled();
     await page.getByRole('button', { name: 'ENTER RUIN ALLEY' }).click();
     await expect(page.locator('#hud')).toBeVisible();
+    // Loading starts with the static menu portrait; wait for one real
+    // Phaser draw before inspecting the runtime atlas and motion metadata.
+    await expect.poll(async () => page.evaluate(() =>
+        (window as any).__app.scene.heroImage.texture.key as string
+    )).toMatch(/^sigma-(atlas|rear-v2|flex-v2|matte-)/);
     const result = await page.evaluate(() => {
         const scene = (window as any).__app.scene;
         const art = scene.heroImage;
