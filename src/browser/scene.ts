@@ -13,7 +13,8 @@ import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
 import { drawWeaponProjectile, drawWeaponAreaAccent, drawSpecialDrop, drawHeroProtection } from './combat-vfx';
 import { HEROES } from '../game/catalog/content';
 import { ENEMIES } from '../game/catalog/enemies';
-import { COVER, WORLD } from '../game/simulation/world';
+import { COVER, RUN_START } from '../game/simulation/world';
+import { buildExpandedAlley } from './ruin-alley-expansion';
 import { drawCoverContacts, actorContactTexture } from './environment-vfx';
 import { inRenderView, areaInRenderView } from './scene-visibility';
 import type { Run } from '../game/simulation/run';
@@ -61,7 +62,9 @@ export class BrowserScene extends Phaser.Scene {
             el.textContent = 'An asset failed to load. Refresh to retry.'; });
     }
     create() {
-        this.add.image(0, 0, 'ruin').setOrigin(0).setDisplaySize(WORLD.width, WORLD.height).setDepth(-10);
+        // Native-scale approved district on a seamless, larger walkable floor.
+        // Do not stretch/duplicate buildings or character art.
+        buildExpandedAlley(this);
         for (const hero of HEROES) {
             const texture = this.textures.get(hero.id + '-atlas');
             // Explicit bounds: generated sheets are not uniform grids.
@@ -97,7 +100,7 @@ export class BrowserScene extends Phaser.Scene {
             .setName('hero-contact').setOrigin(contact.originX, contact.originY)
             .setDepth(.1).setVisible(false);
         this.fx = this.add.graphics().setDepth(2000);
-        this.heroImage = this.add.image(724, 610, 'sigma').setName('hero').setOrigin(.5, .9).setDisplaySize(90, 75);
+        this.heroImage = this.add.image(RUN_START.x, RUN_START.y, 'sigma').setName('hero').setOrigin(.5, .9).setDisplaySize(90, 75);
         for (let i = 0; i < 24; i++)
             this.labels.push(this.add.text(0, 0, '', { fontFamily: 'Arial', fontSize: '18px', fontStyle: 'bold', color: '#fff7da', stroke: '#253449', strokeThickness: 4 }).setDepth(2200).setOrigin(.5));
         // Opt-in diagnostic on the PR preview: no overlay or sampling cost in regular play.
