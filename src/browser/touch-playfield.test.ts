@@ -35,6 +35,21 @@ describe('mobile joystick visible-map bounds', () => {
         expect(area.height).toBeCloseTo(341.1, 1);
     });
 
+    it('projects a world extending left/up of the original district on mobile', () => {
+        const origin = { x: -1026, y: -782 };
+        const extended = { width: 3500, height: 2650 };
+        const result = visiblePlayfieldBounds(
+            { left: 0, top: 0, width: 700, height: 530 },
+            { left: 0, top: 0 },
+            { topLeft: { x: -1200, y: -900 }, bottomRight: { x: 2300, y: 1750 } },
+            extended, origin,
+        );
+        expect(result.left).toBeCloseTo(34.8, 1);
+        expect(result.top).toBeCloseTo(23.6, 1);
+        expect(result.width).toBeCloseTo(665.2, 1);
+        expect(result.height).toBeCloseTo(506.4, 1);
+    });
+
     it('never returns negative or non-finite dimensions when the world is off-screen', () => {
         expect(visiblePlayfieldBounds(
             { left: 0, top: 0, width: 600, height: 400 },
