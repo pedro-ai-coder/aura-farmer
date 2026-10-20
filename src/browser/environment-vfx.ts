@@ -56,3 +56,37 @@ export function drawActorContact(g: Phaser.GameObjects.Graphics, at: Point, radi
     g.fillStyle(INK, .07);
     g.fillEllipse(at.x + 7, at.y + 6, width * .75, height * .65);
 }
+
+/** Reproduce the same two elliptical contact accents in a tiny canvas texture,
+ * once per enemy radius, instead of tessellating ~200 Graphics ellipses per
+ * rendered frame in a dense wave. No new PNGs or gameplay entities.
+ */
+export function actorContactTexture(
+    textures: Phaser.Textures.TextureManager, radius: number,
+): { key: string; originX: number; originY: number } {
+    const width = Math.max(20, Math.min(105, radius * 2.1));
+    const height = Math.max(8, Math.min(32, radius * .55));
+    const padding = 12;
+    const anchorX = Math.ceil(width / 2 + padding);
+    const anchorY = Math.ceil(height / 2 + padding);
+    const canvasWidth = Math.ceil(width + padding * 2);
+    const canvasHeight = Math.ceil(height + padding * 2);
+    const key = 'actor-contact-' + Math.round(radius * 100);
+    if (!textures.exists(key)) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D unavailable for actor contact texture');
+        ctx.fillStyle = 'rgba(37,52,73,0.22)';
+        ctx.beginPath();
+        ctx.ellipse(anchorX + 3, anchorY + 4, width / 2, height / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(37,52,73,0.07)';
+        ctx.beginPath();
+        ctx.ellipse(anchorX + 7, anchorY + 6, width * .375, height * .325, 0, 0, Math.PI * 2);
+        ctx.fill();
+        textures.addCanvas(key, canvas);
+    }
+    return { key, originX: anchorX / canvasWidth, originY: anchorY / canvasHeight };
+}
