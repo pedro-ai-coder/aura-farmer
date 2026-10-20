@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Run } from '../src/game/simulation/run';
 import { Inventory } from '../src/game/simulation/inventory';
 import { HEROES, WEAPONS, PASSIVES, xpRequired } from '../src/game/catalog/content';
-import { walkable, clearLine, move, seededRandom } from '../src/game/simulation/world';
+import { COVER, RUN_START, walkable, clearLine, move, seededRandom } from '../src/game/simulation/world';
 import { readSave, writeSave, recordResult, SAVE_KEY, LEGACY_KEY } from '../src/browser/save';
 function advance(r: Run, seconds: number) { for (let i = 0; i < Math.round(seconds * 60); i++)
     r.update(1 / 60); }
@@ -36,9 +36,9 @@ describe('combat and world', () => {
     it('limits primary aura procs across multiple targets and secondary hits', () => { const r = quiet(); const a = r.spawn('npc', { x: 800, y: 600 })!, b = r.spawn('npc', { x: 820, y: 600 })!; a.born = b.born = 0; r.hitEnemy(a, 1, 'no-cap', 1, true); r.hitEnemy(b, 1, 'no-cap', 1, true); r.hitEnemy(a, 1, 'no-cap', 2, true); r.hitEnemy(a, 1, 'no-cap', 3, true); r.hitEnemy(a, 1, '', 4, false); expect(r.aura).toBe(2); });
     it('Sigma requires a target; Alpha grants shield; Cool Kid respects hazards', () => { const s = quiet(); s.aura = 100; expect(s.activateFlex()).toBe(false); expect(s.aura).toBe(100); const a = new Run('alpha'); a.aura = 100; expect(a.activateFlex()).toBe(true); expect(a.shield).toBe(35); const c = new Run('cool-kid'); c.aura = 100; c.activateFlex(); const e = c.spawn('npc')!; c.hurt(10, e, true); expect(c.hp).toBe(110); c.hurt(10, e, false, true); expect(c.hp).toBeLessThan(110); });
     it('shield is capped and lethal hits do not revive', () => { const r = quiet(); r.addShield('a', 100, 20); r.addShield('b', 100, 20); expect(r.shield).toBe(40); expect(r.shields.a.until).toBe(6); r.hurt(1000, undefined); expect(r.mode).toBe('lost'); expect(r.hp).toBe(0); });
-    it('blocks scenery and projectiles at cover', () => { expect(walkable({ x: 724, y: 610 })).toBe(true); expect(walkable({ x: 600, y: 550 })).toBe(false); expect(walkable({ x: 10, y: 10 })).toBe(false); expect(clearLine({ x: 540, y: 550 }, { x: 660, y: 550 })).toBe(false); expect(move({ x: 550, y: 550 }, 40, 0)).toEqual({ x: 550, y: 550 }); });
+    it('blocks scenery and projectiles at cover', () => { expect(walkable(RUN_START)).toBe(true); const first = COVER[0]; expect(walkable(first)).toBe(false); expect(walkable({ x: 10, y: 10 })).toBe(false); expect(clearLine({ x: first.x - 60, y: first.y }, { x: first.x + 60, y: first.y })).toBe(false); const before = { x: first.x - 50, y: first.y }; expect(move(before, 40, 0)).toEqual(before); });
     for (const w of WEAPONS)
-        it(`${w.name} damages an eligible target`, () => { const hero = HEROES.find(h => h.role === w.role)!; const r = new Run(hero.id, 1); r.nextSpawn = Infinity; r.inventory.weapons = [{ id: w.id, rarity: 'common', level: 1 }]; const e = r.spawn('npc', { x: 780, y: 610 })!; e.born = 0; e.hp = e.maxHp = 10000; advance(r, 1); expect(r.damageDealt).toBeGreaterThan(0); });
+        it(`${w.name} damages an eligible target`, () => { const hero = HEROES.find(h => h.role === w.role)!; const r = new Run(hero.id, 1); r.nextSpawn = Infinity; r.inventory.weapons = [{ id: w.id, rarity: 'common', level: 1 }]; const e = r.spawn('npc', { x: r.pos.x + 56, y: r.pos.y })!; e.born = 0; e.hp = e.maxHp = 10000; advance(r, 1); expect(r.damageDealt).toBeGreaterThan(0); });
 });
 describe('versioned saves', () => {
     const memory = () => { const map = new Map<string, string>(); return { map, getItem: (k: string) => map.get(k) ?? null, setItem: (k: string, v: string) => { map.set(k, v); } }; };
