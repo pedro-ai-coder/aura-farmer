@@ -11,9 +11,9 @@ This PR **changes the actual playable Phaser hero artwork**, not merely document
 - Browser scene now rasterizes SVGs with Phaser, maps animation state and walk stride to per-character authored cells, and keeps a consistent foot baseline and 64-unit hero silhouette.
 - Dedicated rear locomotion drawings for northbound movement. Lateral orientation continues to use existing animation flip selection.
 - Existing special Flex animation sequences and four-stage defeat animations deliberately remain unchanged until accepted replacements exist.
-- Review gallery at **`/assets/cartoon/b1/`** (open on the Vercel PR preview), with independently selectable animated states and contact sheets.
+- Review gallery at **`/assets/cartoon/b1/index.html`** (open on the Vercel PR preview), with independently selectable animated states and contact sheets.
 - Tests for asset integrity, frame mappings, original Flex fallback, full browser asset load and in-game texture selection.
-- Asset provenance is in `public/assets/cartoon/b1/manifest.json`.
+- Asset provenance is in `public/assets/cartoon/b1/index.htmlmanifest.json`.
 
 ## Acceptance checks
 
