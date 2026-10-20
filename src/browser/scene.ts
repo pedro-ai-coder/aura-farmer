@@ -7,7 +7,7 @@ import { EnemyAnimator } from './enemy-animation';
 import { installEnemyTextures } from './enemy-textures';
 import { enemyTelegraph } from './enemy-telegraph';
 import { HeroAnimator } from './hero-animation';
-import { B1_HERO_IDS, B1_SPRITE_CELL, b1HeroArt } from './b1-hero-art';
+import { HeroMotionAnimator } from './hero-motion';
 import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
 import { drawWeaponProjectile, drawWeaponAreaAccent, drawSpecialDrop, drawHeroProtection } from './combat-vfx';
 import { HEROES } from '../game/catalog/content';
@@ -24,6 +24,7 @@ export class BrowserScene extends Phaser.Scene {
     onReady?: () => void;
     private actors = new Map<number, Phaser.GameObjects.Image>();
     private heroAnimator = new HeroAnimator();
+    private heroMotionAnimator = new HeroMotionAnimator();
     private enemyAnimator = new EnemyAnimator();
     private heroImage!: Phaser.GameObjects.Image;
     private ground!: Phaser.GameObjects.Graphics;
@@ -36,7 +37,6 @@ export class BrowserScene extends Phaser.Scene {
         for (const hero of HEROES) {
             this.load.image(hero.id, ROOT + `characters/${hero.id}.png`);
             this.load.image(hero.id + '-atlas', `/assets/runtime/${hero.id}-atlas.png`);
-            this.load.svg(`b1-${hero.id}`, `/assets/cartoon/b1/${hero.id}-hero.svg`, { width: 800, height: 896 });
             if (hero.id !== 'sigma') this.load.image(hero.id + '-rear-v2', `/assets/runtime/${hero.id}-rear-v2.png`);
         }
         this.load.image('cool-kid-flex-v2', '/assets/runtime/cool-kid-flex-v2.png');
@@ -59,14 +59,6 @@ export class BrowserScene extends Phaser.Scene {
             heroFrames[hero.id].forEach(([x, y, width, height], frame) => {
                 texture.add(frame, 0, x, y, width, height);
             });
-        }
-        for (const id of B1_HERO_IDS) {
-            const sheet = this.textures.get(`b1-${id}`);
-            for (let index = 0; index < B1_SPRITE_CELL.columns * B1_SPRITE_CELL.rows; index++) {
-                sheet.add(index, 0, index % B1_SPRITE_CELL.columns * B1_SPRITE_CELL.width,
-                    Math.floor(index / B1_SPRITE_CELL.columns) * B1_SPRITE_CELL.height,
-                    B1_SPRITE_CELL.width, B1_SPRITE_CELL.height);
-            }
         }
         for (const id of ['alpha', 'cool-kid'] as const) {
             const texture = this.textures.get(id + '-rear-v2');
@@ -213,13 +205,15 @@ export class BrowserScene extends Phaser.Scene {
             if (e.shield > 0 && e.shieldUntil > r.time) { g.lineStyle(2, 0x6eaab0, .8); g.strokeCircle(e.x, e.y, e.radius + 3); }
         }
         const pose = this.heroAnimator.sample(r, delta);
-        const b1 = b1HeroArt(r.characterId, pose, r.movementFacing, r.time);
-        const art = b1 ?? heroFrameTexture(r.characterId, pose.sheet, pose.frame);
-        // B1 illustrated frames share a fixed scale and foot baseline.
-        // Existing animated Flex and defeat sequences remain unchanged.
+        const motion = this.heroMotionAnimator.sample(r, pose, delta);
+        const art = heroFrameTexture(r.characterId, pose.sheet, pose.frame);
+        // Approved Option A PNGs, with presentation-only secondary motion.
+        // Run still owns the exact world position, hitbox and combat timing.
         this.heroImage.setVisible(true).setTexture(art.key, art.frame)
-            .setPosition(r.pos.x, r.pos.y).setOrigin(.5, b1?.originY ?? 1).setScale(b1?.scale ?? pose.scale)
-            .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
+            .setPosition(r.pos.x + motion.shiftX, r.pos.y - motion.lift).setOrigin(.5, 1)
+            .setScale(pose.scale * motion.scaleX, pose.scale * motion.scaleY)
+            .setRotation(motion.rotation).setFlipX(pose.flip)
+            .setDepth(r.pos.y).setAlpha(1).setData('pose', pose).setData('motion', motion);
         drawActorContact(g, r.pos, 20);
         drawHeroProtection(g, r);
         if (r.timers.wifiUntil > r.time) {

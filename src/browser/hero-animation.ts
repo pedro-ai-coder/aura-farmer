@@ -11,7 +11,7 @@ interface Playback { walk: number; defeat: number }
 const cycle = (time: number, fps: number, frames: number[]) => frames[Math.floor(Math.max(0, time) * fps) % frames.length];
 
 /** Pure presentation: never advances combat, timers or RNG. Directions use canvas coordinates. */
-export function heroPose(r: Run, playback: Playback = { walk: r.time, defeat: 1 }): HeroPose {
+export function heroPose(r: Run, playback: Playback = { walk: r.time, defeat: 1 }, movementHeading = r.movementFacing): HeroPose {
     const cool = r.characterId === 'cool-kid', alpha = r.characterId === 'alpha';
     const pose = (frame: number, state: HeroPose['state'], flip = Math.cos(r.facing) < 0, sheet: HeroPose['sheet'] = 'atlas'): HeroPose => ({
         frame, flip, sheet, state,
@@ -23,14 +23,14 @@ export function heroPose(r: Run, playback: Playback = { walk: r.time, defeat: 1 
         return pose(frames[Math.min(3, Math.floor(playback.defeat * 8))], 'defeat');
     }
     if (r.timers.hurtUntil > r.time) {
-        if (cool && r.activeFlex) return pose(6, 'hurt', Math.cos(r.movementFacing) < 0, 'flex-v2');
+        if (cool && r.activeFlex) return pose(6, 'hurt', Math.cos(movementHeading) < 0, 'flex-v2');
         const elapsed = .18 - (r.timers.hurtUntil - r.time);
         return pose((cool ? 29 : 37) + (elapsed >= .09 ? 1 : 0), 'hurt');
     }
     if (r.activeFlex) {
         const elapsed = Math.max(0, r.hero.duration - (r.flexUntil - r.time));
         if (cool) {
-            const flip = Math.cos(r.moving ? r.movementFacing : r.facing) < 0;
+            const flip = Math.cos(r.moving ? movementHeading : r.facing) < 0;
             if (elapsed < .25) return pose(Math.floor(elapsed * 8), 'flex-in', flip, 'flex-v2');
             if (r.flexUntil - r.time <= .25) return pose(r.flexUntil - r.time > .125 ? 6 : 7, 'flex-out', flip, 'flex-v2');
             return pose(r.moving ? cycle(playback.walk, 11.25, [2, 3, 4, 5]) : 1, 'flex-loop', flip, 'flex-v2');
@@ -54,7 +54,7 @@ export function heroPose(r: Run, playback: Playback = { walk: r.time, defeat: 1 
         return pose((cool ? 26 : 34) + Math.min(2, Math.floor(elapsed / (.22 / 3))), 'attack');
     }
     if (r.moving) {
-        const dir = (Math.round(r.movementFacing / (Math.PI / 4)) + 8) % 8;
+        const dir = (Math.round(movementHeading / (Math.PI / 4)) + 8) % 8;
         const step = Math.floor(playback.walk * 9) % 4;
         if (alpha && dir >= 5) return pose(([8, 4, 0][dir - 5]) + step, 'run', false, 'rear-v2');
         if (cool && dir === 6) return pose(step, 'run', false, 'rear-v2');
@@ -81,10 +81,12 @@ export class HeroAnimator {
     private walk = 0;
     private defeat = 0;
     private lost = false;
+    private direction = 0;
+    private directionKnown = false;
     sample(r: Run, delta: number): HeroPose {
         if (this.run !== r) {
             this.run = r; this.x = r.pos.x; this.y = r.pos.y;
-            this.walk = 0; this.defeat = 0; this.lost = false;
+            this.walk = 0; this.defeat = 0; this.lost = false; this.directionKnown = false;
         }
         if (r.mode === 'playing') this.walk += Math.hypot(r.pos.x - this.x, r.pos.y - this.y) / r.hero.speed;
         if (r.mode === 'lost') {
@@ -92,6 +94,25 @@ export class HeroAnimator {
             this.lost = true;
         }
         this.x = r.pos.x; this.y = r.pos.y;
-        return heroPose(r, { walk: this.walk, defeat: this.defeat });
+        // The 8-way pose sheet flips at each 22.5-degree midpoint.
+        // Hysteresis avoids rapid pose flicker near joystick boundaries.
+        if (r.mode === 'playing' && r.moving) {
+            const slice = Math.PI / 4;
+            const index = ((Math.round(r.movementFacing / slice) % 8) + 8) % 8;
+            if (!this.directionKnown) {
+                this.direction = index;
+                this.directionKnown = true;
+            } else {
+                const center = this.direction * slice;
+                const difference = Math.atan2(
+                    Math.sin(r.movementFacing - center), Math.cos(r.movementFacing - center));
+                if (Math.abs(difference) > slice / 2 + .105) this.direction = index;
+            }
+        } else if (!r.moving) {
+            // Fresh input after stopping should not inherit an old heading.
+            this.directionKnown = false;
+        }
+        const heading = this.directionKnown ? this.direction * Math.PI / 4 : r.movementFacing;
+        return heroPose(r, { walk: this.walk, defeat: this.defeat }, heading);
     }
 }

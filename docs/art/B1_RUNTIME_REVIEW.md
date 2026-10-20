@@ -1,34 +1,27 @@
-# B1 — new original Cartoon Arcade hero sprites (review)
+# B1 — Approved Cartoon Arcade sprites; animation polish
 
-This PR **changes the actual playable Phaser hero artwork**, not merely documentation.
+**Decision 20 October 2026:** The owner rejected the low-detail SVG replacement sprites. They were removed from the PR. All previously approved Option A PNG portraits and runtime animation atlases remain completely unchanged.
 
-## Contents
+## Implementation
 
-- Three newly authored **transparent vector sprite sheets**, each 800 × 896, with 16 original cartoon poses across a 4 × 4 layout:
-  - `sigma-hero.svg` — deep-ink hood, golden medallion, throwable black cap.
-  - `cool-kid-hero.svg` — blue pompom beanie, blue hoodie, white keyboard.
-  - `alpha-hero.svg` — blond spikes, muscular silhouette, white tank top and metal shield.
-- Browser scene now rasterizes SVGs with Phaser, maps animation state and walk stride to per-character authored cells, and keeps a consistent foot baseline and 64-unit hero silhouette.
-- Dedicated rear locomotion drawings for northbound movement. Lateral orientation continues to use existing animation flip selection.
-- Existing special Flex animation sequences and four-stage defeat animations deliberately remain unchanged until accepted replacements exist.
-- Review gallery at **`/assets/cartoon/b1/index.html`** (open on the Vercel PR preview), with independently selectable animated states and contact sheets.
-- Tests for asset integrity, frame mappings, original Flex fallback, full browser asset load and in-game texture selection.
-- Asset provenance is in `public/assets/cartoon/b1/index.htmlmanifest.json`.
+- **Direction selection:** A small 8-direction hysteresis prevents flickering around joystick direction boundaries. Large turns take effect immediately, independent of automatic aim.
+- **Run:** Already approved stride sprites keep their displacement-driven timing. Subtle lift, directional tilt and squash/stretch reflect travel, not merely pressed keys; running against a wall does not produce extra bounce.
+- **Idle:** Gentle breathing is layered on top of existing illustrated poses.
+- **Attack and hit:** Small recoil and recovery synchronized with simulation attack and damage windows, without extra attacks.
+- **Flex:** Subtle emphasis on existing character-specific Flex poses. No new scripted slams, fake attack effects, or damage.
+- **Transitions:** Frame-rate-independent interpolation softens abrupt motion changes and returns the visual body to its resting pose.
+- **Pause and accessibility:** Upgrade/legendary selections and pause freeze secondary motion; Reduce Motion makes all supplementary transforms neutral. Restart resets state.
 
-## Acceptance checks
+## Invariants
 
-1. Compare Sigma, Cool Kid and Alpha Chad at real game zoom on desktop and mobile.
-2. Verify idle/run/attack/hurt and **rear-facing motion**, including mirrored directions.
-3. Compare each silhouette against its previously approved identity; flag any unwanted changes.
-4. Verify no outlines, accessory fragments or opaque backgrounds spill into neighboring frames.
-5. Inspect B1 gameplay screenshots from the Playwright artifacts when available.
-6. Verify that the three character-specific Flex effects and defeat sequences still play.
-7. CI: TypeScript, unit tests, build, Playwright Chromium must all pass before merge; do not treat technical success as visual approval.
+- The PNG files, source frame coordinates, approved style, gameplay hitboxes, player position, RNG, damage, wave progression, drops, saves and input mappings are unchanged.
+- All new motion is presentation-only in Phaser; ground shadows remain at the real actor contact point.
+- No paid services, dependency additions or newly generated art.
 
-## Limitations
+## Review
 
-- This is the first **runtime visual implementation**, not final B1 art acceptance.
-- This PR does not add enemy art, revise the arena, weapons/icons, or alter game balance.
-- The hand-authored vector aesthetic should be checked against the approved Option A artwork before replacing more assets.
-- All previously approved PNG masters and runtime atlases are preserved for rollback.
-- Do not merge without explicit owner approval. No paid services or new runtime packages.
+Open the Vercel PR preview and compare to main with Sigma, Cool Kid and Alpha Chad. Test starting/stopping, diagonal switches and joystick, colliding with cover, attacking, hurt, Flex, pause, reduce motion and defeat. Browser screenshots are generated as CI artifacts.
+
+Unit regression: \`tests/hero-motion.test.ts\`. Browser regression: \`tests/browser/b1-motion-review.spec.ts\`. Existing hero animation/contact-sheet Playwright and Vitest suites remain required.
+
+This PR stays **draft** until checks pass and the owner explicitly approves its visual feel and merge.
