@@ -7,6 +7,8 @@ import { EnemyAnimator } from './enemy-animation';
 import { installEnemyTextures } from './enemy-textures';
 import { enemyTelegraph } from './enemy-telegraph';
 import { HeroAnimator } from './hero-animation';
+import { HeroMotionAnimator } from './hero-motion';
+import { RenderFrameMeter } from './render-frame-meter';
 import { heroFrameTexture, installHeroFrameMattes } from './hero-frame-mattes';
 import { drawWeaponProjectile, drawWeaponAreaAccent, drawSpecialDrop, drawHeroProtection } from './combat-vfx';
 import { HEROES } from '../game/catalog/content';
@@ -22,7 +24,10 @@ export class BrowserScene extends Phaser.Scene {
     tick?: (dt: number) => void;
     onReady?: () => void;
     private actors = new Map<number, Phaser.GameObjects.Image>();
+    private visibleActorIds = new Set<number>();
+    private frameMeter?: RenderFrameMeter;
     private heroAnimator = new HeroAnimator();
+    private heroMotionAnimator = new HeroMotionAnimator();
     private enemyAnimator = new EnemyAnimator();
     private heroImage!: Phaser.GameObjects.Image;
     private ground!: Phaser.GameObjects.Graphics;
@@ -82,12 +87,16 @@ export class BrowserScene extends Phaser.Scene {
         this.heroImage = this.add.image(724, 610, 'sigma').setName('hero').setOrigin(.5, .9).setDisplaySize(90, 75);
         for (let i = 0; i < 24; i++)
             this.labels.push(this.add.text(0, 0, '', { fontFamily: 'Arial', fontSize: '18px', fontStyle: 'bold', color: '#fff7da', stroke: '#253449', strokeThickness: 4 }).setDepth(2200).setOrigin(.5));
+        // Opt-in diagnostic on the PR preview: no overlay or sampling cost in regular play.
+        if (new URLSearchParams(window.location.search).has('fps'))
+            this.frameMeter = new RenderFrameMeter();
         this.ready = true;
         this.onReady?.();
     }
-    update(_time: number, delta: number) { this.tick?.(Math.min(delta / 1000, .1)); if (this.run)
-        this.draw(this.run, delta / 1000);
-    else {
+    update(_time: number, delta: number) {
+        this.tick?.(Math.min(delta / 1000, .1));
+        if (this.run) this.draw(this.run, delta / 1000);
+        else {
         this.heroImage?.setVisible(false);
         this.ground?.clear();
         this.fx?.clear();
@@ -97,7 +106,9 @@ export class BrowserScene extends Phaser.Scene {
         this.enemyAnimator.reset();
         for (const label of this.labels)
             label.setVisible(false);
-    } }
+        }
+        this.frameMeter?.sample(this.run?.enemies.length ?? 0, this.run?.shots.length ?? 0);
+    }
     private draw(r: Run, delta: number) {
         const g = this.ground, f = this.fx;
         g.clear();
@@ -137,13 +148,16 @@ export class BrowserScene extends Phaser.Scene {
             if (!a.hostile) drawWeaponAreaAccent(g, a, r.reduceMotion);
         }
         const enemyPoses = this.enemyAnimator.sample(r, delta);
-        const visible = new Set(enemyPoses.map(p => p.enemy.id));
+        // Reuse the same ID set instead of allocating one every rendered frame.
+        const visible = this.visibleActorIds;
+        visible.clear();
+        for (const pose of enemyPoses) visible.add(pose.enemy.id);
         for (const [id, image] of this.actors) if (!visible.has(id)) {
             image.destroy(); this.actors.delete(id);
         }
         for (const e of r.enemies) if (e.born > r.time) {
             g.lineStyle(3, 0xe57461, .9); g.strokeCircle(e.x, e.y, 26);
-            g.strokeLineShape(new Phaser.Geom.Line(e.x - 12, e.y - 12, e.x + 12, e.y + 12));
+            g.lineBetween(e.x - 12, e.y - 12, e.x + 12, e.y + 12);
         }
         for (const p of enemyPoses) {
             const e = p.enemy;
@@ -152,7 +166,11 @@ export class BrowserScene extends Phaser.Scene {
                 image = this.add.image(e.x, e.y, p.sheet, p.frame).setName(`enemy-${e.id}`);
                 this.actors.set(e.id, image);
             }
-            image.setTexture(p.sheet, p.frame).setPosition(e.x, e.y).setOrigin(p.originX, p.originY)
+            // Rebinding the same texture/frame for every enemy on every RAF
+            // is unnecessary; only do it when the authored pose changes.
+            if (image.texture.key !== p.sheet || String(image.frame.name) !== String(p.frame))
+                image.setTexture(p.sheet, p.frame);
+            image.setPosition(e.x, e.y).setOrigin(p.originX, p.originY)
                 .setScale(e.kind === 'terminal' ? e.radius * 3.1 / image.frame.height : p.scale).setFlipX(p.flip).setDepth(e.y).setAlpha(p.alpha).setData('pose', p.state);
             image.clearTint();
             if (p.state === 'death') continue;
@@ -203,11 +221,18 @@ export class BrowserScene extends Phaser.Scene {
             if (e.shield > 0 && e.shieldUntil > r.time) { g.lineStyle(2, 0x6eaab0, .8); g.strokeCircle(e.x, e.y, e.radius + 3); }
         }
         const pose = this.heroAnimator.sample(r, delta);
+        const motion = this.heroMotionAnimator.sample(r, pose, delta);
         const art = heroFrameTexture(r.characterId, pose.sheet, pose.frame);
-        // A fixed scale preserves body proportions across attacks, hurt and death.
-        this.heroImage.setVisible(true).setTexture(art.key, art.frame)
-            .setPosition(r.pos.x, r.pos.y).setOrigin(.5, 1).setScale(pose.scale)
-            .setFlipX(pose.flip).setDepth(r.pos.y).setAlpha(1).setData('pose', pose);
+        // Approved Option A PNGs, with presentation-only secondary motion.
+        // Run still owns the exact world position, hitbox and combat timing.
+        if (this.heroImage.texture.key !== art.key ||
+            (art.frame !== undefined && String(this.heroImage.frame.name) !== String(art.frame)))
+            this.heroImage.setTexture(art.key, art.frame);
+        this.heroImage.setVisible(true)
+            .setPosition(r.pos.x + motion.shiftX, r.pos.y - motion.lift).setOrigin(.5, 1)
+            .setScale(pose.scale * motion.scaleX, pose.scale * motion.scaleY)
+            .setRotation(motion.rotation).setFlipX(pose.flip)
+            .setDepth(r.pos.y).setAlpha(1).setData('pose', pose).setData('motion', motion);
         drawActorContact(g, r.pos, 20);
         drawHeroProtection(g, r);
         if (r.timers.wifiUntil > r.time) {

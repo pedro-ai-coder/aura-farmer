@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Aura Farmer · Galeria de animações B1</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#fff3d9;background:#161e33}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#345171,#17213a 65%,#101728);min-height:100vh}
+main{max-width:1100px;margin:auto;padding:32px clamp(16px,4vw,44px) 60px}
+header{margin-bottom:24px}header a{color:#90ddf6;font-size:14px;text-decoration:none}
+.kicker{color:#ffd368;font-weight:900;letter-spacing:.12em;font-size:13px;text-transform:uppercase;margin:18px 0 7px}
+h1{font-size:clamp(29px,5vw,48px);line-height:1.1;margin:0 0 8px;letter-spacing:-.04em}
+h1 span{color:#47dce2}p{line-height:1.5;color:#bfcee1;margin:8px 0}
+.hero-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+button,select,input{font:inherit}
+button{cursor:pointer;color:#fcf2d7;background:#2a3f61;border:2px solid #5a7291;border-radius:10px;padding:11px 16px;font-weight:800}
+button:hover{border-color:#91d4f5}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #ffe086;outline-offset:3px}
+button[aria-pressed=true]{color:#18233a;background:#ffd368;border-color:#f7e6af}
+.content{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(270px,.8fr);gap:20px}
+.panel{background:#1b2b46;border:2px solid #485f81;border-radius:18px;padding:18px;box-shadow:0 10px 0 #101729}
+.panel h2{font-size:22px;margin:0 0 6px}
+.stage{position:relative;overflow:hidden;border:2px solid #687c9a;border-radius:14px;background:linear-gradient(#42547b 0%,#273755 66%,#23334b 100%);display:grid;place-items:center}
+.stage canvas{width:100%;max-width:610px;aspect-ratio:8/6;height:auto;display:block}
+.preview-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:13px;color:#cbdcf0}
+.preview-meta code{font-size:12px;color:#ffd368}
+.controls{display:grid;gap:14px}
+fieldset{padding:0;border:0;margin:0}legend,label{font-size:13px;font-weight:800;color:#e4eaf1;display:block;margin-bottom:6px}
+.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+select{border:2px solid #647b9c;border-radius:9px;background:#12213b;color:#fff3d9;width:100%;padding:10px}
+input[type=range]{width:100%;accent-color:#ffd368}
+.switch{display:flex;align-items:center;gap:9px;color:#e4eaf1;font-size:14px;font-weight:600}
+.switch input{width:19px;height:19px;margin:0;accent-color:#5bd6c5}
+.actions{display:flex;flex-wrap:wrap;gap:9px}.actions button{flex:1;white-space:nowrap}
+.tip{font-size:13px;border-left:3px solid #ffd368;padding:8px 12px;background:#243652;border-radius:4px;margin-top:10px}
+.key{color:#ffd368;font-weight:900}.footer{margin-top:24px;color:#b4c3d5;font-size:13px}
+@media(max-width:800px){.content{grid-template-columns:1fr}.control-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.panel{padding:13px}.control-grid{grid-template-columns:1fr}.hero-tabs button{flex:1}.stage canvas{max-height:310px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<a href="/">← Voltar ao jogo</a>
+<div class="kicker">B1 · Cartoon Arcade · Sprites originais preservados</div>
+<h1>Galeria <span>interativa</span> de animações</h1>
+<p>Experimenta as poses originais de Sigma, Cool Kid e Alpha Chad: corrida em oito direções, ataque, dano, Flex e derrota. Não foram criados novos personagens nem substituídos os PNG existentes.</p>
+</header>
+<nav class="hero-tabs" aria-label="Personagens atuais">
+<button type="button" data-hero="sigma" aria-pressed="true">SIGMA</button>
+<button type="button" data-hero="cool-kid" aria-pressed="false">COOL KID</button>
+<button type="button" data-hero="alpha" aria-pressed="false">ALPHA CHAD</button>
+</nav>
+<div class="content">
+<section class="panel" aria-label="Pré-visualização">
+<div class="stage"><canvas id="hero-canvas" width="640" height="480" role="img" aria-label="Animação do personagem escolhido"></canvas></div>
+<div class="preview-meta"><span id="frame-info" aria-live="polite">A carregar os atlas aprovados…</span><code id="asset-info">PNG aprovado</code></div>
+<p class="tip"><span class="key">Nota:</span> esta galeria reproduz os frames dos atlas usados pelo Phaser; a inclinação e o ressalto são efeitos adicionais de apresentação. O combate real continua a decidir movimentos, ataques e impactos.</p>
+</section>
+<section class="panel controls" aria-label="Controlos da galeria">
+<h2>Explorar movimentos</h2>
+<div class="control-grid">
+<fieldset><label for="state">Animação</label><select id="state">
+<option value="idle">Parado / respirar</option>
+<option value="run" selected>Correr</option>
+<option value="attack">Ataque</option>
+<option value="hurt">Receber dano</option>
+<option value="flex">Flex único</option>
+<option value="defeat">Derrota</option>
+</select></fieldset>
+<fieldset><label for="direction">Direção</label><select id="direction">
+<option value="0">Este →</option><option value="1">Sudeste ↘</option>
+<option value="2">Sul ↓</option><option value="3">Sudoeste ↙</option>
+<option value="4">Oeste ←</option><option value="5">Noroeste ↖</option>
+<option value="6">Norte ↑</option><option value="7">Nordeste ↗</option>
+</select></fieldset>
+</div>
+<div><label for="speed">Velocidade <output id="speed-value">1×</output></label><input id="speed" type="range" min="0.5" max="2" step="0.25" value="1"></div>
+<div><label for="zoom">Escala de visualização <output id="zoom-value">1×</output></label><input id="zoom" type="range" min="0.7" max="1.5" step="0.1" value="1"></div>
+<label class="switch"><input id="secondary-motion" type="checkbox" checked> Movimento secundário (B1)</label>
+<label class="switch"><input id="reduced-motion" type="checkbox"> Reduzir efeitos</label>
+<div class="actions">
+<button id="previous" type="button" aria-label="Frame anterior">◀ Frame</button>
+<button id="play" type="button" aria-pressed="true">Ⅱ Pausar</button>
+<button id="next" type="button" aria-label="Frame seguinte">Frame ▶</button>
+</div>
+<p class="tip">Para analisar um frame, pausa a animação e usa os botões de avançar e recuar. A galeria mantém os três personagens atuais — a criação dos restantes fica adiada.</p>
+</section>
+</div>
+<div class="footer">Assets existentes: <code>/assets/runtime/</code> · Sem bibliotecas externas · Sem novos sprites ou regras de combate.</div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const el = id => document.getElementById(id);
+  const canvas = el('hero-canvas'), ctx = canvas.getContext('2d');
+  const tabs = [...document.querySelectorAll('[data-hero]')];
+  const names = ['sigma','cool-kid','alpha'];
+  const stateSelect = el('state'), direction = el('direction');
+  const speed = el('speed'), zoom = el('zoom');
+  const secondary = el('secondary-motion'), reduced = el('reduced-motion');
+  const play = el('play');
+  let metadata, hero = 'sigma', playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let playhead = 0, lastStamp = 0, clock = 0;
+  const images = new Map();
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  function loadImage(url) {
+    if (!images.has(url)) {
+      const img = new Image();
+      const pending = new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Falha ao carregar ' + url));
+      });
+      img.src = url;
+      images.set(url, pending);
+    }
+    return images.get(url);
+  }
+
+  function poseFor(id, state, dir, elapsed) {
+    const info = metadata.heroes[id];
+    const four = Math.floor(elapsed * 9) % 4;
+    const pose = (sheet, frame, flip = false) => ({sheet,frame,flip});
+    if (state === 'idle') return pose('atlas', (id==='cool-kid'?24:32) + Math.floor(elapsed * 2) % 2);
+    if (state === 'run') {
+      if (id === 'alpha' && dir >= 5) return pose('rear', [8,4,0][dir-5] + four);
+      if (id === 'cool-kid' && dir === 6) return pose('rear', four);
+      const groups = id === 'sigma' ? [0,4,8,12,16,20,24,28] :
+        id === 'alpha' ? [0,8,16,24,0,0,0,0] : [0,4,8,12,0,16,0,20];
+      return pose('atlas', groups[dir]+four, id === 'sigma' ? dir === 5 : dir === 4);
+    }
+    if (state === 'attack') {
+      const progress = (elapsed % .66) / .66;
+      return pose('atlas', (id==='cool-kid'?26:34) + Math.min(2, Math.floor(progress*3)), dir===4);
+    }
+    if (state === 'hurt') {
+      return pose('atlas', (id==='cool-kid'?29:37)+Math.floor(elapsed/.18)%2, dir===4);
+    }
+    if (state === 'defeat') {
+      const frame = Math.min(3,Math.floor(elapsed%1.2*8));
+      return pose('atlas', (id==='cool-kid'?29:37)+frame);
+    }
+    const t = elapsed % info.flexDuration, remains = info.flexDuration - t;
+    if (id==='cool-kid') {
+      if (t<.25) return pose('flex',Math.min(1,Math.floor(t*8)),dir===4);
+      if (remains<=.25) return pose('flex',remains>.125?6:7,dir===4);
+      return pose('flex',2+Math.floor((t-.25)*11.25)%4,dir===4);
+    }
+    if (id==='alpha') {
+      const p=t%2;
+      const f=remains<=.25?(remains>.125?46:47):p<.125?44:p<.25?45:p<.4?46:t<4&&p>1.875?43:t<4&&p>1.75?41:42;
+      return pose('atlas',f);
+    }
+    if (t<.25) return pose('atlas',41+Math.floor(t*8));
+    if (remains<=.25) return pose('atlas',remains>.125?46:47);
+    return pose('atlas',[43,44,45,46][Math.floor((t-.25)*8)%4]);
+  }
+
+  function render() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const w=canvas.width,h=canvas.height;
+    ctx.save();
+    // Lightly textured stage, held below original 2D art.
+    ctx.strokeStyle='rgba(195,218,238,.09)';
+    for(let x=0;x<w;x+=38){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(let y=0;y<h;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    const cx=w/2, fy=h*.82;
+    ctx.fillStyle='rgba(8,16,32,.42)';
+    ctx.beginPath();ctx.ellipse(cx+3,fy+3,95,17,0,0,Math.PI*2);ctx.fill();
+
+    if (!metadata){ctx.restore();return;}
+    const info=metadata.heroes[hero];
+    const state=stateSelect.value,dir=Number(direction.value);
+    const pose=poseFor(hero,state,dir,playhead);
+    const sheetInfo=info[pose.sheet], url=sheetInfo.image;
+    const img=sheetInfo.img;
+    if (!img){ctx.restore();return;}
+    const [sx,sy,sw,sh]=sheetInfo.frames[pose.frame];
+    const artScale=(pose.sheet==='rear'?info.rearScale:pose.sheet==='flex'?info.flexScale:info.scale)*2.55*Number(zoom.value);
+    let tilt=0,dy=0,scaleX=1,scaleY=1;
+    if(secondary.checked && !reduced.checked){
+      if(state==='run'){
+        const step=Math.abs(Math.sin(playhead*9*Math.PI/2));
+        dy=2.3*step*2.55; tilt=(dir>=3&&dir<=5?-.038:.038);
+        scaleX+=.021*step;scaleY-=.023*step;
+      } else if(state==='idle'){
+        const breath=Math.sin(playhead*Math.PI*2*1.25);
+        scaleX-=.006*breath;scaleY+=.013*breath;
+      } else if(state==='attack'||state==='hurt'){
+        const phase=Math.sin(playhead*Math.PI*2.3);
+        tilt=(state==='hurt'?-1:1)*.055*phase;
+        scaleX+=.03*Math.abs(phase);scaleY-=.02*Math.abs(phase);
+      } else if(state==='flex'){
+        scaleX+=.019*Math.sin(playhead*4*Math.PI)**2;
+        scaleY=scaleX;
+      }
+    }
+    ctx.translate(cx,fy-dy);
+    ctx.rotate(tilt);
+    ctx.scale((pose.flip?-1:1)*scaleX,scaleY);
+    const edges=pose.sheet==='atlas'?(info.matte[String(pose.frame)]||{left:0,right:0}):{left:0,right:0};
+    const left=edges.left,right=edges.right,inner=sw-left-right;
+    if(inner>0){
+      ctx.drawImage(img,sx+left,sy,inner,sh,
+        (-sw/2+left)*artScale,-sh*artScale,inner*artScale,sh*artScale);
+    }
+    ctx.restore();
+    el('frame-info').textContent=info.name+' · '+state.toUpperCase()+' · '+(dir+1)+'/8 · '+pose.sheet+':'+pose.frame;
+    el('asset-info').textContent=url.split('/').pop();
+  }
+
+  function draw(stamp) {
+    if (!lastStamp)lastStamp=stamp;
+    const dt=clamp((stamp-lastStamp)/1000,0,.06);
+    lastStamp=stamp;
+    if(playing)playhead+=dt*Number(speed.value);
+    clock=stamp;
+    render();
+    requestAnimationFrame(draw);
+  }
+  function restart(){playhead=0;render();}
+  function setPlay(v){playing=v;play.setAttribute('aria-pressed',String(v));play.textContent=v?'Ⅱ Pausar':'▶ Reproduzir';}
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{
+    hero=tab.dataset.hero;tabs.forEach(t=>t.setAttribute('aria-pressed',String(t===tab)));restart();
+  }));
+  [stateSelect,direction,zoom,secondary,reduced].forEach(control=>control.addEventListener('change',restart));
+  speed.addEventListener('input',()=>{el('speed-value').textContent=speed.value+'×';});
+  zoom.addEventListener('input',()=>{el('zoom-value').textContent=zoom.value+'×';render();});
+  play.addEventListener('click',()=>setPlay(!playing));
+  el('previous').addEventListener('click',()=>{setPlay(false);playhead=Math.max(0,playhead-.11);render();});
+  el('next').addEventListener('click',()=>{setPlay(false);playhead+=.11;render();});
+  if(!playing)setPlay(false);
+  window.fetch('/assets/cartoon/option-a-v1/animation-gallery-data.json',{cache:'force-cache'})
+    .then(r=>{if(!r.ok)throw new Error('Dados de animação indisponíveis');return r.json();})
+    .then(async data=>{
+      if(Object.keys(data.heroes).join(',')!==names.join(','))throw new Error('Galeria só suporta os três personagens aprovados');
+      await Promise.all(Object.values(data.heroes).flatMap(info=>
+        ['atlas','rear','flex'].filter(k=>info[k]).map(async k=>{
+          info[k].img=await loadImage(info[k].image);
+        })));
+      metadata=data;
+      restart();
+      requestAnimationFrame(draw);
+    })
+    .catch(error=>{el('frame-info').textContent=error.message;});
+})();
+</script>
+</body>
+</html>
