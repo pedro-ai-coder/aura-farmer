@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aura Farmer — B1 Sprite Review</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Arial,sans-serif;background:#12162b;color:#fff8df}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -25%,#42517b 0,#171e38 45%,#101326 90%)}
+header,main,footer{max-width:1180px;margin:auto;padding:24px 20px}
+header{padding-top:42px}h1{margin:8px 0;font-size:clamp(30px,5vw,52px);letter-spacing:-1px;text-shadow:4px 4px #070b1b}
+h1 span{color:#43dbf3}p{line-height:1.55;color:#c6d0e2;max-width:760px}.eyebrow{color:#ffd35e;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:#1b2643;border:3px solid #415a83;border-radius:20px;padding:18px;box-shadow:0 12px 0 #080e21;min-width:0}
+.card[data-hero="sigma"]{--accent:#b989ff}.card[data-hero="cool-kid"]{--accent:#48d9ff}.card[data-hero="alpha"]{--accent:#ffcf59}
+.card h2{color:var(--accent);margin:0 0 4px;font-size:24px}.card p{margin:4px 0 12px;font-size:13px}
+.stage{height:245px;border:2px solid #516182;border-radius:15px;background:repeating-linear-gradient(0deg,transparent,transparent 39px,#27314c 40px),linear-gradient(#313e5a,#1c2442);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.stage::after{content:"";position:absolute;bottom:18px;width:115px;height:20px;border-radius:100%;background:#0c1429;opacity:.6}
+.sprite{width:200px;height:224px;position:relative;z-index:1;background-repeat:no-repeat;filter:drop-shadow(0 3px 0 #121829);background-size:800px 896px}
+.card[data-hero="sigma"] .sprite{background-image:url("./sigma-hero.svg")}
+.card[data-hero="cool-kid"] .sprite{background-image:url("./cool-kid-hero.svg")}
+.card[data-hero="alpha"] .sprite{background-image:url("./alpha-hero.svg")}
+label{display:block;margin:14px 0 7px;color:#f2e4c4;font-weight:700;font-size:13px}
+select{width:100%;border:2px solid #536b91;border-radius:9px;background:#10172f;color:#fff8df;padding:10px;font:inherit}
+small{color:#a9b9d1}.note{padding:16px 20px;background:#202d49;border-left:5px solid #ffd35e;border-radius:8px;margin:28px 0}
+.sheet{margin:25px auto;width:min(100%,800px)}.sheet img{display:block;width:100%;height:auto;background:#1d2a45;border:2px solid #506284;border-radius:16px}
+footer{font-size:13px;color:#a1abc3;padding-bottom:40px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.card{max-width:450px;width:100%;margin:auto}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Pré-visualização da arte original · Fase B1</div>
+<h1>AURA <span>FARMER</span> — HERO SPRITES</h1>
+<p>Três protagonistas redesenhados para o estilo Cartoon Arcade. Estas são as folhas SVG que o Phaser carrega no jogo; cada uma contém 16 poses originais. A animação nesta página serve para rever silhuetas e consistência antes da tua aprovação.</p></header>
+<main>
+<section class="grid" aria-label="Previews das personagens">
+<article class="card" data-hero="sigma"><h2>SIGMA</h2><p>Silhueta escura · cap na mão · medalhão dourado</p><div class="stage"><div class="sprite" role="img" aria-label="Sigma animado"></div></div><label>Animar</label><select aria-label="Animação Sigma"><option value="run">Correr — frente</option><option value="back">Correr — costas</option><option value="idle">Parado</option><option value="attack">Ataque</option><option value="hurt">Dano</option><option value="defeat">Queda</option></select></article>
+<article class="card" data-hero="cool-kid"><h2>COOL KID</h2><p>Beanie azul · hoodie · teclado</p><div class="stage"><div class="sprite" role="img" aria-label="Cool Kid animado"></div></div><label>Animar</label><select aria-label="Animação Cool Kid"><option value="run">Correr — frente</option><option value="back">Correr — costas</option><option value="idle">Parado</option><option value="attack">Ataque</option><option value="hurt">Dano</option><option value="defeat">Queda</option></select></article>
+<article class="card" data-hero="alpha"><h2>ALPHA CHAD</h2><p>Cabelo loiro · corpo largo · escudo</p><div class="stage"><div class="sprite" role="img" aria-label="Alpha Chad animado"></div></div><label>Animar</label><select aria-label="Animação Alpha Chad"><option value="run">Correr — frente</option><option value="back">Correr — costas</option><option value="idle">Parado</option><option value="attack">Ataque</option><option value="hurt">Dano</option><option value="defeat">Queda</option></select></article>
+</section>
+<div class="note"><strong>Importante:</strong> a jogabilidade e as hitboxes mantêm-se. Em jogo, as sequências especiais de Flex e a animação de derrota continuam a utilizar os sprites aprovados anteriormente. Esta página permite rever também poses adicionais ainda não ativadas em runtime.</div>
+<section><h2>Contact sheets completas</h2><p>4 colunas × 4 linhas, com transparência e pivô partilhado. Revisão de escala, movimento, atributos e poses traseiras.</p>
+<div class="sheet"><h3>Sigma</h3><img alt="Folha original de dezasseis poses de Sigma" src="./sigma-hero.svg"></div>
+<div class="sheet"><h3>Cool Kid</h3><img alt="Folha original de dezasseis poses de Cool Kid" src="./cool-kid-hero.svg"></div>
+<div class="sheet"><h3>Alpha Chad</h3><img alt="Folha original de dezasseis poses de Alpha Chad" src="./alpha-hero.svg"></div>
+</section></main>
+<footer>Arte SVG original do B1 · Sem dependências externas · Sujeita a revisão do criador antes do merge.</footer>
+<script>
+const sequences={idle:[0,1],run:[2,3,4,5],back:[11,12,13,14],attack:[6,7],hurt:[8],defeat:[9]};
+let tick=0;let last=0;
+const cards=[...document.querySelectorAll('.card')];
+function update(){for(const card of cards){
+ const state=card.querySelector('select').value;
+ const frames=sequences[state];
+ const frame=frames[tick%frames.length];
+ const s=card.querySelector('.sprite');
+ s.style.backgroundPosition=(-frame%4*200)+'px '+(-Math.floor(frame/4)*224)+'px';
+ s.dataset.frame=String(frame);
+}}
+function animate(now){if(now-last>=125){tick++;last=now;update()}requestAnimationFrame(animate)}
+for(const card of cards)card.querySelector('select').addEventListener('change',()=>{tick=0;update()});
+update();requestAnimationFrame(animate);
+</script>
+</body></html>
