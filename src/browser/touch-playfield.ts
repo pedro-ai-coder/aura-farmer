@@ -18,6 +18,7 @@ export function visiblePlayfieldBounds(
     stage: Pick<Rect, 'left' | 'top'>,
     viewportWorld: { topLeft: Point; bottomRight: Point },
     world: Pick<Rect, 'width' | 'height'>,
+    origin: Point = { x: 0, y: 0 },
 ): Rect {
     const worldSpanX = viewportWorld.bottomRight.x - viewportWorld.topLeft.x;
     const worldSpanY = viewportWorld.bottomRight.y - viewportWorld.topLeft.y;
@@ -26,8 +27,8 @@ export function visiblePlayfieldBounds(
 
     const pixelsPerWorldX = canvas.width / worldSpanX;
     const pixelsPerWorldY = canvas.height / worldSpanY;
-    const projectedLeft = canvas.left - viewportWorld.topLeft.x * pixelsPerWorldX;
-    const projectedTop = canvas.top - viewportWorld.topLeft.y * pixelsPerWorldY;
+    const projectedLeft = canvas.left + (origin.x - viewportWorld.topLeft.x) * pixelsPerWorldX;
+    const projectedTop = canvas.top + (origin.y - viewportWorld.topLeft.y) * pixelsPerWorldY;
     const left = Math.max(canvas.left, projectedLeft);
     const top = Math.max(canvas.top, projectedTop);
     const right = Math.min(canvas.left + canvas.width, projectedLeft + world.width * pixelsPerWorldX);
