@@ -53,6 +53,9 @@ describe('iteration 2 — progression boundaries', () => {
             const time = r.time, aura = r.aura;
             r.update(.05);
             expect(r.time).toBe(time); expect(r.aura).toBe(aura);
+            // The NPC only probes modal damage safety. Retire it without XP
+            // before resuming, so this assertion isolates transition credit.
+            r.enemies = [];
             r.deferLegendary(); drain(r); r.update(.01);
             expect(r.xpCollected).toBe(xp);
         });
